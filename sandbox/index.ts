@@ -34,8 +34,13 @@ app.get('/greet_query', (req: Request<{}, {}, {}, GreetQuery>, res: Response) =>
 // POST Request
 // simple pay
 app.post('/pay', (req: Request, res: Response) => {
-    const amount = req.body.amount; // we are accessing the amount request from the body
+    const amount = req.body.payment_amount; // we are accessing the amount request from the body
     res.send(`Pay ${amount}!`);
+});
+
+app.post('/received', (req: Request, res: Response) => {
+    const amount = req.body.received_amount; // we are accessing the amount request from the body
+    res.send(`Amount received: ${amount}!`);
 });
 
 // Start server
