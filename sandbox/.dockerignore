@@ -1,0 +1,42 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environment directories
+venv/
+env/
+.venv/
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+
+# Terrafom
+*.tf
+.terraform/
+
+# Node.js / JavaScript related ignores
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+dist/
+*.tgz
+*.log
+*.pid
+*.gz
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.7z
+*.rar
+*.swp
+*.swo
+*.swn
+*.DS_Store
+*.vscode/
