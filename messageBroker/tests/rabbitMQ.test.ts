@@ -8,6 +8,7 @@ describe('RabbitMQ Message Broker', () => {
   it('should send and receive messages', (done) => {
     const testQueue = 'test_queue';
     const testMessage = 'Hello, RabbitMQ!';
+    const testChannel = 'test_channel';
 
     // Increase the timeout for this test
     jest.setTimeout(10000);
@@ -20,9 +21,9 @@ describe('RabbitMQ Message Broker', () => {
       } catch (error) {
         done(error);
       }
-    });
+    }, testChannel);
 
     // Send the message
-    sendMessageToQueue(testMessage, testQueue);
+    sendMessageToQueue(testMessage, testQueue, testChannel);
   });
 });
