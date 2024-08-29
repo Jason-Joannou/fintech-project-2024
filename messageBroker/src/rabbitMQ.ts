@@ -1,22 +1,26 @@
 import amqp, { Connection, Channel } from 'amqplib';
 
 let connection: Connection;
-let channel: Channel;
-
-const queue = 'default_queue';
+const channels: { [key: string]: Channel } = {};
 
 const connect = async () => {
   if (!connection) {
     connection = await amqp.connect('amqp://localhost');
   }
-  if (!channel) {
-    channel = await connection.createChannel();
-  }
 };
 
-export const sendMessageToQueue = async (message: string, queueName: string = queue): Promise<void> => {
-  try {
+const getChannel = async (channelName: string): Promise<Channel> => {
+  if (!channels[channelName]) {
     await connect();
+    const channel = await connection.createChannel();
+    channels[channelName] = channel;
+  }
+  return channels[channelName];
+};
+
+export const sendMessageToQueue = async (message: string, queueName: string = 'default_queue', channelName: string = 'default'): Promise<void> => {
+  try {
+    const channel = await getChannel(channelName);
     await channel.assertQueue(queueName, { durable: false });
     channel.sendToQueue(queueName, Buffer.from(message));
     console.log(`Sent: ${message}`);
@@ -25,9 +29,9 @@ export const sendMessageToQueue = async (message: string, queueName: string = qu
   }
 };
 
-export const receiveMessageFromQueue = async (queueName: string = queue, callback: (msg: string) => void): Promise<void> => {
+export const receiveMessageFromQueue = async (queueName: string = 'default_queue', callback: (msg: string) => void, channelName: string = 'default'): Promise<void> => {
   try {
-    await connect();
+    const channel = await getChannel(channelName);
     await channel.assertQueue(queueName, { durable: false });
     console.log('Waiting for messages in %s. To exit press CTRL+C', queueName);
 
@@ -46,8 +50,8 @@ export const receiveMessageFromQueue = async (queueName: string = queue, callbac
 
 export const closeConnection = async () => {
   try {
-    if (channel) {
-      await channel.close();
+    for (const channelName in channels) {
+      await channels[channelName].close();
     }
     if (connection) {
       await connection.close();
