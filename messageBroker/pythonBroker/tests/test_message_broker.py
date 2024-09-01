@@ -1,5 +1,5 @@
 import pytest
-from pythonBroker.message_broker import MessageBroker
+from src.message_broker import MessageBroker
 
 
 @pytest.fixture
