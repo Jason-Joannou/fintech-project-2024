@@ -1,9 +1,8 @@
 from flask import Flask, request
-from messageBroker.pythonBroker.src.message_broker import MessageBroker
-from action_handlers import handle_action
+from .action_handlers import handle_action
 from twilio.twiml.messaging_response import MessagingResponse
 from database.queries import check_if_number_exists_sql, check_if_number_exists_sqlite
-from message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
+from .message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
 from .cache import Cache
 
 app = Flask(__name__)
@@ -31,4 +30,7 @@ def whatsapp():
         if incoming_msg in ['hi', 'hello']:
             twiml.message(GREET_MESSAGE_UNREGISTERED["message"])
         else:
+            twiml.message("Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'")
             print("Invalid message, please activate the service by sending 'Hi' or 'Hello'")
+
+    return str(twiml)
