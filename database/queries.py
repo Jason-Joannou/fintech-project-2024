@@ -2,7 +2,7 @@ from .sqlite_connection import SQLiteConnection
 from .sql_connection import sql_connection
 
 sqlite_conn = SQLiteConnection(database="./test_db.db")
-sql_conn = sql_connection()
+# sql_conn = sql_connection()
 
 def check_if_number_exists_sqlite(from_number):
 
