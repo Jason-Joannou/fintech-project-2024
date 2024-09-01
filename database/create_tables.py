@@ -13,6 +13,10 @@ def create_stokvel_table_sqlite():
             id INTEGER PRIMARY KEY, 
             name TEXT UNIQUE,  -- Add UNIQUE constraint here
             url TEXT, 
+            stokvel_type TEXT,
+            min_contributing_amount INTEGER,
+            max_number_of_contributors INTEGER,
+            payout_day INTEGER,
             created_at TIMESTAMP, 
             updated_at TIMESTAMP
         );
@@ -24,7 +28,11 @@ def create_stokvel_table_sql_server():
         CREATE TABLE IF NOT EXISTS STOKVELS (
             id INTEGER PRIMARY KEY, 
             name TEXT UNIQUE,  -- Add UNIQUE constraint here
-            url TEXT, 
+            url TEXT,
+            stokvel_type TEXT,
+            min_contributing_amount INTEGER,
+            max_number_of_contributors INTEGER,
+            payout_day INTEGER,
             created_at DATETIME, 
             updated_at DATETIME
         );
