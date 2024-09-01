@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . . 
 
 # Run the python script wen the container launches
-CMD["python", "main.py"]
+CMD ["python", "main.py"]
