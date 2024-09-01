@@ -1,0 +1,3 @@
+JOIN_STOCKVEL = {
+    
+}
