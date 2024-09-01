@@ -18,10 +18,10 @@ def whatsapp():
     user = cache.get(from_number)
     if user is None:
         user = check_if_number_exists_sqlite(from_number=from_number)
-        if user is not None:
+        if user:
             cache.set(from_number, user)
     
-    if user is not None:
+    if user:
         if incoming_msg in ['hi', 'hello']:
             twiml.message(GREET_MESSAGE_REGISTERED["message"])
         else:
