@@ -11,9 +11,9 @@ def check_if_number_exists_sqlite(from_number):
         cursor = conn.execute(query, {'from_number': from_number})
         result = cursor.fetchone()
         if result:
-            return True
+            return result
         else:
-            return False
+            return None
         
 def check_if_number_exists_sql(from_number):
 
