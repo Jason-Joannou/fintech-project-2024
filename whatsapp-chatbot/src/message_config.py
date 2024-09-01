@@ -13,7 +13,7 @@ JOIN_STOCKVEL = {
 }
 
 GREET_MESSAGE_REGISTERED = {
-    "message": """Hi there! Please select one of the following options to proceed: 
+    "message": """Hi there, welcome back! Please select one of the following options to proceed: 
     1. Join a stockvel 
     2. Leave a stockvel
     3. Contribute to a stockvel
