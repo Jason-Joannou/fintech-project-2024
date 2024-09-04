@@ -7,63 +7,63 @@ sql_conn = sql_connection()
 # URL refers to the openAPI address of the stokvel
 
 def create_stokvel_table_sqlite():
-    engine = sqlite_conn.get_engine()
-    engine.execute("""
-        CREATE TABLE IF NOT EXISTS STOKVELS (
-            id INTEGER PRIMARY KEY, 
-            name TEXT UNIQUE,  -- Add UNIQUE constraint here
-            url TEXT, 
-            stokvel_type TEXT,
-            min_contributing_amount INTEGER,
-            max_number_of_contributors INTEGER,
-            payout_day INTEGER,
-            created_at TIMESTAMP, 
-            updated_at TIMESTAMP
-        );
-    """)
+    with sqlite_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS STOKVELS (
+                id INTEGER PRIMARY KEY, 
+                name TEXT UNIQUE,  -- Add UNIQUE constraint here
+                url TEXT, 
+                stokvel_type TEXT,
+                min_contributing_amount INTEGER,
+                max_number_of_contributors INTEGER,
+                payout_day INTEGER,
+                created_at TIMESTAMP, 
+                updated_at TIMESTAMP
+            );
+        """)
 
 def create_stokvel_table_sql_server():
-    engine = sql_conn.get_engine()
-    engine.execute("""
-        CREATE TABLE IF NOT EXISTS STOKVELS (
-            id INTEGER PRIMARY KEY, 
-            name TEXT UNIQUE,  -- Add UNIQUE constraint here
-            url TEXT,
-            stokvel_type TEXT,
-            min_contributing_amount INTEGER,
-            max_number_of_contributors INTEGER,
-            payout_day INTEGER,
-            created_at DATETIME, 
-            updated_at DATETIME
-        );
-    """)
+    with sql_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS STOKVELS (
+                id INTEGER PRIMARY KEY, 
+                name TEXT UNIQUE,  -- Add UNIQUE constraint here
+                url TEXT,
+                stokvel_type TEXT,
+                min_contributing_amount INTEGER,
+                max_number_of_contributors INTEGER,
+                payout_day INTEGER,
+                created_at DATETIME, 
+                updated_at DATETIME
+            );
+        """)
 
 def create_user_table_sqlite():
-    engine = sqlite_conn.get_engine()
-    engine.execute("""
-        CREATE TABLE IF NOT EXISTS USERS (
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            created_at TIMESTAMP, 
-            updated_at TIMESTAMP
-        );
-    """)
+    with sqlite_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS USERS (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                created_at TIMESTAMP, 
+                updated_at TIMESTAMP
+            );
+        """)
 
 def create_user_table_sql_server():
-    engine = sql_conn.get_engine()
-    engine.execute("""
-        CREATE TABLE IF NOT EXISTS USERS (
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            created_at DATETIME, 
-            updated_at DATETIME
-        );
+    with sql_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS USERS (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                created_at DATETIME, 
+                updated_at DATETIME
+            )
     """)
 
 def create_transaction_table_sqlite():
-    engine = sqlite_conn.get_engine()
-    engine.execute("""
-        CREATE TABLE IF NOT EXISTS TRANSACTIONS (
+    with sqlite_conn.connect() as conn:
+        conn.execute("""
+                     CREATE TABLE IF NOT EXISTS TRANSACTIONS (
             id INTEGER PRIMARY KEY, 
             user_id INTEGER, 
             stokvel_id INTEGER, 
@@ -74,8 +74,9 @@ def create_transaction_table_sqlite():
     """)
 
 def create_transaction_table_sql_server():
-    engine = sql_conn.get_engine()
-    engine.execute("""
+
+    with sql_conn.connect() as conn:
+        conn.execute("""
         CREATE TABLE IF NOT EXISTS TRANSACTIONS (
             id INTEGER PRIMARY KEY, 
             user_id INTEGER, 
@@ -85,3 +86,39 @@ def create_transaction_table_sql_server():
             updated_at DATETIME
         );
     """)
+
+def create_resource_table_sqlite():
+    with sqlite_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS RESOURCES (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                url TEXT, 
+                created_at TIMESTAMP, 
+                updated_at TIMESTAMP
+            );
+        """)
+
+def create_resource_table_sql_server():
+    engine = sql_conn.get_engine()
+    engine.execute(
+        """
+        CREATE TABLE IF NOT EXISTS RESOURCES (
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            url TEXT, 
+            created_at DATETIME, 
+            updated_at DATETIME
+        );
+        """
+    )
+    with sql_conn.connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS RESOURCES (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                url TEXT, 
+                created_at DATETIME, 
+                updated_at DATETIME
+            );
+        """)
