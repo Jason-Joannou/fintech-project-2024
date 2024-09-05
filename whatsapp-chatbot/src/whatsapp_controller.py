@@ -1,7 +1,7 @@
 from flask import Flask, request
 from .action_handlers import handle_action
 from twilio.twiml.messaging_response import MessagingResponse
-from database.queries import check_if_number_exists_sql, check_if_number_exists_sqlite
+from database.queries import check_if_number_exists_sqlite
 from .message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
 from .cache import Cache
 
