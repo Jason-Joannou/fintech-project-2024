@@ -37,7 +37,9 @@ def cache():
 def mock_message_broker():
     return mock_broker
 
-# Patch `check_if_number_exists_sqlite` and other necessary components
+# Example of grerting test
+    # When we have a registered user, we should expect the whatsapp endpoint to return the specified greeting message
+    # This is what the below test checks
 def test_greeting_action_call_registered(client, cache, mock_message_broker, sqlite_database):
     from_number = '+1234567890'
     action_message = 'hi'
@@ -53,3 +55,19 @@ def test_greeting_action_call_registered(client, cache, mock_message_broker, sql
 
     # Assert that the response contains the expected greeting message for registered users
     assert GREET_MESSAGE_REGISTERED["message"] in response.data.decode('utf-8')
+
+def test_greeting_action_call_unregistered(client, cache, mock_message_broker, sqlite_database):
+    from_number = '+1234567891'
+    action_message = 'hi'
+
+    # Simulate user in the database
+    with sqlite_database.connect() as conn:
+        result = conn.execute(text("SELECT * FROM USERS WHERE user_number = :from_number"), {'from_number': from_number}).fetchone()
+        assert result is None  # Expect no user to be found
+
+    # Simulate sending a message to the endpoint
+    response = client.post('/whatsapp', data={'From': from_number, 'Body': action_message})
+
+    # Assert that the response contains the expected greeting message for unregistered users
+    assert GREET_MESSAGE_UNREGISTERED["message"] in response.data.decode('utf-8')
+
