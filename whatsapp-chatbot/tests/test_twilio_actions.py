@@ -71,3 +71,6 @@ def test_greeting_action_call_unregistered(client, cache, mock_message_broker, s
     # Assert that the response contains the expected greeting message for unregistered users
     assert GREET_MESSAGE_UNREGISTERED["message"] in response.data.decode('utf-8')
 
+# OTHER TESTS TO IMPLEMENT
+    # What is the expected message when a users sends something other than hi ( registered and unregistered users )
+    # When they select a specific action
