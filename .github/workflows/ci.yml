@@ -12,7 +12,7 @@ jobs:
   auto-format:
     runs-on: ubuntu-latest
     outputs:
-      branch: ${{ steps.set-output.outputs.branch }}
+      branch: ${{ steps.create-branch.outputs.branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -49,12 +49,9 @@ jobs:
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
           echo "branch=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "::set-output name=branch::$BRANCH_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set output
-        id: set-output
-        run: echo "::set-output name=branch::${{ env.branch }}"
 
   lint-and-checks:
     needs: auto-format
@@ -108,11 +105,10 @@ jobs:
 
       - name: Delete temporary branch
         run: |
-          BRANCH_NAME="formatting-branch-${{ needs.auto-format.outputs.branch }}"
+          BRANCH_NAME="${{ needs.auto-format.outputs.branch }}"
           echo "Branch to delete: $BRANCH_NAME"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git fetch origin
-          git branch -r | grep "origin/$BRANCH_NAME" && git push origin --delete $BRANCH_NAME || true
+          git push origin --delete $BRANCH_NAME || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
