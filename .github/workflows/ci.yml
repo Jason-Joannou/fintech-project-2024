@@ -97,9 +97,15 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.auto-format.outputs.branch }}
+
       - name: Delete temporary branch
         run: |
           BRANCH_NAME="formatting-branch-${{ needs.auto-format.outputs.branch }}"
+          echo "Branch to delete: $BRANCH_NAME"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git fetch origin
