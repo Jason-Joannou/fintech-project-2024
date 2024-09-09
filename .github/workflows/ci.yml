@@ -108,6 +108,10 @@ jobs:
     runs-on: ubuntu-latest
     if: always()  # Ensures this job runs regardless of previous job outcomes
     steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       # Delete the temporary branch
       - name: Delete temporary branch
         run: |
