@@ -48,7 +48,7 @@ jobs:
           git add .
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
-          echo "::set-output name=branch::$BRANCH_NAME"
+          echo "branch=$BRANCH_NAME" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -105,16 +105,14 @@ jobs:
       - name: Debug - Print branch name
         run: |
           echo "Branch from output: ${{ needs.auto-format.outputs.branch }}"
-          echo "Branch to delete: $BRANCH_NAME"
+          echo "Branch to delete: ${{ needs.auto-format.outputs.branch }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ needs.auto-format.outputs.branch }}
 
       - name: Delete temporary branch
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git push origin --delete $BRANCH_NAME || true
+          git push origin --delete ${{ needs.auto-format.outputs.branch }} || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ needs.auto-format.outputs.branch }}
