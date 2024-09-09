@@ -29,33 +29,32 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Use Microsoft's Python Action Collection for formatting and testing
-    - name: Python Actions Collection
-      uses: microsoft/action-python@0.7.2
-      with:
-        # Set the root directory
-        root: .
-
-        # Set Python version to 3.9
-        python_version: '3.9'
-
-        # Enable Black for formatting
-        black: true
-
-        # Enable Flake8 for formatting
-        flake8: true
-
-        # Enable Pylint for tpye checking
-        pylint: true
-
-        # Enable Pyright (for Mypy type checking)
-        pyright: true
-
-        # Enable Pytest for running unit tests
-        pytest: true
-
-    # Optionally, run isort separately if not included in the collection
-    - name: Run isort
+    # Run Black manually
+    - name: Run Black
       run: |
-        pip install isort
-        isort .
+        pip install black
+        black .
+
+    # Run Flake8
+    - name: Run Flake8
+      run: |
+        pip install flake8
+        flake8 .
+
+    # Run Pylint
+    - name: Run Pylint
+      run: |
+        pip install pylint
+        pylint **/*.py
+
+    # Run Pyright (Mypy)
+    - name: Run Pyright
+      run: |
+        pip install pyright
+        pyright
+
+    # Run Pytest
+    - name: Run Pytest
+      run: |
+        pip install pytest
+        pytest
