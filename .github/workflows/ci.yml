@@ -40,6 +40,8 @@ jobs:
         id: git-status
         run: |
           git diff --exit-code || echo "Formatting changes detected"
+          # Set output variable to indicate if changes were detected
+          echo "::set-output name=changed::$(if [ -n "$(git diff)" ]; then echo 'true'; else echo 'false'; fi)"
 
       # Commit and push formatting changes to a new branch
       - name: Commit and push changes
