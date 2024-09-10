@@ -92,7 +92,7 @@ jobs:
       - name: Run Pylint
         run: |
           pip install pylint
-          pylint **/*.py
+          pylint --recursive=y .
 
       - name: Run Pytest
         run: |

@@ -4,4 +4,4 @@ max-line-length = 150
 
 [MESSAGES CONTROL]
 # List of message IDs to disable.
-disable = C0114
+disable = C0114, R0801
