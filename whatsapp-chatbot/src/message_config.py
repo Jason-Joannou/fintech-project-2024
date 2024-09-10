@@ -23,7 +23,6 @@ GREET_MESSAGE_REGISTERED = {
 
 GREET_MESSAGE_UNREGISTERED = {
     "message": """Hi there! We noticed this number is not registered with us. Registering your number is needed to start contributing to Stokvels.
-    
     Please select one of the following options to proceed: 
     1. Register using Rafiki money
     2. Register using MTN Mobile Money"""
@@ -32,7 +31,6 @@ GREET_MESSAGE_UNREGISTERED = {
 MORE_SERVICES = {
     "message" : """
     Please select one of the following options to proceed:
-    
     1. View all available stockvels
     2. Pay Reciepient"""
 }
