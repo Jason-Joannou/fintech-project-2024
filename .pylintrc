@@ -1,6 +1,6 @@
 [MASTER]
 ignore = rafiki-services, documentation
-max-line-length = 100
+max-line-length = 150
 
 [MESSAGES CONTROL]
 # List of message IDs to disable.
