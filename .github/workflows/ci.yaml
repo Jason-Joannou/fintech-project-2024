@@ -50,6 +50,7 @@ jobs:
           git push origin $BRANCH_NAME
           echo $BRANCH_NAME > branch_name.txt
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "::set-output name=branch::$BRANCH_NAME"  # Setting the output for branch
 
       - name: Upload branch name artifact
         if: env.changed == 'true'
@@ -61,7 +62,7 @@ jobs:
   lint-and-checks:
     needs: auto-format
     runs-on: ubuntu-latest
-    if: needs.auto-format.outputs.branch_name != ''
+    if: needs.auto-format.outputs.branch != ''
     steps:
       - name: Download branch name artifact
         uses: actions/download-artifact@v3
