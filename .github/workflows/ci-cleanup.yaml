@@ -1,0 +1,25 @@
+name: Cleanup Temporary Branch
+
+on:
+  workflow_run:
+    workflows: ["Lint and Test"]
+    types:
+      - completed
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.outputs.branch }}
+
+      - name: Delete temporary branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git push origin --delete ${{ github.event.workflow_run.outputs.branch }} || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
