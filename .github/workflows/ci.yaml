@@ -48,8 +48,7 @@ jobs:
           git add .
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
-          echo $BRANCH_NAME >> $GITHUB_ENV
-          echo "::set-output name=branch::$BRANCH_NAME"  # Setting the output for branch
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV  # Setting the environment variable
 
   lint-and-checks:
     needs: auto-format
@@ -59,15 +58,15 @@ jobs:
       - name: Checkout formatted branch
         uses: actions/checkout@v3
         with:
-          ref: ${{ needs.auto-format.outputs.branch }}
+          ref: ${{ env.BRANCH_NAME }}
 
       - name: Verify checked out branch
         run: |
           CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "Checked out branch: $CURRENT_BRANCH"
-          if [ "$CURRENT_BRANCH" != "${{ needs.auto-format.outputs.branch }}" ]; then
+          if [ "$CURRENT_BRANCH" != "${{ env.BRANCH_NAME }}" ]; then
             echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{
-            needs.auto-format.outputs.branch }})"
+            env.BRANCH_NAME }})"
             exit 1
           fi
 
@@ -111,7 +110,7 @@ jobs:
 
       - name: Delete temporary branch
         run: |
-          BRANCH_NAME="${{ needs.auto-format.outputs.branch }}"
+          BRANCH_NAME="${{ env.BRANCH_NAME }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git push origin --delete $BRANCH_NAME || true
