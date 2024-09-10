@@ -74,6 +74,15 @@ jobs:
         with:
           ref: ${{ env.branch_name }}
 
+      - name: Verify checked out branch
+        run: |
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "Checked out branch: $CURRENT_BRANCH"
+          if [ "$CURRENT_BRANCH" != "${{ env.branch_name }}" ]; then
+            echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{ env.branch_name }})"
+            exit 1
+          fi
+
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
