@@ -69,6 +69,13 @@ jobs:
         with:
           name: branch_name
 
+      - name: Read branch name
+        id: read-branch
+        run: |
+          BRANCH_NAME=$(cat branch_name.txt)
+          echo "Branch to check out: $BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+
       - name: Checkout formatted branch
         uses: actions/checkout@v3
         with:
