@@ -53,7 +53,7 @@ jobs:
   lint-and-checks:
     needs: auto-format
     runs-on: ubuntu-latest
-    if: needs.auto-format.outputs.branch != ''
+    if: env.BRANCH_NAME != ''
     steps:
       - name: Checkout formatted branch
         uses: actions/checkout@v3
