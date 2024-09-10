@@ -6,6 +6,9 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 def check_if_number_exists_sqlite(from_number):
+    """
+    docstring
+    """
 
     query = "SELECT * FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
@@ -13,5 +16,5 @@ def check_if_number_exists_sqlite(from_number):
         result = cursor.fetchone()
         if result:
             return True
-        else:
-            return False
+        
+        return False

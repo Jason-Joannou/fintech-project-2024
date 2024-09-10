@@ -44,7 +44,7 @@ class SQLiteConnection:
                     f"sqlite:///{self.database}"
                 )
             except Exception as e:
-                logging.error(f'Error creating SQLite engine: {e}')
+                logging.error("Error creating SQL engine: %s", e)
                 raise
         return self._engine
     
@@ -69,7 +69,7 @@ class SQLiteConnection:
             connection = self.get_engine().connect()
             return connection
         except Exception as e:
-            logging.error(f'Error establishing SQL connection: {e}')
+            logging.error("Error establishing SQL connection: %s", e)
             raise
         
     def test_connection(self):
@@ -84,14 +84,14 @@ class SQLiteConnection:
             response = {"connection_status": "complete", "message": "Successfully established SQLite connection."}
             connection.close()
             return response
-        except Exception as e:
+        except ValueError as e:
             response = {"connection_status": "incomplete", "message": f'Error establishing SQLite connection: {e}'}
             return response
 
 # Usage example
 if __name__ == "__main__":
-    connection = SQLiteConnection(database="test.db")
-    engine = connection.get_engine()
-    session = connection.get_session()
-    conn = connection.connect()
+    test_connection = SQLiteConnection(database="test.db")
+    test_engine = test_connection.get_engine()
+    test_session = test_connection.get_session()
+    test_conn = test_connection.connect()
     print("Connected to SQLite database successfully.")

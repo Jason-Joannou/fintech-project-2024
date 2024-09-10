@@ -5,10 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
-env = load_dotenv(dotenv_path=r"./.env", override=True)
+ENV = load_dotenv(dotenv_path=r"./.env", override=True)
 
 
-class sql_connection:
+class SqlConnection:
     """
     This class manages the SQL connection to a database. It encapsulates the connection details, such as the server, 
     database, username and password. It provides methods to get an engine, a session, and a connection.
@@ -26,14 +26,14 @@ class sql_connection:
         The constructor for the SQLConnection. It initializes the connection parameters.
         """
 
-        ENV_KEYS = ["DB_SERVER", "DB_DATABASE", "DB_USERNAME", "DB_PASSWORD"]
+        env_keys = ["DB_SERVER", "DB_DATABASE", "DB_USERNAME", "DB_PASSWORD"]
         missing = []
-        for k in ENV_KEYS:
+        for k in env_keys:
             if not os.getenv(k):
                 missing.append(k)
 
         if len(missing) > 0:
-            raise Exception(f"Missing sql server related environment variables in .env file: `{missing}`")
+            raise ValueError(f"Missing sql server related environment variables in .env file: `{missing}`")
 
         self.server = os.getenv("DB_SERVER", server)
         self.database = os.getenv("DB_DATABASE", database)
@@ -41,13 +41,13 @@ class sql_connection:
         self.password = os.getenv("DB_PASSWORD", password)
         self._engine = None
 
-        logging.info(f"Read environment variables - server: {self.server}, database: {self.database}, username: {self.username}")
+        logging.info("Read environment variables - server: %s, database: %s, username: %s", self.server, self.database, self.username)
 
 
         if '@' in self.username:
-            raise Exception("Username cannot contain '@'")
+            raise ValueError("Username cannot contain '@'")
         if '@' in self.password:
-            raise Exception("Password cannot contain '@'")
+            raise ValueError("Password cannot contain '@'")
 
     def get_engine(self):
         """
@@ -67,7 +67,7 @@ class sql_connection:
                     fast_executemany=True
                 )
             except Exception as e:
-                logging.error(f'Error creating SQL engine: {e}')
+                logging.error("Error creating SQL engine: %s", e)
                 raise
         return self._engine
     
@@ -93,5 +93,5 @@ class sql_connection:
             logging.info("Successfully established SQL connection.")
             return connection
         except Exception as e:
-            logging.error(f'Error establishing SQL connection: {e}')
+            logging.error("Error establishing SQL connection: %s", e)
             raise

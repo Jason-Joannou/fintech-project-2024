@@ -8,6 +8,9 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # URL refers to the openAPI address of the stokvel
 
 def create_stokvel_members_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS STOKVEL_MEMBERS (
@@ -21,6 +24,10 @@ def create_stokvel_members_table_sqlite():
         """))
 
 def create_stokvel_table_sqlite():
+    """
+    docstring
+    """
+
     with sqlite_conn.connect() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS STOKVELS (
@@ -38,6 +45,9 @@ def create_stokvel_table_sqlite():
 
 
 def create_user_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS USERS (
@@ -50,6 +60,9 @@ def create_user_table_sqlite():
         """))
 
 def create_transaction_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS TRANSACTIONS (
@@ -65,6 +78,9 @@ def create_transaction_table_sqlite():
     """))
 
 def create_resource_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS RESOURCES (
