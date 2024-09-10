@@ -61,7 +61,7 @@ jobs:
   lint-and-checks:
     needs: auto-format
     runs-on: ubuntu-latest
-    if: needs.auto-format.outputs.branch != ''
+    if: needs.auto-format.outputs.branch_name != ''
     steps:
       - name: Download branch name artifact
         uses: actions/download-artifact@v3
