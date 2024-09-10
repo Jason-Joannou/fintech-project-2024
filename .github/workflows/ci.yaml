@@ -50,7 +50,7 @@ jobs:
           git push origin $BRANCH_NAME
           echo $BRANCH_NAME > branch_name.txt
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "::set-output name=branch::$BRANCH_NAME"  # Setting the output for branch
+          echo "branch=$BRANCH_NAME" >>$GITHUB_OUTPUT  # Setting the output for branch
 
       - name: Upload branch name artifact
         if: env.changed == 'true'
