@@ -15,7 +15,7 @@ jobs:
       branch: ${{ steps.create-branch.outputs.branch }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v3
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -50,11 +50,11 @@ jobs:
           git push origin $BRANCH_NAME
           echo $BRANCH_NAME > branch_name.txt
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "branch=$BRANCH_NAME" >> $GITHUB_ENV  # Updated to use environment file
+          echo "::set-output name=branch::$BRANCH_NAME"  # Setting the output for branch
 
       - name: Upload branch name artifact
         if: env.changed == 'true'
-        uses: actions/upload-artifact@v4  # Updated to v4
+        uses: actions/upload-artifact@v3
         with:
           name: branch_name
           path: branch_name.txt
@@ -65,7 +65,7 @@ jobs:
     if: needs.auto-format.outputs.branch != ''
     steps:
       - name: Download branch name artifact
-        uses: actions/download-artifact@v4  # Updated to v4
+        uses: actions/download-artifact@v3
         with:
           name: branch_name
 
@@ -77,7 +77,7 @@ jobs:
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Checkout formatted branch
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.branch_name }}
 
@@ -126,10 +126,10 @@ jobs:
     if: always()  # Always run the cleanup job
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v3
 
       - name: Download branch name artifact
-        uses: actions/download-artifact@v4  # Updated to v4
+        uses: actions/download-artifact@v3
         with:
           name: branch_name
 
