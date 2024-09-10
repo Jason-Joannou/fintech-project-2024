@@ -9,17 +9,25 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    if: always()  # This ensures the cleanup runs regardless of success or failure
+    if: always()  # Always run the cleanup job
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Download branch name artifact
+        uses: actions/download-artifact@v3
         with:
-          ref: ${{ github.event.workflow_run.outputs.branch }}
+          name: branch_name
+          path: .
+
+      - name: Read branch name
+        id: read-branch
+        run: |
+          BRANCH_NAME=$(cat branch_name.txt)
+          echo "Branch to delete: $BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Delete temporary branch
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git push origin --delete ${{ github.event.workflow_run.outputs.branch }} || true
+          git push origin --delete ${{ env.branch_name }} || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

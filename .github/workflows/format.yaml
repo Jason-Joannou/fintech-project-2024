@@ -11,8 +11,6 @@ on:
 jobs:
   format:
     runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.create-branch.outputs.branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,6 +43,13 @@ jobs:
           git add .
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
-          echo "branch=$BRANCH_NAME" >> $GITHUB_ENV
+          echo $BRANCH_NAME > branch_name.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload branch name artifact
+        if: env.changed == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: branch_name
+          path: branch_name.txt
