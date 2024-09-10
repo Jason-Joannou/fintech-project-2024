@@ -82,6 +82,7 @@ class SQLiteConnection:
         try:
             connection = self.get_engine().connect()
             response = {"connection_status": "complete", "message": "Successfully established SQLite connection."}
+            connection.close()
             return response
         except Exception as e:
             response = {"connection_status": "incomplete", "message": f'Error establishing SQLite connection: {e}'}
