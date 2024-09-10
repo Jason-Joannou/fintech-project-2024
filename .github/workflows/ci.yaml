@@ -48,38 +48,26 @@ jobs:
           git add .
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
-          echo $BRANCH_NAME > branch_name.txt
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          echo $BRANCH_NAME >> $GITHUB_ENV
           echo "::set-output name=branch::$BRANCH_NAME"  # Setting the output for branch
-
-      - name: Upload branch name artifact
-        if: env.changed == 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: branch_name
-          path: branch_name.txt
 
   lint-and-checks:
     needs: auto-format
     runs-on: ubuntu-latest
     if: needs.auto-format.outputs.branch != ''
     steps:
-      - name: Download branch name artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: branch_name
-
       - name: Checkout formatted branch
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.branch_name }}
+          ref: ${{ needs.auto-format.outputs.branch }}
 
       - name: Verify checked out branch
         run: |
           CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "Checked out branch: $CURRENT_BRANCH"
-          if [ "$CURRENT_BRANCH" != "${{ env.branch_name }}" ]; then
-            echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{ env.branch_name }})"
+          if [ "$CURRENT_BRANCH" != "${{ needs.auto-format.outputs.branch }}" ]; then
+            echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{
+            needs.auto-format.outputs.branch }})"
             exit 1
           fi
 
@@ -121,22 +109,11 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Download branch name artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: branch_name
-
-      - name: Read branch name
-        id: read-branch
-        run: |
-          BRANCH_NAME=$(cat branch_name.txt)
-          echo "Branch to delete: $BRANCH_NAME"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-
       - name: Delete temporary branch
         run: |
+          BRANCH_NAME="${{ needs.auto-format.outputs.branch }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git push origin --delete ${{ env.branch_name }} || true
+          git push origin --delete $BRANCH_NAME || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
