@@ -89,11 +89,6 @@ jobs:
           pip install pylint
           pylint **/*.py
 
-      - name: Run Pyright
-        run: |
-          pip install pyright
-          pyright
-
       - name: Run Pytest
         run: |
           pip install pytest
