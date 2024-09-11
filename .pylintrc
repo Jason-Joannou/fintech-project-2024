@@ -3,5 +3,5 @@ ignore = rafiki-services, documentation, messageBroker/tests, whatsapp-chatbot/t
 max-line-length = 150
 
 [MESSAGES CONTROL]
-# List of message IDs to disable.
+# List of message IDs to disable in pylint
 disable = C0114, R0801, W0621
