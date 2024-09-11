@@ -9,11 +9,11 @@ from whatsapp_utils._utils.message_config import GREET_MESSAGE_REGISTERED, GREET
 
 cache = Cache()
 
-onboarding_wa = Blueprint("whatsapp", __name__)
+whatsapp_bp = Blueprint("whatsapp", __name__)
 
 base_route = "/whatsapp"
 
-@onboarding_wa.route(base_route, methods=['POST'])
+@whatsapp_bp.route(base_route, methods=['POST'])
 def whatsapp():
     """
     docstring

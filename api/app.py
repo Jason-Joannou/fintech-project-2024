@@ -1,13 +1,22 @@
 from flask import Flask
-from routes import join_stokvel, onboarding, user_info, whatsapp_controller, stokvel_info
+from api.routes.join_stokvel import join_stokvel_bp
+from api.routes.onboarding import onboarding_bp
+from api.routes.user_info import user_info_bp
+from api.routes.whatsapp_controller import whatsapp_bp
+from api.routes.stokvel_info import stokvel_info_bp
 
 app = Flask(__name__)
 
-app.register_blueprint(join_stokvel)
-app.register_blueprint(onboarding)
-app.register_blueprint(user_info)
-app.register_blueprint(whatsapp_controller)
-app.register_blueprint(stokvel_info)
+app.register_blueprint(join_stokvel_bp)
+app.register_blueprint(onboarding_bp)
+app.register_blueprint(user_info_bp)
+app.register_blueprint(whatsapp_bp)
+app.register_blueprint(stokvel_info_bp)
+
+
+@app.route('/')
+def index():
+    return "Stokvel API"
 
 if __name__ == '__main__':
     app.run(debug=True)
