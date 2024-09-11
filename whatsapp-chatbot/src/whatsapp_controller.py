@@ -10,6 +10,9 @@ cache = Cache()
 
 @app.route('/whatsapp', methods=['POST'])
 def whatsapp():
+    """
+    docstring
+    """
     incoming_msg = request.values.get('Body', '').lower()
     from_number = request.values.get('From', '')
     twiml = MessagingResponse()

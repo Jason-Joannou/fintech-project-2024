@@ -1,5 +1,5 @@
 [MASTER]
-ignore = rafiki-services, documentation, messageBroker/tests
+ignore = rafiki-services, documentation, messageBroker/tests, whatsapp-chatbot/tests
 max-line-length = 150
 
 [MESSAGES CONTROL]
