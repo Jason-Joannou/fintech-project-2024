@@ -53,7 +53,7 @@ jobs:
           git add .
           git commit -m "Auto-format code"
           git push origin $BRANCH_NAME
-          echo "branch=$BRANCH_NAME" >>$GITHUB_OUTPUT  # Setting the output for branch
+          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT  # Setting the output for branch
 
   lint-and-checks:
     needs: auto-format
@@ -121,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install black, isort
+          pip install black isort
 
       - name: Run Isort Formatter
         run: |
@@ -142,7 +142,7 @@ jobs:
           git push origin HEAD:${{ github.head_ref }}
 
   cleanup:
-    needs: lint-and-checks
+    needs: auto-format
     runs-on: ubuntu-latest
     if: always()  # Always run the cleanup job
     steps:
@@ -156,12 +156,12 @@ jobs:
 
       - name: Debug branch output  # Debug to ensure branch output is correctly passed
         run: |
-          echo "Branch name: ${{ needs.lint-and-checks.outputs.branch }}"
+          echo "Branch name: ${{ needs.auto-format.outputs.branch }}"
 
       - name: Delete temporary formatting branch
-        if: ${{ needs.lint-and-checks.outputs.branch != '' }}  # Only if branch is set
+        if: ${{ needs.auto-format.outputs.branch != '' }}  # Only if branch is set
         run: |
-          BRANCH_NAME=${{ needs.lint-and-checks.outputs.branch }}
+          BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
           echo "Deleting branch: $BRANCH_NAME"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
