@@ -115,7 +115,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ needs.auto-format.outputs.branch }}
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -145,17 +145,19 @@ jobs:
           git commit -m "Apply final formatting before merge" || echo "No changes to commit"
           git push origin ${{ needs.auto-format.outputs.branch }}
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get install gh
+
       - name: Create pull request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh auth login --with-token <<< $GITHUB_TOKEN
           BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
           PR_TITLE="Auto-formatted code"
           PR_BODY="This pull request contains auto-formatted code. Please review and merge."
           gh pr create --base main --head $BRANCH_NAME --title "$PR_TITLE" --body "$PR_BODY"
-        uses: actions/checkout@v3
-        with:
-          ref: main
 
 
   cleanup:
