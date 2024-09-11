@@ -1,12 +1,13 @@
-import os
 import logging
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
 class SQLiteConnection:
     """
-    This class manages the SQL connection to an SQLite database. It encapsulates the connection details, 
+    This class manages the SQL connection to an SQLite database. It encapsulates the connection details,
     such as the database file path. It provides methods to get an engine, a session, and a connection.
 
     Args:
@@ -22,7 +23,9 @@ class SQLiteConnection:
             self.database = database
             self._engine = None
         else:
-            raise ValueError(f"Database connection not established, connection = {database}")
+            raise ValueError(
+                f"Database connection not established, connection = {database}"
+            )
 
     def get_engine(self):
         """
@@ -37,17 +40,15 @@ class SQLiteConnection:
         """
         if not os.path.exists(self.database):
             raise FileNotFoundError(f"SQLite database file '{self.database}' not found")
-    
+
         if not self._engine:
             try:
-                self._engine = create_engine(
-                    f"sqlite:///{self.database}"
-                )
+                self._engine = create_engine(f"sqlite:///{self.database}")
             except Exception as e:
                 logging.error("Error creating SQL engine: %s", e)
                 raise
         return self._engine
-    
+
     def get_session(self):
         """
         This method returns a sqlalchemy session that is bound to the engine.
@@ -57,7 +58,7 @@ class SQLiteConnection:
         """
         session = sessionmaker(bind=self.get_engine())
         return session()
-    
+
     def connect(self):
         """
         This method returns a connection to the SQLite database using the engine.
@@ -71,7 +72,7 @@ class SQLiteConnection:
         except Exception as e:
             logging.error("Error establishing SQL connection: %s", e)
             raise
-        
+
     def test_connection(self):
         """
         This method returns a connection to the SQLite database using the engine.
@@ -81,12 +82,19 @@ class SQLiteConnection:
         """
         try:
             connection = self.get_engine().connect()
-            response = {"connection_status": "complete", "message": "Successfully established SQLite connection."}
+            response = {
+                "connection_status": "complete",
+                "message": "Successfully established SQLite connection.",
+            }
             connection.close()
             return response
         except ValueError as e:
-            response = {"connection_status": "incomplete", "message": f'Error establishing SQLite connection: {e}'}
+            response = {
+                "connection_status": "incomplete",
+                "message": f"Error establishing SQLite connection: {e}",
+            }
             return response
+
 
 # Usage example
 if __name__ == "__main__":

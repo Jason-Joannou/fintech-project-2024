@@ -1,16 +1,16 @@
-import os
 import logging
+import os
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 
 ENV = load_dotenv(dotenv_path=r"./.env", override=True)
 
 
 class SqlConnection:
     """
-    This class manages the SQL connection to a database. It encapsulates the connection details, such as the server, 
+    This class manages the SQL connection to a database. It encapsulates the connection details, such as the server,
     database, username and password. It provides methods to get an engine, a session, and a connection.
 
     Args:
@@ -33,7 +33,9 @@ class SqlConnection:
                 missing.append(k)
 
         if len(missing) > 0:
-            raise ValueError(f"Missing sql server related environment variables in .env file: `{missing}`")
+            raise ValueError(
+                f"Missing sql server related environment variables in .env file: `{missing}`"
+            )
 
         self.server = os.getenv("DB_SERVER", server)
         self.database = os.getenv("DB_DATABASE", database)
@@ -41,12 +43,16 @@ class SqlConnection:
         self.password = os.getenv("DB_PASSWORD", password)
         self._engine = None
 
-        logging.info("Read environment variables - server: %s, database: %s, username: %s", self.server, self.database, self.username)
+        logging.info(
+            "Read environment variables - server: %s, database: %s, username: %s",
+            self.server,
+            self.database,
+            self.username,
+        )
 
-
-        if '@' in self.username:
+        if "@" in self.username:
             raise ValueError("Username cannot contain '@'")
-        if '@' in self.password:
+        if "@" in self.password:
             raise ValueError("Password cannot contain '@'")
 
     def get_engine(self):
@@ -64,13 +70,13 @@ class SqlConnection:
             try:
                 self._engine = create_engine(
                     f"mssql+pyodbc://{self.username}:{self.password}@{self.server}/{self.database}?driver=ODBC+Driver+17+for+SQL+Server",
-                    fast_executemany=True
+                    fast_executemany=True,
                 )
             except Exception as e:
                 logging.error("Error creating SQL engine: %s", e)
                 raise
         return self._engine
-    
+
     def get_session(self):
         """
         This method returns a sqlalchemy session that is bound to the engine.
@@ -80,7 +86,7 @@ class SqlConnection:
         """
         session = sessionmaker(bind=self.get_engine())
         return session()
-    
+
     def connect(self):
         """
         This method returns a connection to the database using the engine.

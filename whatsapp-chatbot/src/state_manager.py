@@ -2,6 +2,7 @@ class StateManager:
     """
     docstring
     """
+
     def __init__(self):
         self.user_states = {}
 

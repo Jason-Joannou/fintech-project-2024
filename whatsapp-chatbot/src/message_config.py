@@ -8,8 +8,7 @@ JOIN_STOCKVEL = {
     },
     "step_2": {
         "message": "Please provide the amount you want to contribute towards the stockvel:",
-    }
-
+    },
 }
 
 GREET_MESSAGE_REGISTERED = {
@@ -29,7 +28,7 @@ GREET_MESSAGE_UNREGISTERED = {
 }
 
 MORE_SERVICES = {
-    "message" : """
+    "message": """
     Please select one of the following options to proceed:
     1. View all available stockvels
     2. Pay Reciepient"""

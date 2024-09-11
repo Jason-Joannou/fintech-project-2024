@@ -11,14 +11,15 @@ def broker():
     yield broker
     broker.close()
 
+
 def test_publish_and_consume(broker):
     """
     docstring
     """
-    test_queue = 'test_queue'
-    test_message = 'Hello, RabbitMQ!'
+    test_queue = "test_queue"
+    test_message = "Hello, RabbitMQ!"
 
-    def callback(ch, method, properties, body): # pylint: disable=unused-argument
+    def callback(ch, method, properties, body):  # pylint: disable=unused-argument
         assert body.decode() == test_message
         print(f"Received: {body.decode()}")
 
