@@ -101,7 +101,7 @@ jobs:
       - name: Run Pytest
         run: |
           pip install pytest
-          pytest
+          pytest -v
 
   apply-final-formatting:
     needs: lint-and-checks
