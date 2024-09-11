@@ -66,13 +66,21 @@ jobs:
           ref: ${{ needs.auto-format.outputs.branch }}
 
       - name: Verify checked out branch
+        id: verify-branch
         run: |
           CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "Checked out branch: $CURRENT_BRANCH"
           if [ "$CURRENT_BRANCH" != "${{ needs.auto-format.outputs.branch }}" ]; then
             echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{ needs.auto-format.outputs.branch }})"
             exit 1
+          else
+            echo "Branch names match. Setting output."
+            echo "branch=$CURRENT_BRANCH" >> $GITHUB_ENV  # Set environment variable for later use
           fi
+
+      - name: Set branch output
+        if: env.branch != ''
+        run: echo "branch=${{ env.branch }}" >> $GITHUB_OUTPUT
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -152,12 +160,12 @@ jobs:
 
       - name: Debug branch output  # Debug to ensure branch output is correctly passed
         run: |
-          echo "Branch name: ${{ needs.auto-format.outputs.branch }}"
+          echo "Branch name: ${{ needs.lint-and-checks.outputs.branch }}"
 
       - name: Delete temporary formatting branch
-        if: ${{ needs.auto-format.outputs.branch != '' }}  # Only if branch is set
+        if: ${{ needs.lint-and-checks.outputs.branch != '' }}  # Only if branch is set
         run: |
-          BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
+          BRANCH_NAME=${{ needs.lint-and-checks.outputs.branch }}
           echo "Deleting branch: $BRANCH_NAME"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
