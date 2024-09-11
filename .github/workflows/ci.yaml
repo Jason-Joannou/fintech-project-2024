@@ -96,7 +96,7 @@ jobs:
       - name: Run Pylint
         run: |
           pip install pylint
-          pylint --recursive=y .
+          pylint --recursive=y --fail-under=9.7 .
 
       - name: Run Pytest
         run: |
