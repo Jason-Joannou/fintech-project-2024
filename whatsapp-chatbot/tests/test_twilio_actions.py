@@ -13,34 +13,55 @@ with patch('messageBroker.src.message_broker.MessageBroker', return_value=mock_b
 
 @pytest.fixture
 def client():
+    """
+    docstring
+    """
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
 
 @pytest.fixture
 def twilio_client():
+    """
+    docstring
+    """
     return TwilioClient()
 
 @pytest.fixture
 def sqlite_database():
+    """
+    docstring
+    """
     return SQLiteConnection(database="./database/test_db.db")
 
 @pytest.fixture
 def sql_server():
+    """
+    docstring
+    """
     return SQLiteConnection(database="./database/test_db.db")
 
 @pytest.fixture
 def cache():
+    """
+    docstring
+    """
     return Cache()
 
 @pytest.fixture
 def mock_message_broker():
+    """
+    docstring
+    """
     return mock_broker
 
 # Example of grerting test
     # When we have a registered user, we should expect the whatsapp endpoint to return the specified greeting message
     # This is what the below test checks
-def test_greeting_action_call_registered(client, cache, mock_message_broker, sqlite_database):
+def test_greeting_action_call_registered(client, cache, mock_message_broker, sqlite_database): # pylint: disable=unused-argument
+    """
+    docstring
+    """
     from_number = '+1234567890'
     action_message = 'hi'
 
@@ -56,7 +77,10 @@ def test_greeting_action_call_registered(client, cache, mock_message_broker, sql
     # Assert that the response contains the expected greeting message for registered users
     assert GREET_MESSAGE_REGISTERED["message"] in response.data.decode('utf-8')
 
-def test_greeting_action_call_unregistered(client, cache, mock_message_broker, sqlite_database):
+def test_greeting_action_call_unregistered(client, cache, mock_message_broker, sqlite_database): #pylint: disable=unused-argument
+    """
+    docstring
+    """
     from_number = '+1234567891'
     action_message = 'hi'
 
