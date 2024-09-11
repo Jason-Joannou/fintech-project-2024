@@ -99,6 +99,9 @@ jobs:
           pylint --recursive=y --fail-under=9.7 .
 
       - name: Run Pytest
+        env:
+            TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+            TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
         run: |
           pip install pytest
           pytest -v
