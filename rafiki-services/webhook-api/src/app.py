@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
-from flask_swagger_ui import get_swaggerui_blueprint
 import uuid
+
+from flask import Flask, jsonify, request
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 

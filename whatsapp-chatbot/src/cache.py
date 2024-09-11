@@ -2,6 +2,7 @@ class Cache:
     """
     docstring
     """
+
     def __init__(self):
         self.cache = {}
 
