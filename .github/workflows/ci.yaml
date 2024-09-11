@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write  # Allows the workflow to push changes to the repository
+  pull-requests: write  # Allows the workflow to create and update pull requests
+
 jobs:
   auto-format:
     runs-on: ubuntu-latest
