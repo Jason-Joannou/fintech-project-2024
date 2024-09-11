@@ -153,7 +153,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh auth login --with-token <<< $GITHUB_TOKEN
           PR_BRANCH_NAME=${{ steps.create-pr-branch.outputs.branch }}
           PR_TITLE="Auto-formatted code"
           PR_BODY="This pull request contains auto-formatted code. Please review and merge."
