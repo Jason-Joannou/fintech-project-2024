@@ -109,7 +109,7 @@ jobs:
 
   apply-final-formatting:
     needs: lint-and-checks
-    if: needs.lint-and-checks.result == 'success'
+    if: ${{ needs.auto-format.result == 'success' && needs.lint-and-checks.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -143,16 +143,19 @@ jobs:
           git config --global user.email "jjoannou1099@gmail.com"
           git add .
           git commit -m "Apply final formatting before merge" || echo "No changes to commit"
-          if [ "${{ github.event_name }}" == "push" ]; then
-            # For push events, push directly to the branch of the ref
-            git push origin HEAD:${{ github.ref_name }}
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            # For pull requests, push to the PR branch
-            git push origin HEAD:${{ github.head_ref }}
-          else
-            echo "Unhandled event type: ${{ github.event_name }}"
-            exit 1
-          fi
+          git push origin ${{ needs.auto-format.outputs.branch }}
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
+          PR_TITLE="Auto-formatted code"
+          PR_BODY="This pull request contains auto-formatted code. Please review and merge."
+          gh pr create --base main --head $BRANCH_NAME --title "$PR_TITLE" --body "$PR_BODY"
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
 
   cleanup:
