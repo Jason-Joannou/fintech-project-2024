@@ -145,10 +145,21 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Delete temporary branch
+      - name: Verify checked out branch  # Debugging step to check the current branch
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git push origin --delete ${{ needs.auto-format.outputs.branch }} || true
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "Checked out branch: $CURRENT_BRANCH"
+
+      - name: Delete temporary formatting branch
+        run: |
+          BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
+          if [ -n "$BRANCH_NAME" ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            echo "Deleting branch: $BRANCH_NAME"
+            git push origin --delete "$BRANCH_NAME" || echo "Branch $BRANCH_NAME could not be deleted or does not exist"
+          else
+            echo "No branch to delete"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
