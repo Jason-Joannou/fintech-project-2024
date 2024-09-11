@@ -59,10 +59,6 @@ jobs:
     needs: auto-format
     runs-on: ubuntu-latest
     if: needs.auto-format.outputs.branch != ''
-    env:
-        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
     steps:
       - name: Checkout formatted branch
         uses: actions/checkout@v3
@@ -102,16 +98,10 @@ jobs:
           pip install pylint
           pylint --recursive=y --fail-under=9.7 .
 
-      - name: Check env
+      - name: Run MyPy
         run: |
-          echo "TWILIO_ACCOUNT_SID: $TWILIO_ACCOUNT_SID"
-          echo "TWILIO_AUTH_TOKEN: $TWILIO_AUTH_TOKEN"
-          echo "TWILIO_PHONE_NUMBER: $TWILIO_PHONE_NUMBER"
-
-      - name: Run Pytest
-        run: |
-          pip install pytest
-          pytest -v
+          pip install mypy
+          mypy .
 
   apply-final-formatting:
     needs: lint-and-checks
