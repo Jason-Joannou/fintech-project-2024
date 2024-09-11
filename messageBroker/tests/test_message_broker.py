@@ -4,11 +4,17 @@ from src.message_broker import MessageBroker
 
 @pytest.fixture
 def broker():
+    """
+    docstring
+    """
     broker = MessageBroker()
     yield broker
     broker.close()
 
 def test_publish_and_consume(broker):
+    """
+    docstring
+    """
     test_queue = 'test_queue'
     test_message = 'Hello, RabbitMQ!'
 
