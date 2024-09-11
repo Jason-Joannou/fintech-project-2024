@@ -138,7 +138,7 @@ jobs:
           git push origin HEAD:${{ github.head_ref }}
 
   cleanup:
-    needs: auto-format
+    needs: lint-and-checks
     runs-on: ubuntu-latest
     if: always()  # Always run the cleanup job
     steps:
@@ -150,16 +150,17 @@ jobs:
           CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "Checked out branch: $CURRENT_BRANCH"
 
+      - name: Debug branch output  # Debug to ensure branch output is correctly passed
+        run: |
+          echo "Branch name: ${{ needs.auto-format.outputs.branch }}"
+
       - name: Delete temporary formatting branch
+        if: ${{ needs.auto-format.outputs.branch != '' }}  # Only if branch is set
         run: |
           BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
-          if [ -n "$BRANCH_NAME" ]; then
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            echo "Deleting branch: $BRANCH_NAME"
-            git push origin --delete "$BRANCH_NAME" || echo "Branch $BRANCH_NAME could not be deleted or does not exist"
-          else
-            echo "No branch to delete"
-          fi
+          echo "Deleting branch: $BRANCH_NAME"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git push origin --delete "$BRANCH_NAME" || echo "Branch $BRANCH_NAME could not be deleted or does not exist"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
