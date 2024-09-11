@@ -138,7 +138,7 @@ jobs:
           git push origin HEAD:${{ github.head_ref }}
 
   cleanup:
-    needs: lint-and-checks
+    needs: auto-format
     runs-on: ubuntu-latest
     if: always()  # Always run the cleanup job
     steps:
