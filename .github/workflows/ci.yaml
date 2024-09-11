@@ -75,12 +75,8 @@ jobs:
             exit 1
           else
             echo "Branch names match. Setting output."
-            echo "branch=$CURRENT_BRANCH" >> $GITHUB_ENV  # Set environment variable for later use
+            echo "branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT  # Set environment variable for later use
           fi
-
-      - name: Set branch output
-        if: env.branch != ''
-        run: echo "branch=${{ env.branch }}" >> $GITHUB_OUTPUT
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
