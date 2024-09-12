@@ -36,4 +36,3 @@ def success():
     docstring
     """
     return "Form submitted successfully!"
-
