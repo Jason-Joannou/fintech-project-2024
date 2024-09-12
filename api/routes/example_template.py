@@ -1,6 +1,8 @@
 from flask import render_template, request, redirect, url_for, Blueprint
 
+
 example_template_bp = Blueprint("example_template", __name__)
+
 
 BASE_ROUTE = "/example_template"
 
@@ -11,6 +13,7 @@ def example_template():
     docstrings
     """
     return render_template("example_template.html")
+
 
 @example_template_bp.route(f'{BASE_ROUTE}/submit', methods=['POST'])
 def submit():
