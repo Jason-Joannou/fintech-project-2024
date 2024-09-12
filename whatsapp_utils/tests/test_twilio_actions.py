@@ -1,15 +1,15 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from _utils.message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
 from sqlalchemy import text
-from src.message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
 
 # Patch MessageBroker at the start before importing the modules that depend on it
 mock_broker = MagicMock()
 with patch("messageBroker.src.message_broker.MessageBroker", return_value=mock_broker):
-    from src.cache import Cache
-    from src.twilio_client import TwilioClient
-    from src.whatsapp_controller import app
+    from _utils.cache import Cache
+    from _utils.twilio_client import TwilioClient
+    from _utils.whatsapp_controller import app
 
     from database.sqlite_connection import SQLiteConnection
 
