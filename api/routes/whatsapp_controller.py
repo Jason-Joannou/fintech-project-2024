@@ -2,10 +2,12 @@ from flask import Blueprint, request
 from twilio.twiml.messaging_response import MessagingResponse
 
 from database.queries import check_if_number_exists_sqlite
-
 from whatsapp_utils._utils.action_handlers import handle_action
 from whatsapp_utils._utils.cache import Cache
-from whatsapp_utils._utils.message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
+from whatsapp_utils._utils.message_config import (
+    GREET_MESSAGE_REGISTERED,
+    GREET_MESSAGE_UNREGISTERED,
+)
 
 cache = Cache()
 
@@ -13,7 +15,8 @@ whatsapp_bp = Blueprint("whatsapp", __name__)
 
 BASE_ROUTE = "/whatsapp"
 
-@whatsapp_bp.route(BASE_ROUTE, methods=['POST'])
+
+@whatsapp_bp.route(BASE_ROUTE, methods=["POST"])
 def whatsapp():
     """
     docstring
@@ -46,4 +49,3 @@ def whatsapp():
             )
 
     return str(twiml)
-

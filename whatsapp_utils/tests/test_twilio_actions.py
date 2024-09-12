@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import text
 from _utils.message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
+from sqlalchemy import text
 
 # Patch MessageBroker at the start before importing the modules that depend on it
 mock_broker = MagicMock()

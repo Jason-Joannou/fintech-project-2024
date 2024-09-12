@@ -17,4 +17,3 @@ def handle_action(from_number, action):
         pass
     else:
         pass
-

@@ -12,14 +12,16 @@ def onboarding():
     """
     return "Onboarding API. This API endpoint is used for onboarding users and stokvels ( on creation )"
 
-@onboarding_bp.route(f"{BASE_ROUTE}/users", methods=['POST'])
+
+@onboarding_bp.route(f"{BASE_ROUTE}/users", methods=["POST"])
 def onboard_user():
     """
     docstring
     """
     return "Complete Onboarding endpoint"
 
-@onboarding_bp.route(f"{BASE_ROUTE}/stokvels", methods=['POST'])
+
+@onboarding_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
 def onboard_stokvel():
     """
     docstring
