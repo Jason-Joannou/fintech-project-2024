@@ -8,7 +8,7 @@ BASE_ROUTE = "/example_template"
 @example_template_bp.route(BASE_ROUTE)
 def example_template():
     """
-    docstring
+    docstrings
     """
     return render_template("example_template.html")
 
