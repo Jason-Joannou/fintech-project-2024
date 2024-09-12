@@ -1,5 +1,4 @@
-from flask import render_template, request, redirect, url_for, Blueprint
-
+from flask import Blueprint, redirect, render_template, request, url_for
 
 example_template_bp = Blueprint("example_template", __name__)
 
@@ -15,15 +14,15 @@ def example_template():
     return render_template("example_template.html")
 
 
-@example_template_bp.route(f'{BASE_ROUTE}/submit', methods=['POST'])
+@example_template_bp.route(f"{BASE_ROUTE}/submit", methods=["POST"])
 def submit():
     """
     docstring
     """
     # Get user inputs from the form
-    name = request.form['name']
-    email = request.form['email']
-    message = request.form['message']
+    name = request.form["name"]
+    email = request.form["email"]
+    message = request.form["message"]
 
     # Process the data as needed (e.g., save to database, send email, etc.)
     # For this example, just print the data
@@ -33,7 +32,7 @@ def submit():
     return redirect(url_for(f'{BASE_ROUTE.removeprefix("/")}.success'))
 
 
-@example_template_bp.route('/success')
+@example_template_bp.route("/success")
 def success():
     """
     docstring
