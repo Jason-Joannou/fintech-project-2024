@@ -11,9 +11,9 @@ cache = Cache()
 
 whatsapp_bp = Blueprint("whatsapp", __name__)
 
-base_route = "/whatsapp"
+BASE_ROUTE = "/whatsapp"
 
-@whatsapp_bp.route(base_route, methods=['POST'])
+@whatsapp_bp.route(BASE_ROUTE, methods=['POST'])
 def whatsapp():
     """
     docstring

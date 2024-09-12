@@ -2,9 +2,12 @@ from flask import Blueprint
 
 join_stokvel_bp = Blueprint("join_stokvel", __name__)
 
-base_route = "/join_stokvel"
+BASE_ROUTE = "/join_stokvel"
 
 
-@join_stokvel_bp.route(base_route)
+@join_stokvel_bp.route(BASE_ROUTE)
 def join_stokvel():
+    """
+    docstring
+    """
     return "Join Stokvel API. This API endpoint is used for joining a stokvel"
