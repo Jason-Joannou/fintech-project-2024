@@ -71,13 +71,13 @@ jobs:
             echo "changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Pull latest changes from the remote branch
+      - name: Fetch and rebase
         if: env.changed == 'true'
         run: |
           git fetch origin
-          git rebase origin/${{ github.head_ref }}
+          git rebase origin/${{ github.head_ref }} || exit 1
 
-      - name: Push formatting changes back to PR branch
+      - name: Commit and push formatting changes
         if: env.changed == 'true'
         run: |
           git config user.name "github-actions"
