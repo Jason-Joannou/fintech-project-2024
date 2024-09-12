@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 
 join_stokvel_bp = Blueprint("join_stokvel", __name__)
 

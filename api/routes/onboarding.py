@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 
 onboarding_bp = Blueprint("onboarding", __name__)
 

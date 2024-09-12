@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 
 stokvel_info_bp = Blueprint("stokvel_info", __name__)
 

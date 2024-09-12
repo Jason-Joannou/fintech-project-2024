@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 
 user_info_bp = Blueprint("user_info", __name__)
 
