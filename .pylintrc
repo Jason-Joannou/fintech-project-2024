@@ -4,4 +4,4 @@ max-line-length = 150
 
 [MESSAGES CONTROL]
 # List of message IDs to disable in pylint
-disable = C0114, R0801, W0621
+disable = C0114, R0801, W0621, E0401
