@@ -14,6 +14,9 @@ def example_template():
 
 @example_template_bp.route(f'{BASE_ROUTE}/submit', methods=['POST'])
 def submit():
+    """
+    docstring
+    """
     # Get user inputs from the form
     name = request.form['name']
     email = request.form['email']
@@ -29,5 +32,8 @@ def submit():
 
 @example_template_bp.route('/success')
 def success():
+    """
+    docstring
+    """
     return "Form submitted successfully!"
 
