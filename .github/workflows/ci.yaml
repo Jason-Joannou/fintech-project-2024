@@ -1,9 +1,6 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
@@ -71,17 +68,21 @@ jobs:
             echo "changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Fetch and rebase
-        if: env.changed == 'true'
-        run: |
-          git fetch origin
-          git rebase origin/${{ github.head_ref }} || exit 1
-
-      - name: Commit and push formatting changes
+      - name: Commit formatting changes
         if: env.changed == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
           git commit -m "Auto-format code" || echo "No changes to commit"
+
+      - name: Pull latest changes from the remote branch
+        if: env.changed == 'true'
+        run: |
+          git fetch origin
+          git rebase origin/${{ github.head_ref }} || exit 1
+
+      - name: Push formatting changes back to PR branch
+        if: env.changed == 'true'
+        run: |
           git push origin HEAD:${{ github.head_ref }} || echo "Failed to push changes"
