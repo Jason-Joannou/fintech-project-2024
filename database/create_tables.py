@@ -126,6 +126,9 @@ def create_resource_table_sqlite():
 
 
 def create_admin_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
@@ -144,6 +147,9 @@ def create_admin_table_sqlite():
 
 
 def create_contributions_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
@@ -163,6 +169,9 @@ def create_contributions_table_sqlite():
 
 
 def create_userWallet_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
@@ -178,6 +187,9 @@ def create_userWallet_table_sqlite():
 
 
 def create_stokvelWallet_table_sqlite():
+    """
+    docstring
+    """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
