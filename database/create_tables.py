@@ -120,11 +120,16 @@ def create_resource_table_sqlite():
                 created_at TIMESTAMP, 
                 updated_at TIMESTAMP
             );
-        """))
+        """
+            )
+        )
+
 
 def create_admin_table_sqlite():
     with sqlite_conn.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS ADMIN (
                 id INTEGER PRIMARY KEY, 
                 stokvel_id INTEGER,
@@ -133,11 +138,16 @@ def create_admin_table_sqlite():
                 total_contributions INTEGER,
                 total_members INTEGER
             );
-        """))
+        """
+            )
+        )
+
 
 def create_contributions_table_sqlite():
     with sqlite_conn.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS CONTRIBUTIONS (
                 id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
@@ -147,27 +157,40 @@ def create_contributions_table_sqlite():
                 EndDate DATETIME,
                 contribution INTEGER
             );
-        """))
+        """
+            )
+        )
+
 
 def create_userWallet_table_sqlite():
     with sqlite_conn.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS USER_WALLET (
                 id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance INTEGER            );
-        """))
+        """
+            )
+        )
+
 
 def create_stokvelWallet_table_sqlite():
     with sqlite_conn.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS STOKVEL_WALLET (
                 id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance INTEGER            );
-        """))
+        """
+            )
+        )
+
 
 if __name__ == "__main__":
     create_user_table_sqlite()
