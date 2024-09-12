@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from api.routes.whatsapp_controller import whatsapp_bp
-from whatsapp_utils._utils.message_config import GREET_MESSAGE_REGISTERED, GREET_MESSAGE_UNREGISTERED
+from whatsapp_utils._utils.message_config import GREET_MESSAGE_REGISTERED
 
 # Create a test app
 @pytest.fixture
