@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask
 
 from api.routes.join_stokvel import join_stokvel_bp
 from api.routes.onboarding import onboarding_bp
