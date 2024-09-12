@@ -76,6 +76,13 @@ jobs:
           git add .
           git commit -m "Auto-format code" || echo "No changes to commit"
 
+      - name: Fetch and merge remote changes
+        if: env.changed == 'true'
+        run: |
+          git fetch origin
+          git checkout ${{ github.head_ref }}
+          git pull origin jj_dev || exit 1  # Integrate remote changes
+
       - name: Push formatting changes back to PR branch
         if: env.changed == 'true'
         run: |
