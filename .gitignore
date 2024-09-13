@@ -200,3 +200,8 @@ dist/
 
 # Ignore variable files with sensitive data
 *.tfvars
+
+#sqlite db
+
+*.sqlite
+*.db
