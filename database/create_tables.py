@@ -202,6 +202,7 @@ def create_stokvelWallet_table_sqlite():
             )
         )
 
+
 def create_applications_table_sqlite():
     """
     docstring
@@ -219,6 +220,7 @@ def create_applications_table_sqlite():
         """
             )
         )
+
 
 if __name__ == "__main__":
     create_user_table_sqlite()
