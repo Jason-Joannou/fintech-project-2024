@@ -1,5 +1,6 @@
 from flask import Flask
 
+from api.routes.example_template import example_template_bp
 from api.routes.join_stokvel import join_stokvel_bp
 from api.routes.onboarding import onboarding_bp
 from api.routes.stokvel_info import stokvel_info_bp
@@ -13,6 +14,7 @@ app.register_blueprint(onboarding_bp)
 app.register_blueprint(user_info_bp)
 app.register_blueprint(whatsapp_bp)
 app.register_blueprint(stokvel_info_bp)
+app.register_blueprint(example_template_bp)
 
 
 @app.route("/")

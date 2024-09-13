@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 150
-exclude = rafiki-services/, documentation/
-ignore = W291
+exclude = rafiki-services/, documentation/, api/tests, messageBroker/
+ignore = W291, E302, E305

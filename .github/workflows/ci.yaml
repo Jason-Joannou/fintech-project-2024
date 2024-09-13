@@ -1,22 +1,16 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: write  # Allows the workflow to push changes to the repository
-  pull-requests: write  # Allows the workflow to create and update pull requests
+  contents: write  # Allows pushing changes back to the PR branch
 
 jobs:
-  auto-format:
+  lint:
     runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.create-branch.outputs.branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,163 +20,65 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Install pip
-        run: |
-          python -m pip install --upgrade pip
-
-      - name: Run Isort
-        run: |
-          pip install isort
-          isort .
-
-      - name: Run Black
-        run: |
-          pip install black
-          black .
-
-      - name: Check for formatting changes
-        id: git-status
-        run: |
-          git diff --exit-code || echo "Formatting changes detected"
-          if [ -n "$(git diff)" ]; then echo "changed=true" >> $GITHUB_ENV; else echo "changed=false" >> $GITHUB_ENV; fi
-
-      - name: Create and push formatting branch
-        id: create-branch
-        if: env.changed == 'true'
-        run: |
-          BRANCH_NAME="formatting-branch-${{ github.run_id }}"
-          git checkout -b $BRANCH_NAME
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add .
-          git commit -m "Auto-format code"
-          git push origin $BRANCH_NAME
-          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT  # Setting the output for branch
-
-  lint-and-checks:
-    needs: auto-format
-    runs-on: ubuntu-latest
-    if: needs.auto-format.outputs.branch != ''
-    steps:
-      - name: Checkout formatted branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.auto-format.outputs.branch }}
-
-      - name: Verify checked out branch
-        id: verify-branch
-        run: |
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          echo "Checked out branch: $CURRENT_BRANCH"
-          if [ "$CURRENT_BRANCH" != "${{ needs.auto-format.outputs.branch }}" ]; then
-            echo "Error: Checked out branch ($CURRENT_BRANCH) does not match expected branch (${{ needs.auto-format.outputs.branch }})"
-            exit 1
-          else
-            echo "Branch names match. Setting output."
-            echo "branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT  # Set environment variable for later use
-          fi
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install flake8 pylint mypy
 
       - name: Run Flake8
-        run: |
-          pip install flake8
-          flake8 .
+        run: flake8 .
 
       - name: Run Pylint
-        run: |
-          pip install pylint
-          pylint --recursive=y --fail-under=9.7 .
+        run: pylint --recursive=y --fail-under=9.7 .
 
       - name: Run MyPy
-        run: |
-          pip install mypy
-          mypy .
+        run: mypy .
 
-  apply-final-formatting:
-    needs: lint-and-checks
-    if: needs.lint-and-checks.result == 'success'
+  format:
+    needs: lint
+    if: success()  # Run only if lint job succeeds
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}  # Checkout the PR branch
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install dependencies
+      - name: Install formatting tools
         run: |
           python -m pip install --upgrade pip
           pip install black isort
 
-      - name: Run Isort Formatter
-        run: |
-          isort .
+      - name: Run Isort
+        run: isort .
 
-      - name: Run Black Formatter
-        run: |
-          black .
+      - name: Run Black
+        run: black .
 
-      - name: Install GitHub CLI
+      - name: Check for formatting changes
+        id: check-diff
         run: |
-          sudo apt-get install gh
+          git diff --exit-code || echo "Formatting changes detected"
+          if [ -n "$(git diff)" ]; then
+            echo "changed=true" >> $GITHUB_ENV
+          else
+            echo "changed=false" >> $GITHUB_ENV
+          fi
 
-      - name: Create and push PR branch
-        id: create-pr-branch
+      - name: Commit formatting changes
+        if: env.changed == 'true'
         run: |
-          PR_BRANCH_NAME="PR-branch-${{ github.run_id }}"
-          git checkout -b $PR_BRANCH_NAME
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
-          git commit -m "Apply final formatting"
-          git push origin $PR_BRANCH_NAME
-          echo "branch=$PR_BRANCH_NAME" >> $GITHUB_OUTPUT  # Set the PR branch output
+          git commit -m "Auto-format code" || echo "No changes to commit"
 
-      - name: Create pull request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push formatting changes back to PR branch
+        if: env.changed == 'true'
         run: |
-          PR_BRANCH_NAME=${{ steps.create-pr-branch.outputs.branch }}
-          PR_TITLE="Auto-formatted code"
-          PR_BODY="This pull request contains auto-formatted code. Please review and merge changes."
-          gh pr create --base main --head $PR_BRANCH_NAME --title "$PR_TITLE" --body "$PR_BODY"
-
-
-  cleanup:
-    needs: [auto-format, lint-and-checks]
-    runs-on: ubuntu-latest
-    if: always()  # Always run the cleanup job
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Verify checked out branch  # Debugging step to check the current branch
-        run: |
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          echo "Checked out branch: $CURRENT_BRANCH"
-
-      - name: Debug branch output  # Debug to ensure branch output is correctly passed
-        run: |
-          echo "Branch name: ${{ needs.auto-format.outputs.branch }}"
-
-      - name: Delete temporary formatting branch
-        if: ${{ needs.auto-format.outputs.branch != '' }}  # Only if branch is set
-        run: |
-          BRANCH_NAME=${{ needs.auto-format.outputs.branch }}
-          echo "Deleting branch: $BRANCH_NAME"
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git push origin --delete "$BRANCH_NAME" || echo "Branch $BRANCH_NAME could not be deleted or does not exist"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin HEAD:${{ github.head_ref }} || echo "Failed to push changes"
