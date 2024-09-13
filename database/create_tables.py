@@ -11,7 +11,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 
 def create_stokvel_members_table_sqlite():
     """
-    docstring
+    docstrings
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
