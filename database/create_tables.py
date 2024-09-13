@@ -20,7 +20,6 @@ def create_stokvel_members_table_sqlite():
             CREATE TABLE IF NOT EXISTS STOKVEL_MEMBERS (
                 id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
-                stokvel_name TEXT,
                 user_id INTEGER,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP
@@ -45,9 +44,9 @@ def create_stokvel_table_sqlite():
                 ILP_wallet TEXT,
                 MOMO_wallet TEXT, 
                 total_members INTEGER,
-                min_contributing_amount INTEGER,
+                min_contributing_amount NUMBER,
                 max_number_of_contributors INTEGER,
-                Total_contributions FLOAT,
+                Total_contributions NUMBER,
                 created_at TIMESTAMP, 
                 updated_at TIMESTAMP
             );
@@ -92,7 +91,7 @@ def create_transaction_table_sqlite():
                 id INTEGER PRIMARY KEY,
                 user_id INTEGER,
                 stokvel_id INTEGER,
-                amount INTEGER,
+                amount NUMBER,
                 tx_type TEXT,
                 wallet_type TEXT,
                 tx_date TEXT,
@@ -138,7 +137,7 @@ def create_admin_table_sqlite():
                 stokvel_id INTEGER,
                 stokvel_name TEXT,
                 user_id INTEGER,
-                total_contributions INTEGER,
+                total_contributions NUMBER,
                 total_members INTEGER
             );
         """
@@ -161,7 +160,7 @@ def create_contributions_table_sqlite():
                 frequency_days INTEGER,
                 StartDate DATETIME,
                 EndDate DATETIME,
-                contribution INTEGER
+                contribution NUMBER
             );
         """
             )
@@ -180,7 +179,7 @@ def create_userWallet_table_sqlite():
                 id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
-                UserBalance INTEGER            );
+                UserBalance NUMBER           );
         """
             )
         )
@@ -198,11 +197,28 @@ def create_stokvelWallet_table_sqlite():
                 id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
-                UserBalance INTEGER            );
+                UserBalance NUMBER            );
         """
             )
         )
 
+def create_applications_table_sqlite():
+    """
+    docstring
+    """
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+            CREATE TABLE IF NOT EXISTS APPLICATIONS (
+                id INTEGER PRIMARY KEY,
+                stokvel_id INTEGER, 
+                user_id INTEGER,
+                AppStatus TEXT,
+                AppDate DATETIME            );
+        """
+            )
+        )
 
 if __name__ == "__main__":
     create_user_table_sqlite()
@@ -214,3 +230,4 @@ if __name__ == "__main__":
     create_transaction_table_sqlite()
     create_userWallet_table_sqlite()
     create_stokvelWallet_table_sqlite()
+    create_applications_table_sqlite()
