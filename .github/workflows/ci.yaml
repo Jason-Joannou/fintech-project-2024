@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}  # Checkout the PR branch
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -67,13 +69,6 @@ jobs:
           else
             echo "changed=false" >> $GITHUB_ENV
           fi
-
-      - name: Fetch and merge remote changes
-        if: env.changed == 'true'
-        run: |
-          git fetch origin
-          git checkout ${{ github.head_ref }}
-          git pull origin jj_dev || exit 1  # Integrate remote changes
 
       - name: Commit formatting changes
         if: env.changed == 'true'
