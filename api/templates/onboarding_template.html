@@ -38,6 +38,7 @@
         }
 
         input[type="text"],
+
         input[type="number"] {
             width: 100%;
             padding: 10px;
@@ -80,10 +81,10 @@
             <input type="text" id="surname" name="surname" required>
 
             <label for="cellphone_number">Cellphone Number:</label>
-            <input type="number" id="cellphone_number" name="cellphone_number" required>
+            <input type="tel" id="cellphone_number" name="cellphone_number" required>
 
             <label for="id_number">ID Number:</label>
-            <input type="number" id="id_number" name="id_number" required>
+            <input type="number" maxlength="13" id="id_number" name="id_number" required>
 
             <input type="submit" value="Submit">
         </form>
