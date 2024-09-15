@@ -38,6 +38,7 @@ def create_stokvel_table_sqlite() -> None:
         conn.execute(
             text(
                 """
+<<<<<<< HEAD
             CREATE TABLE STOKVELS (
             stokvel_id INTEGER PRIMARY KEY, -- In SQLite, INTEGER PRIMARY KEY creates an alias for ROWID
             stokvel_name TEXT NOT NULL, -- Using TEXT for variable-length strings
@@ -54,6 +55,21 @@ def create_stokvel_table_sqlite() -> None:
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Set current timestamp by default
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+=======
+            CREATE TABLE IF NOT EXISTS STOKVELS (
+                stokvel_id INTEGER PRIMARY KEY, 
+                stokvel_name TEXT UNIQUE,  -- Ensure stokvel_name is unique
+                ILP_wallet TEXT,
+                MOMO_wallet TEXT, 
+                total_members INTEGER,
+                min_contributing_amount NUMBER,
+                max_number_of_contributors INTEGER,
+                Total_contributions NUMBER,
+                created_at TIMESTAMP, 
+                updated_at TIMESTAMP,
+                UNIQUE (stokvel_id)  -- Ensure stokvel_id is unique
+            );
+>>>>>>> fa44206 (Created test data. in the test_data.py script.)
         """
             )
         )
@@ -75,7 +91,11 @@ def create_user_table_sqlite() -> None:
                 ILP_wallet TEXT,
                 MOMO_wallet TEXT,
                 verified_KYC INTEGER,
+<<<<<<< HEAD
                 created_at TIMESTAMP,
+=======
+                created_at TIMESTAMP, 
+>>>>>>> fa44206 (Created test data. in the test_data.py script.)
                 updated_at TIMESTAMP,
                 UNIQUE (user_id)  -- Ensure user_id is unique
             );
@@ -187,7 +207,11 @@ def create_user_wallet_table_sqlite() -> None:
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
+<<<<<<< HEAD
                 UNIQUE (id)  -- Ensure user_id is unique
+=======
+                UNIQUE (user_id)  -- Ensure user_id is unique
+>>>>>>> fa44206 (Created test data. in the test_data.py script.)
             );
         """
             )
@@ -207,7 +231,11 @@ def create_stokvel_wallet_table_sqlite() -> None:
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
+<<<<<<< HEAD
                 UNIQUE (id)  -- Ensure user_id is unique
+=======
+                UNIQUE (user_id)  -- Ensure user_id is unique
+>>>>>>> fa44206 (Created test data. in the test_data.py script.)
             );
         """
             )
@@ -227,7 +255,9 @@ def create_applications_table_sqlite() -> None:
                 stokvel_id INTEGER,
                 user_id INTEGER,
                 AppStatus TEXT,
-                AppDate DATETIME            );
+                AppDate DATETIME,
+                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
+            );
         """
             )
         )
