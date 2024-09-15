@@ -207,11 +207,7 @@ def create_user_wallet_table_sqlite() -> None:
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
-<<<<<<< HEAD
                 UNIQUE (id)  -- Ensure user_id is unique
-=======
-                UNIQUE (user_id)  -- Ensure user_id is unique
->>>>>>> fa44206 (Created test data. in the test_data.py script.)
             );
         """
             )
@@ -231,11 +227,7 @@ def create_stokvel_wallet_table_sqlite() -> None:
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
-<<<<<<< HEAD
                 UNIQUE (id)  -- Ensure user_id is unique
-=======
-                UNIQUE (user_id)  -- Ensure user_id is unique
->>>>>>> fa44206 (Created test data. in the test_data.py script.)
             );
         """
             )
