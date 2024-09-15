@@ -184,7 +184,7 @@ def create_userWallet_table_sqlite():
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
-                UNIQUE (user_id)  -- Ensure user_id is unique
+                UNIQUE (id)  -- Ensure user_id is unique
             );
         """
             )
@@ -204,7 +204,7 @@ def create_stokvelWallet_table_sqlite():
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER,
-                UNIQUE (user_id)  -- Ensure user_id is unique
+                UNIQUE (id)  -- Ensure user_id is unique
             );
         """
             )
