@@ -11,7 +11,7 @@ def example_template():
     """
     docstring
     """
-    return render_template("example_template.html")
+    return render_template("onboarding_template.html")
 
 
 @example_template_bp.route(f"{BASE_ROUTE}/submit", methods=["POST"])
