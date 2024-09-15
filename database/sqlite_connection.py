@@ -38,6 +38,7 @@ class SQLiteConnection:
         Raises:
             Exception: An error occurred creating the engine.
         """
+        
         if not os.path.exists(self.database):
             raise FileNotFoundError(f"SQLite database file '{self.database}' not found")
 
@@ -98,7 +99,7 @@ class SQLiteConnection:
 
 # Usage example
 if __name__ == "__main__":
-    test_connection = SQLiteConnection(database="test.db")
+    test_connection = SQLiteConnection(database="./database/test_db.db")
     test_engine = test_connection.get_engine()
     test_session = test_connection.get_session()
     test_conn = test_connection.connect()

@@ -9,9 +9,9 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # URL refers to the openAPI address of the stokvel
 
 
-def create_stokvel_members_table_sqlite() -> None:
+def create_stokvel_members_table_sqlite():
     """
-    docstrings
+    Create STOKVEL_MEMBERS table with a unique constraint on (stokvel_id, user_id) to prevent duplicate entries.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
@@ -22,46 +22,43 @@ def create_stokvel_members_table_sqlite() -> None:
                 stokvel_id INTEGER,
                 user_id INTEGER,
                 created_at TIMESTAMP,
-                updated_at TIMESTAMP
+                updated_at TIMESTAMP,
+                UNIQUE (stokvel_id, user_id)  -- Ensure stokvel_id and user_id combination is unique
             )
         """
             )
         )
 
 
-def create_stokvel_table_sqlite() -> None:
+def create_stokvel_table_sqlite():
     """
-    docstring
+    Create STOKVELS table with a unique constraint on stokvel_id.
     """
-
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
                 """
             CREATE TABLE IF NOT EXISTS STOKVELS (
-                stokvel_id INTEGER PRIMARY KEY,
-                stokvel_name TEXT UNIQUE,  -- Add UNIQUE constraint here
+                stokvel_id INTEGER PRIMARY KEY, 
+                stokvel_name TEXT UNIQUE,  -- Ensure stokvel_name is unique
                 ILP_wallet TEXT,
-                MOMO_wallet TEXT,
+                MOMO_wallet TEXT, 
                 total_members INTEGER,
                 min_contributing_amount NUMBER,
                 max_number_of_contributors INTEGER,
                 Total_contributions NUMBER,
-                created_at TIMESTAMP,
+                created_at TIMESTAMP, 
                 updated_at TIMESTAMP,
-                start_date	TEXT,
-                end_date	TEXT,
-                payout_frequency_int	INTEGER,
-                payout_frequency_period	TEXT,
+                UNIQUE (stokvel_id)  -- Ensure stokvel_id is unique
             );
         """
             )
         )
 
 
-def create_user_table_sqlite() -> None:
+def create_user_table_sqlite():
     """
-    docstring
+    Create USERS table with a unique constraint on user_id.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
@@ -75,17 +72,18 @@ def create_user_table_sqlite() -> None:
                 ILP_wallet TEXT,
                 MOMO_wallet TEXT,
                 verified_KYC INTEGER,
-                created_at TIMESTAMP,
-                updated_at TIMESTAMP
+                created_at TIMESTAMP, 
+                updated_at TIMESTAMP,
+                UNIQUE (user_id)  -- Ensure user_id is unique
             );
         """
             )
         )
 
 
-def create_transaction_table_sqlite() -> None:
+def create_transaction_table_sqlite():
     """
-    docstring
+    Create TRANSACTIONS table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
@@ -99,7 +97,7 @@ def create_transaction_table_sqlite() -> None:
                 tx_type TEXT,
                 wallet_type TEXT,
                 tx_date TEXT,
-                created_at TIMESTAMP,
+                created_at TIMESTAMP, 
                 updated_at TIMESTAMP
         );
     """
@@ -107,20 +105,20 @@ def create_transaction_table_sqlite() -> None:
         )
 
 
-def create_resource_table_sqlite() -> None:
+def create_resource_table_sqlite():
     """
-    docstring
+    Create RESOURCES table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
                 """
             CREATE TABLE IF NOT EXISTS RESOURCES (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY, 
                 name TEXT,
-                resource_type TEXT,
-                url TEXT,
-                created_at TIMESTAMP,
+                resource_type TEXT, 
+                url TEXT, 
+                created_at TIMESTAMP, 
                 updated_at TIMESTAMP
             );
         """
@@ -128,30 +126,31 @@ def create_resource_table_sqlite() -> None:
         )
 
 
-def create_admin_table_sqlite() -> None:
+def create_admin_table_sqlite():
     """
-    docstring
+    Create ADMIN table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
                 """
             CREATE TABLE IF NOT EXISTS ADMIN (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY, 
                 stokvel_id INTEGER,
                 stokvel_name TEXT,
                 user_id INTEGER,
                 total_contributions NUMBER,
-                total_members INTEGER
+                total_members INTEGER,
+                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
             );
         """
             )
         )
 
 
-def create_contributions_table_sqlite() -> None:
+def create_contributions_table_sqlite():
     """
-    docstring
+    Create CONTRIBUTIONS table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
@@ -164,52 +163,57 @@ def create_contributions_table_sqlite() -> None:
                 frequency_days INTEGER,
                 StartDate DATETIME,
                 EndDate DATETIME,
-                contribution NUMBER
+                contribution NUMBER,
+                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
             );
         """
             )
         )
 
 
-def create_user_wallet_table_sqlite() -> None:
+def create_userWallet_table_sqlite():
     """
-    docstring
+    Create USER_WALLET table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
                 """
             CREATE TABLE IF NOT EXISTS USER_WALLET (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
-                UserBalance NUMBER           );
+                UserBalance NUMBER,
+                UNIQUE (user_id)  -- Ensure user_id is unique
+            );
         """
             )
         )
 
 
-def create_stokvel_wallet_table_sqlite() -> None:
+def create_stokvelWallet_table_sqlite():
     """
-    docstring
+    Create STOKVEL_WALLET table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
             text(
                 """
             CREATE TABLE IF NOT EXISTS STOKVEL_WALLET (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY, 
                 user_id INTEGER,
                 user_wallet TEXT,
-                UserBalance NUMBER            );
+                UserBalance NUMBER,
+                UNIQUE (user_id)  -- Ensure user_id is unique
+            );
         """
             )
         )
 
 
-def create_applications_table_sqlite() -> None:
+def create_applications_table_sqlite():
     """
-    docstring
+    Create APPLICATIONS table.
     """
     with sqlite_conn.connect() as conn:
         conn.execute(
@@ -217,30 +221,12 @@ def create_applications_table_sqlite() -> None:
                 """
             CREATE TABLE IF NOT EXISTS APPLICATIONS (
                 id INTEGER PRIMARY KEY,
-                stokvel_id INTEGER,
+                stokvel_id INTEGER, 
                 user_id INTEGER,
                 AppStatus TEXT,
-                AppDate DATETIME            );
-        """
-            )
-        )
-
-
-def create_state_management_table() -> None:
-    """
-    docstring
-    """
-
-    with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(
-                """
-        CREATE TABLE IF NOT EXISTS STATE_MANAGEMENT (
-            id INTEGER PRIMARY KEY,
-            user_number TEXT,
-            last_interaction DATETIME,
-            stack_state TEXT
-        );
+                AppDate DATETIME,
+                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
+            );
         """
             )
         )
@@ -254,7 +240,6 @@ if __name__ == "__main__":
     create_stokvel_members_table_sqlite()
     create_stokvel_table_sqlite()
     create_transaction_table_sqlite()
-    create_user_wallet_table_sqlite()
-    create_stokvel_wallet_table_sqlite()
+    create_userWallet_table_sqlite()
+    create_stokvelWallet_table_sqlite()
     create_applications_table_sqlite()
-    create_state_management_table()
