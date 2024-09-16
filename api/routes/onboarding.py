@@ -1,7 +1,8 @@
 from flask import Blueprint, redirect, render_template, request, url_for
-import database.queries as queries 
+from database.queries import insert_user, insert_wallet
 from utils.user import User
 from utils.wallet import Wallet
+from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -29,43 +30,30 @@ def onboard_user():
         cell_number = request.form["cellphone_number"]
         id_number = request.form["id_number"]
 
-        flag = queries.check_if_number_exists_sqlite(cell_number)
-        print(f"Check if number exists: {flag}")
+        user = User(name=name, surname=surname, cell_number=cell_number, id_number=id_number, wallet_id="")
+        wallet = Wallet(user.id_number, user_wallet="ILP_test_string", user_balance=100)
 
-        if not flag:
-            user = User(name=name, surname=surname, cell_number=cell_number, id_number=id_number, wallet_id="")
-            wallet = Wallet(user.id_number, user_wallet="ILP_test_string", user_balance=100)
+        insert_user(
+            user_id=user.id_number,
+            user_number=user.cell_number,
+            user_surname=user.surname,
+            user_name=user.name,
+            ILP_wallet=wallet.id
+        )
+        insert_wallet(
+            user_id=user.id_number,
+            user_wallet=wallet.id,
+            userbalance=wallet.user_balance
+        )
+        send_notification_message(to="whatsapp:"+user.cell_number, body=f"Welcome {user.name} {user.surname}!")
+        return redirect(url_for('onboarding.success_user_creation'))
 
-            try:
-                queries.insert_user(
-                    user_id=user.id_number,
-                    user_number=user.cell_number,
-                    user_surname=user.surname,
-                    user_name=user.name,
-                    ILP_wallet=wallet.id
-                )
-                queries.insert_wallet(
-                    user_id=user.id_number,
-                    user_wallet=wallet.id,
-                    userbalance=wallet.user_balance
-                )
-
-                return redirect(url_for('onboarding.success_user_creation'))
-
-            except SQLAlchemyError as sql_error:
-                print(f"SQL Error occurred during insert operations: {sql_error}")
-                return redirect(url_for('onboarding.failed_user_creation'))
-
-            except Exception as e:
-                print(f"General Error occurred during insert operations: {e}")
-                return redirect(url_for('onboarding.failed_user_creation'))
-        
-        # If the cell number already exists or other logic, handle accordingly
+    except SQLAlchemyError as sql_error:
+        print(f"SQL Error occurred during insert operations: {sql_error}")
         return redirect(url_for('onboarding.failed_user_creation'))
 
     except Exception as e:
-        # Exception handling for errors outside the inner try block
-        print(f"Error occurred: {e}")
+        print(f"General Error occurred during insert operations: {e}")
         return redirect(url_for('onboarding.failed_user_creation'))
 
 
