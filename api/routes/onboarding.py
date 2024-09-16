@@ -45,7 +45,17 @@ def onboard_user():
             user_wallet=wallet.id,
             userbalance=wallet.user_balance
         )
-        send_notification_message(to="whatsapp:"+user.cell_number, body=f"Welcome {user.name} {user.surname}!")
+        # Prepare the notification message
+        notification_message = (
+            f"Welcome {user.name} {user.surname}!\n\n"
+            f"Your user ID: {user.id_number}\n"
+            f"Your wallet ID: {wallet.id}\n"
+            f"Your wallet balance: {wallet.user_balance}\n\n"
+            f"Thank you for registering with us!"
+        )
+
+        # Send the notification message
+        send_notification_message(to=f"whatsapp:{user.cell_number}", body=notification_message)
         return redirect(url_for('onboarding.success_user_creation'))
 
     except SQLAlchemyError as sql_error:
