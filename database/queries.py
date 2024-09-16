@@ -15,7 +15,7 @@ def check_if_number_exists_sqlite(from_number):
     """
     docstring
     """
-
+    from_number = from_number.split(":")[1]
     query = "SELECT * FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
         cursor = conn.execute(text(query), {"from_number": from_number})
