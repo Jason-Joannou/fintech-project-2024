@@ -17,7 +17,6 @@ class TwilioClient:
             os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN")
         )
         self.from_number = os.getenv("TWILIO_PHONE_NUMBER")
-        self.twiml = MessagingResponse()
 
     def send_mesage_notification(self, to, body):
         """
@@ -34,7 +33,8 @@ class TwilioClient:
         """
         docstring
         """
-        self.twiml.message(message)  # Create the TwiML message
-        return str(self.twiml)  # Return the entire TwiML response as a string
+        twiml = MessagingResponse()
+        twiml.message(message)  # Create the TwiML message
+        return str(twiml)  # Return the entire TwiML response as a string
         
 
