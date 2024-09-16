@@ -39,7 +39,7 @@ def whatsapp():
         if incoming_msg in ["hi", "hello"]:
             msg = send_conversational_message(GREET_MESSAGE_REGISTERED["message"])
         else:
-            handle_action(from_number=from_number, action=incoming_msg)
+            msg = handle_action(from_number=from_number, action=incoming_msg)
 
     else:
         print("User not registered")
