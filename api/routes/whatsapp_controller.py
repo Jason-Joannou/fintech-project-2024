@@ -42,16 +42,10 @@ def whatsapp():
             handle_action(from_number=from_number, action=incoming_msg)
 
     else:
-        print("here non registered")
+        print("User not registered")
         if incoming_msg in ["hi", "hello"]:
-            msg = send_conversational_message(GREET_MESSAGE_UNREGISTERED["message"])
-            print(msg)
+            msg = send_conversational_message(message=GREET_MESSAGE_UNREGISTERED["message"])
         else:
-            msg = send_conversational_message(
-                "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
-            )
-            print(
-                "Invalid message, please activate the service by sending 'Hi' or 'Hello'"
-            )
+            msg = handle_action(from_number=from_number, action=incoming_msg)
 
     return str(msg)
