@@ -1,7 +1,7 @@
 from .twilio_messenger import send_conversational_message
 
 
-def handle_action(from_number, action):
+def handle_action(from_number: str, action: str):
     """
     docstring
     """

@@ -6,7 +6,7 @@ BASE_ROUTE = "/stokvel_info"
 
 
 @stokvel_info_bp.route(BASE_ROUTE)
-def stokvel_info():
+def stokvel_info() -> str:
     """
     docstring
     """

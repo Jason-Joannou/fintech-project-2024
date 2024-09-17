@@ -18,7 +18,7 @@ class TwilioClient:
         )
         self.from_number = os.getenv("TWILIO_PHONE_NUMBER")
 
-    def send_mesage_notification(self, to, body):
+    def send_mesage_notification(self, to: str, body: str):
         """
         docstring
         """
@@ -29,7 +29,7 @@ class TwilioClient:
 
         print(f"Message sent: {message.sid}")
 
-    def send_conversational_message(self, message):
+    def send_conversational_message(self, message: str):
         """
         docstring
         """

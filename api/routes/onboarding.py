@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, Response, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.queries import insert_user, insert_wallet
@@ -12,7 +12,7 @@ BASE_ROUTE = "/onboard"
 
 
 @onboarding_bp.route(BASE_ROUTE)
-def onboarding():
+def onboarding() -> str:
     """
     docstring
     """
@@ -20,7 +20,7 @@ def onboarding():
 
 
 @onboarding_bp.route(f"{BASE_ROUTE}/users", methods=["POST"])
-def onboard_user():
+def onboard_user() -> Response:
     """
     Handles onboarding of a new user.
     """
@@ -76,7 +76,7 @@ def onboard_user():
 
 
 @onboarding_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
-def onboard_stokvel():
+def onboard_stokvel() -> Response:
     """
     docstring
     """
@@ -86,7 +86,7 @@ def onboard_stokvel():
 
 
 @onboarding_bp.route("/success_user_creation")
-def success_user_creation():
+def success_user_creation() -> str:
     """
     docstring
     """
@@ -94,7 +94,7 @@ def success_user_creation():
 
 
 @onboarding_bp.route("/failed_user_creation")
-def failed_user_creation():
+def failed_user_creation() -> str:
     """
     docstring
     """
@@ -102,7 +102,7 @@ def failed_user_creation():
 
 
 @onboarding_bp.route("/success_stockvel_creation")
-def success_stockvel_creation():
+def success_stockvel_creation() -> str:
     """
     docstring
     """
