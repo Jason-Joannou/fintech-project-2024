@@ -12,8 +12,8 @@ def handle_action(from_number, action):
         pass
     else:
         msg = send_conversational_message(
-                "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
-            )
+            "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+        )
         print(
             "Invalid message, please activate the service by sending 'Hi' or 'Hello'"
         )
