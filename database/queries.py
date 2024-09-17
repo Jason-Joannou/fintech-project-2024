@@ -1,4 +1,5 @@
 # from .sql_connection import sql_connection
+import sqlite3
 from datetime import datetime
 from typing import Optional
 
@@ -90,6 +91,8 @@ def insert_user(
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
     except Exception as e:
         print(f"Error occurred during insert: {e}")
 
@@ -129,5 +132,7 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
     except Exception as e:
         print(f"Error occurred during insert: {e}")
