@@ -26,7 +26,7 @@ def check_if_number_exists_sqlite(from_number):
 
         return False
 
-def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_wallet = 'test', verified_kyc = 1, created_at=None, updated_at=None):
+def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_wallet='test', verified_kyc=1, created_at=None, updated_at=None):
     """
     Inserts a new user into the USERS table.
 
