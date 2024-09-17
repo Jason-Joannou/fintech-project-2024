@@ -2,6 +2,10 @@ from pydantic import BaseModel, Field
 
 
 class OnboardUserSchema(BaseModel):
+    """
+    docstring
+    """
+
     name: str = Field(..., example="John")
     surname: str = Field(..., example="Doe")
     cellphone_number: str = Field(..., example="1234567890")
