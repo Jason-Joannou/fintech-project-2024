@@ -9,9 +9,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
-
 def check_if_number_exists_sqlite(from_number):
-
     """
     docstring
     """
@@ -26,7 +24,20 @@ def check_if_number_exists_sqlite(from_number):
 
         return False
 
-def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_wallet='test', verified_kyc=1, created_at=None, updated_at=None):
+
+def insert_user(
+    user_id,
+    user_number,
+    user_name,
+    user_surname,
+    ilp_wallet,
+    momo_wallet="test",
+    verified_kyc=1,
+    created_at=None,
+    updated_at=None,
+):
+    # Need to look at refactoring this
+
     """
     Inserts a new user into the USERS table.
 
@@ -42,30 +53,30 @@ def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_
         updated_at (str, optional): The timestamp when the user was last updated. Defaults to current time if not provided.
     """
     if created_at is None:
-        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if updated_at is None:
-        updated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     insert_query = """
     INSERT INTO USERS (
-        user_id, user_number, user_name, user_surname, ILP_wallet, 
+        user_id, user_number, user_name, user_surname, ILP_wallet,
         MOMO_wallet, verified_KYC, created_at, updated_at
     ) VALUES (
-        :user_id, :user_number, :user_name, :user_surname, :ILP_wallet, 
+        :user_id, :user_number, :user_name, :user_surname, :ILP_wallet,
         :MOMO_wallet, :verified_KYC, :created_at, :updated_at
     )
     """
 
     parameters = {
-        'user_id': user_id,
-        'user_number': user_number,
-        'user_name': user_name,
-        'user_surname': user_surname,
-        'ILP_wallet': ilp_wallet,
-        'MOMO_wallet': momo_wallet,
-        'verified_KYC': verified_kyc,
-        'created_at': created_at,
-        'updated_at': updated_at
+        "user_id": user_id,
+        "user_number": user_number,
+        "user_name": user_name,
+        "user_surname": user_surname,
+        "ILP_wallet": ilp_wallet,
+        "MOMO_wallet": momo_wallet,
+        "verified_KYC": verified_kyc,
+        "created_at": created_at,
+        "updated_at": updated_at,
     }
 
     try:
@@ -73,7 +84,7 @@ def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_
             print("Connected in user insert")
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
-            
+
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
@@ -81,14 +92,15 @@ def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_
     except Exception as e:
         print(f"Error occurred during insert: {e}")
 
+
 def insert_wallet(user_id, user_wallet, userbalance):
     """
-        Inserts a new user wallet into the USER_WALLET table.
+    Inserts a new user wallet into the USER_WALLET table.
 
-        Args:
-            user_id (int): The user's ID.
-            user_wallet (str): The user's wallet address.
-            userbalance (float): The user's balance in the wallet.
+    Args:
+        user_id (int): The user's ID.
+        user_wallet (str): The user's wallet address.
+        userbalance (float): The user's balance in the wallet.
     """
 
     insert_query = """
@@ -100,9 +112,9 @@ def insert_wallet(user_id, user_wallet, userbalance):
     """
 
     parameters = {
-        'user_id': user_id,
-        'user_wallet': user_wallet,
-        'UserBalance': userbalance
+        "user_id": user_id,
+        "user_wallet": user_wallet,
+        "UserBalance": userbalance,
     }
 
     try:
@@ -118,5 +130,3 @@ def insert_wallet(user_id, user_wallet, userbalance):
                 print("Insert failed.")
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-
-
