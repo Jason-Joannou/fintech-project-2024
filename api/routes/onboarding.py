@@ -38,7 +38,7 @@ def onboard_user():
             user_number=user.cell_number,
             user_surname=user.surname,
             user_name=user.name,
-            ILP_wallet=wallet.id
+            ilp_wallet=wallet.id
         )
         insert_wallet(
             user_id=user.id_number,

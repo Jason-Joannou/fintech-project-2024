@@ -26,7 +26,7 @@ def check_if_number_exists_sqlite(from_number):
 
         return False
 
-def insert_user(user_id, user_number, user_name, user_surname, ILP_wallet, MOMO_wallet = 'test', verified_KYC = 1, created_at=None, updated_at=None): 
+def insert_user(user_id, user_number, user_name, user_surname, ilp_wallet, momo_wallet = 'test', verified_kyc = 1, created_at=None, updated_at=None):
     """
     Inserts a new user into the USERS table.
 
@@ -61,9 +61,9 @@ def insert_user(user_id, user_number, user_name, user_surname, ILP_wallet, MOMO_
         'user_number': user_number,
         'user_name': user_name,
         'user_surname': user_surname,
-        'ILP_wallet': ILP_wallet,
-        'MOMO_wallet': MOMO_wallet,
-        'verified_KYC': verified_KYC,
+        'ILP_wallet': ilp_wallet,
+        'MOMO_wallet': momo_wallet,
+        'verified_KYC': verified_kyc,
         'created_at': created_at,
         'updated_at': updated_at
     }
