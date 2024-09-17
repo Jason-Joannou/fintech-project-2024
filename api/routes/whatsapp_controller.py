@@ -44,7 +44,9 @@ def whatsapp():
     else:
         print("User not registered")
         if incoming_msg in ["hi", "hello"]:
-            msg = send_conversational_message(message=GREET_MESSAGE_UNREGISTERED["message"])
+            msg = send_conversational_message(
+                message=GREET_MESSAGE_UNREGISTERED["message"]
+            )
         else:
             msg = handle_action(from_number=from_number, action=incoming_msg)
 
