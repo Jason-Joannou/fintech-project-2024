@@ -1,6 +1,12 @@
 import random
 
+
 class Wallet:
+    # Update to pydantic model
+    """
+    docstring
+    """
+
     def __init__(self, user_id, user_wallet, user_balance):
         """
         Initialize a Wallet object.
@@ -20,7 +26,6 @@ class Wallet:
         self.user_balance = user_balance
 
     def __repr__(self):
-        
         """
         Return a string representation of the Wallet object.
 
@@ -30,17 +35,19 @@ class Wallet:
         :return: A string representation of the Wallet object
         :rtype: str
         """
-        return (f"Wallet(id={self.id}, user_id={self.user_id}, "
-                f"user_wallet='{self.user_wallet}', user_balance={self.user_balance})")
-    
+        return (
+            f"Wallet(id={self.id}, user_id={self.user_id}, "
+            f"user_wallet='{self.user_wallet}', user_balance={self.user_balance})"
+        )
+
     def generate_wallet_address(self):
         """
         Generates a random 13-digit wallet address.
-        
+
         Returns:
             str: A string representing the 13-digit wallet address.
         """
         wallet_number = random.randint(10**12, 10**13 - 1)
         wallet_address = str(wallet_number).zfill(13)
-        
+
         return wallet_address

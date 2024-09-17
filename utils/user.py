@@ -1,4 +1,9 @@
 class User:
+    # Update this to pydantic model
+    """
+    docstring
+    """
+
     def __init__(self, name, surname, cell_number, id_number, wallet_id):
         """
         The constructor for the User class. It initializes the user's name, surname, cellphone number and ID number.
@@ -25,6 +30,7 @@ class User:
         Returns:
             str: A string representation of the User object.
         """
-        return (f"User(name={self.name}, surname={self.surname}, "
-                f"cell_number={self.cell_number}, id_number={self.id_number})")
-
+        return (
+            f"User(name={self.name}, surname={self.surname}, "
+            f"cell_number={self.cell_number}, id_number={self.id_number})"
+        )
