@@ -1,9 +1,9 @@
 # from .sql_connection import sql_connection
+from datetime import datetime
+
 from sqlalchemy import text
 
 from .sqlite_connection import SQLiteConnection
-
-from datetime import datetime
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()

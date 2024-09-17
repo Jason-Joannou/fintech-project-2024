@@ -36,5 +36,3 @@ class TwilioClient:
         twiml = MessagingResponse()
         twiml.message(message)  # Create the TwiML message
         return str(twiml)  # Return the entire TwiML response as a string
-        
-
