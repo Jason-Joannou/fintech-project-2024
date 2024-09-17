@@ -35,8 +35,8 @@ def insert_user(
     ilp_wallet: str,
     momo_wallet: str = "test",
     verified_kyc: int = 1,
-    created_at: Optional[datetime] = None,
-    updated_at: Optional[datetime] = None,
+    created_at: Optional[str] = None,
+    updated_at: Optional[str] = None,
 ) -> None:
     # Need to look at refactoring this
 
