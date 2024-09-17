@@ -9,7 +9,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # URL refers to the openAPI address of the stokvel
 
 
-def create_stokvel_members_table_sqlite():
+def create_stokvel_members_table_sqlite() -> None:
     """
     docstrings
     """
@@ -29,7 +29,7 @@ def create_stokvel_members_table_sqlite():
         )
 
 
-def create_stokvel_table_sqlite():
+def create_stokvel_table_sqlite() -> None:
     """
     docstring
     """
@@ -55,7 +55,7 @@ def create_stokvel_table_sqlite():
         )
 
 
-def create_user_table_sqlite():
+def create_user_table_sqlite() -> None:
     """
     docstring
     """
@@ -79,7 +79,7 @@ def create_user_table_sqlite():
         )
 
 
-def create_transaction_table_sqlite():
+def create_transaction_table_sqlite() -> None:
     """
     docstring
     """
@@ -103,7 +103,7 @@ def create_transaction_table_sqlite():
         )
 
 
-def create_resource_table_sqlite():
+def create_resource_table_sqlite() -> None:
     """
     docstring
     """
@@ -124,7 +124,7 @@ def create_resource_table_sqlite():
         )
 
 
-def create_admin_table_sqlite():
+def create_admin_table_sqlite() -> None:
     """
     docstring
     """
@@ -145,7 +145,7 @@ def create_admin_table_sqlite():
         )
 
 
-def create_contributions_table_sqlite():
+def create_contributions_table_sqlite() -> None:
     """
     docstring
     """
@@ -167,7 +167,7 @@ def create_contributions_table_sqlite():
         )
 
 
-def create_user_wallet_table_sqlite():
+def create_user_wallet_table_sqlite() -> None:
     """
     docstring
     """
@@ -185,7 +185,7 @@ def create_user_wallet_table_sqlite():
         )
 
 
-def create_stokvel_wallet_table_sqlite():
+def create_stokvel_wallet_table_sqlite() -> None:
     """
     docstring
     """
@@ -203,7 +203,7 @@ def create_stokvel_wallet_table_sqlite():
         )
 
 
-def create_applications_table_sqlite():
+def create_applications_table_sqlite() -> None:
     """
     docstring
     """

@@ -17,18 +17,14 @@ BASE_ROUTE = "/whatsapp"
 
 
 @whatsapp_bp.route(BASE_ROUTE, methods=["POST"])
-def whatsapp():
+def whatsapp() -> str:
     """
     docstring
     """
     incoming_msg = request.values.get("Body", "").lower()
     from_number = request.values.get("From", "")
 
-    print(incoming_msg)
-    print(from_number)
-
     user = cache.get(from_number)
-    print(user)
     if user is None:
         user = check_if_number_exists_sqlite(from_number=from_number)
         if user:

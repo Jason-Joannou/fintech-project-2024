@@ -1,5 +1,7 @@
 # from .sql_connection import sql_connection
+import sqlite3
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import text
 
@@ -9,7 +11,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
-def check_if_number_exists_sqlite(from_number):
+def check_if_number_exists_sqlite(from_number: str) -> bool:
     """
     docstring
     """
@@ -26,16 +28,16 @@ def check_if_number_exists_sqlite(from_number):
 
 
 def insert_user(
-    user_id,
-    user_number,
-    user_name,
-    user_surname,
-    ilp_wallet,
-    momo_wallet="test",
-    verified_kyc=1,
-    created_at=None,
-    updated_at=None,
-):
+    user_id: str,
+    user_number: str,
+    user_name: str,
+    user_surname: str,
+    ilp_wallet: str,
+    momo_wallet: str = "test",
+    verified_kyc: int = 1,
+    created_at: Optional[str] = None,
+    updated_at: Optional[str] = None,
+) -> None:
     # Need to look at refactoring this
 
     """
@@ -89,11 +91,13 @@ def insert_user(
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
     except Exception as e:
         print(f"Error occurred during insert: {e}")
 
 
-def insert_wallet(user_id, user_wallet, userbalance):
+def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
     """
     Inserts a new user wallet into the USER_WALLET table.
 
@@ -114,7 +118,7 @@ def insert_wallet(user_id, user_wallet, userbalance):
     parameters = {
         "user_id": user_id,
         "user_wallet": user_wallet,
-        "UserBalance": userbalance,
+        "UserBalance": user_balance,
     }
 
     try:
@@ -128,5 +132,7 @@ def insert_wallet(user_id, user_wallet, userbalance):
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
     except Exception as e:
         print(f"Error occurred during insert: {e}")

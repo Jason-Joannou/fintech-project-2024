@@ -6,7 +6,7 @@ BASE_ROUTE = "/join_stokvel"
 
 
 @join_stokvel_bp.route(BASE_ROUTE)
-def join_stokvel():
+def join_stokvel() -> str:
     """
     docstrings
     """
