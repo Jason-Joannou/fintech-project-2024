@@ -46,13 +46,36 @@ STOKVEL_SERVICES = {
     2. Join a stokvel
     3. Contribute to a stockvel
     4. Leave a stockvel
+    5. Back
     """,
-    "valid_actions": ["1", "2", "3", "4"],
+    "valid_actions": ["1", "2", "3", "4", "5"],
     "action_responses": {
         "1": "Please register through our online portal: https://stokvels.com/register",
         "2": "Please register through our online portal: https://stokvels.com/register",
         "3": "Please specify the amount you want to contribute in Rands and the name of the stokvel you would like to contribute to.",
         "4": "Please specify the stokvel you would like to leave.",
+    },
+    "state": 1,
+}
+
+COMMUNITY_SERVICES = {
+    "tag": "community_services",
+    "message": """
+    Welcome to our community services! Please select one of the following options to proceed:
+    1. Total Number of Stokvels
+    2. Total Number of Members
+    3. Total Number of Contributions
+    4. Total Number of Members grouped by Stokvel
+    5. Total Contributions grouped by Stokvel
+    6. Back
+    """,
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    "action_requests": {  # Maybe we specify the endpoint per action
+        "1": "/stokvels/total_stokvels",
+        "2": "/users/total_users",
+        "3": "/accounting/total_contributions",
+        "4": "/users/users_by_stokvel",
+        "5": "/accounting/contributions_by_stokvel",
     },
     "state": 1,
 }
