@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-user_info_bp = Blueprint("user_info", __name__)
+user_info_bp = Blueprint("users", __name__)
 
-BASE_ROUTE = "/user_info"
+BASE_ROUTE = "/users"
 
 
 @user_info_bp.route(BASE_ROUTE)
