@@ -44,9 +44,7 @@ def get_user_state(from_number: str) -> Tuple[str, str, str]:
     return current_state_tag, previous_state_tag, last_interaction
 
 
-def update_user_state(
-    from_number: str, current_state_tag: str, previous_state_tag: str
-) -> None:
+def update_current_state(from_number: str, current_state_tag: str) -> None:
     """
     Update user state with new state tags and last interaction timestamp.
     """
@@ -54,8 +52,7 @@ def update_user_state(
     query = """
     UPDATE STATE_MANAGEMENT
     SET last_interaction = :datetime,
-        current_state_tag = :current_state_tag,
-        previous_state_tag = :previous_state_tag
+        current_state_tag = :current_state_tag
     WHERE user_number = :from_number
     """
     with db_conn.connect() as conn:
@@ -65,6 +62,27 @@ def update_user_state(
                 "from_number": from_number,
                 "datetime": datetime.now(),
                 "current_state_tag": current_state_tag,
+            },
+        )
+
+
+def update_previous_state(from_number: str, previous_state_tag: str) -> None:
+    """
+    Update user state with new state tags and last interaction timestamp.
+    """
+    from_number = extract_whatsapp_number(from_number=from_number)
+    query = """
+    UPDATE STATE_MANAGEMENT
+    SET last_interaction = :datetime,
+        previous_state_tag = :previous_state_tag
+    WHERE user_number = :from_number
+    """
+    with db_conn.connect() as conn:
+        conn.execute(
+            text(query),
+            {
+                "from_number": from_number,
+                "datetime": datetime.now(),
                 "previous_state_tag": previous_state_tag,
             },
         )
@@ -79,11 +97,8 @@ def reset_state_if_inactive(from_number: str) -> None:
         last_interaction, "%Y-%m-%d %H:%M:%S.%f"
     )
     if inactive_duration > timedelta(hours=1):
-        update_user_state(
-            from_number=from_number,
-            current_state_tag="stateless",
-            previous_state_tag="stateless",
-        )
+        update_current_state(from_number=from_number, current_state_tag="stateless")
+        update_previous_state(from_number=from_number, previous_state_tag="stateless")
 
 
 def check_if_user_has_state(from_number: str) -> bool:
