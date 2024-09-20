@@ -222,6 +222,28 @@ def create_applications_table_sqlite() -> None:
         )
 
 
+def create_state_management_table() -> None:
+    """
+    docstring
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+        CREATE TABLE IF NOT EXISTS STATE_MANAGEMENT (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            user_number TEXT,
+            current_state_tag TEXT,
+            previous_state_tag TEXT,
+            last_interaction DATETIME
+        );
+        """
+            )
+        )
+
+
 if __name__ == "__main__":
     create_user_table_sqlite()
     create_resource_table_sqlite()
@@ -233,3 +255,4 @@ if __name__ == "__main__":
     create_user_wallet_table_sqlite()
     create_stokvel_wallet_table_sqlite()
     create_applications_table_sqlite()
+    create_state_management_table()
