@@ -233,7 +233,6 @@ def create_state_management_table() -> None:
                 """
         CREATE TABLE IF NOT EXISTS STATE_MANAGEMENT (
             id INTEGER PRIMARY KEY,
-            user_id INTEGER,
             user_number TEXT,
             current_state_tag TEXT,
             previous_state_tag TEXT,
