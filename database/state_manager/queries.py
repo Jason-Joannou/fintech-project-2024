@@ -69,3 +69,17 @@ def reset_state_if_inactive(from_number: str) -> None:
             current_state_tag="stateless",
             previous_state_tag="stateless",
         )
+
+
+def check_if_user_has_state(from_number: str) -> bool:
+    """
+    docstring
+    """
+    from_number = extract_whatsapp_number(from_number=from_number)
+    query = "SELECT * FROM STATE_MANAGEMENT WHERE user_number = :from_number"
+    with db_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"from_number": from_number})
+        result = cursor.fetchone()
+    if result:
+        return True
+    return False
