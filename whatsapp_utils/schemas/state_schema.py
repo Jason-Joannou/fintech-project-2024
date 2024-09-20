@@ -15,3 +15,4 @@ class StateSchema(BaseModel):
     action_requests: Optional[Dict] = Field(
         None, examples={"1": "/stokvels/total_stokvels"}
     )
+    state_selection: Optional[Dict] = Field(None, examples={"1": "community_services"})

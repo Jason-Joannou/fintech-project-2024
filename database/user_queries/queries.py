@@ -5,7 +5,8 @@ from typing import Optional
 
 from sqlalchemy import text
 
-from .sqlite_connection import SQLiteConnection
+from database.sqlite_connection import SQLiteConnection
+from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
@@ -15,16 +16,35 @@ def check_if_number_exists_sqlite(from_number: str) -> bool:
     """
     docstring
     """
-    from_number = from_number.split(":")[1]
+    from_number = extract_whatsapp_number(from_number=from_number)
     query = "SELECT * FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
         cursor = conn.execute(text(query), {"from_number": from_number})
         result = cursor.fetchone()
-        print(result)
         if result:
             return True
 
         return False
+
+
+def check_if_number_is_admin(from_number: str) -> bool:
+    """
+    docstring
+    """
+    from_number = extract_whatsapp_number(from_number=from_number)
+
+    query = """
+    SELECT COUNT(*)
+    FROM USERS u
+    JOIN ADMIN a ON u.user_id = a.user_id
+    WHERE u.user_number = :user_number
+    """
+
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"from_number": from_number})
+        result = cursor.fetchone()
+
+    return result[0] >= 1
 
 
 def insert_user(
