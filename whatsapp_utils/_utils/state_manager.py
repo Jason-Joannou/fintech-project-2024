@@ -1,5 +1,10 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
+from database.state_manager.queries import (
+    get_state_responses,
+    update_current_state,
+    update_previous_state,
+)
 from database.user_queries.queries import (
     check_if_number_exists_sqlite,
     check_if_number_is_admin,
@@ -14,18 +19,23 @@ class MessageStateManager:
     """
 
     # We handle registration outside, this is purely for state management
-    def __init__(
-        self, user_number: str, current_state_tag: str, previous_state_tag: str
-    ) -> None:
+    def __init__(self, user_number: str) -> None:
         self.base_greetings = MESSAGE_STATES["base_state"]
         self.unrecognized_state = MESSAGE_STATES["unrecognized_state"]
         self.user_number = user_number
-        self.current_state_tag = current_state_tag  # stateless if none
-        self.previous_state_tag = previous_state_tag
         self.registration_status = self.check_registration_status()
         self.is_admin = self.check_admin_status()
-        self.current_state: StateSchema = {}
-        self.previous_state: StateSchema = {}
+        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
+        self.current_state: StateSchema = (
+            MESSAGE_STATES[self.current_state_tag]
+            if self.current_state_tag != "stateless"
+            else {}
+        )
+        self.previous_state: StateSchema = (
+            MESSAGE_STATES[self.previous_state_tag]
+            if self.previous_state_tag != "stateless"
+            else {}
+        )
         self.state_index = 0
 
     def check_registration_status(self) -> bool:
@@ -39,16 +49,12 @@ class MessageStateManager:
             self.registration_status = self.check_registration_status()
 
     def processes_user_request(self, user_action: str) -> str:
-        # Check if user is admin
+
         self.update_registration_status()
-        if (
-            not self.registration_status
-        ):  # We dont need to handle unregistered state in database
+        # User is not registered
+        if not self.registration_status:
+            self.set_current_state(tag="unregistered_number")
             if user_action in self.base_greetings:
-                self.set_previous_state()
-                self.set_current_state(
-                    state=MESSAGE_STATES["unregistered_number"]
-                )  # Need to incorporate tag
                 return self.get_current_state_message()
             else:
                 if user_action not in self.get_current_state_valid_actions():
@@ -57,15 +63,15 @@ class MessageStateManager:
                 return MESSAGE_STATES["unregistered_number"]["action_responses"][
                     user_action
                 ]
+
+        # User is registered
         elif self.registration_status:
             if user_action in self.base_greetings:
                 if self.check_admin_status():
-                    self.set_current_state(
-                        state=MESSAGE_STATES["registered_number_admin"]
-                    )
+                    self.set_current_state(tag="registered_number_admin")
                     self.set_previous_state()
                 else:
-                    self.set_current_state(state=MESSAGE_STATES["registered_number"])
+                    self.set_current_state(tag="registered_number")
                     self.set_previous_state()
                 return self.get_current_state_message()
 
@@ -87,11 +93,17 @@ class MessageStateManager:
     def get_current_state_message(self):
         return self.current_state.message
 
-    def set_current_state(self, state: StateSchema) -> None:
-        self.current_state = state
+    def set_current_state(self, tag: str) -> None:
+        # Need to set current state in the db
+        update_current_state(from_number=self.user_number, current_state_tag=tag)
+        self.update_local_states()
 
     def set_previous_state(self):
-        self.previous_state = self.current_state
+        # Need to set previous state in the db
+        update_previous_state(
+            from_number=self.user_number, previous_state_tag=self.current_state_tag
+        )
+        self.update_local_states()
 
     def get_unrecognized_state_response(self):
         if self.current_state and self.previous_state:
@@ -111,6 +123,18 @@ class MessageStateManager:
     def get_current_state_state_selections(self) -> Optional[Dict]:
         return self.current_state.state_selection
 
-    def clear_states(self) -> None:
-        self.current_state = {}
-        self.previous_state = {}
+    def get_state_tags(self) -> Tuple:
+        return get_state_responses(from_number=self.user_number)
+
+    def update_local_states(self) -> None:
+        self.current_state, self.previous_state = self.get_state_tags()
+        self.current_state = (
+            MESSAGE_STATES[self.current_state]
+            if self.current_state != "stateless"
+            else {}
+        )
+        self.previous_state = (
+            MESSAGE_STATES[self.previous_state]
+            if self.previous_state != "stateless"
+            else {}
+        )
