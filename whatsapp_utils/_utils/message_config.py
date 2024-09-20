@@ -11,6 +11,7 @@ UNREGISTERED_NUMBER = {
         "1": "Please register through our online portal: https://stokvels.com/register",
         "2": "Please register through our online portal: https://stokvels.com/register",
     },
+    "state": -1,
 }
 
 REGISTERED_NUMBER = {
@@ -22,6 +23,11 @@ REGISTERED_NUMBER = {
     3. Financial Reports
     """,
     "valid_actions": ["1", "2", "3"],
+    "state_selection": {
+        "1": "stokvel_services",
+        "2": "community_services",
+        "3": "financial_reports",
+    },
     "state": 0,
 }
 
@@ -35,6 +41,12 @@ REGISTERED_NUMBER_ADMIN = {
     4. Admin Services
     """,
     "valid_actions": ["1", "2", "3", "4"],
+    "state_selection": {
+        "1": "stokvel_services",
+        "2": "community_services",
+        "3": "financial_reports",
+        "4": "admin_services",
+    },
     "state": 0,
 }
 
@@ -55,6 +67,7 @@ STOKVEL_SERVICES = {
         "3": "Please specify the amount you want to contribute in Rands and the name of the stokvel you would like to contribute to.",
         "4": "Please specify the stokvel you would like to leave.",
     },
+    "state_selection": {"5": "Back:"},
     "state": 1,
 }
 
@@ -78,6 +91,40 @@ COMMUNITY_SERVICES = {
         "5": "/accounting/contributions_by_stokvel",
     },
     "state": 1,
+}
+
+FINANCIAL_REPORTS = {
+    "tag": "financial_reports",
+    "message": """
+    Welcome to your finacial reports services! Please select one of the following options to proceed:
+    1. Your total contributions
+    2. Your total stokvel payouts
+    3. Audit a stokvel
+    4. Back
+    """,
+    "valid_actions": ["1", "2", "3", "4"],
+    "action_requests": {
+        "1": "accounting/total_user_contributions",
+        "2": "accounting/total_user_payouts",
+        "3": "accoutning/audit_stokvel",
+    },
+}
+
+ADMIN_SERVICES = {
+    "tag": "admin_services",
+    "message": """
+    Welcome to your admin page! Please select one of the following options to proceed:
+    1. View your stokvels
+    2. View your stokvel members
+    3. Edit stokvel constitution""",
+    "valid_actions": ["1", "2", "3"],
+    "action_requests": {
+        "1": "admin/admin_stokvels",
+        "2": "admin/admin_stokvel_members",
+    },
+    "action_responses": {
+        "3": "You can edit your stokvel constitutions through our online portal: stokvels.com"
+    },
 }
 
 
