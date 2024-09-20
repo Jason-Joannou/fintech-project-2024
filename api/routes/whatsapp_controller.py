@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 
-from database.queries import check_if_number_exists_sqlite
+from database.user_queries.queries import check_if_number_exists_sqlite
 from whatsapp_utils._utils.action_handlers import handle_action
 from whatsapp_utils._utils.cache import Cache
 from whatsapp_utils._utils.message_config import (
