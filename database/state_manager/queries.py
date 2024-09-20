@@ -55,15 +55,22 @@ def update_current_state(from_number: str, current_state_tag: str) -> None:
         current_state_tag = :current_state_tag
     WHERE user_number = :from_number
     """
-    with db_conn.connect() as conn:
-        conn.execute(
-            text(query),
-            {
-                "from_number": from_number,
-                "datetime": datetime.now(),
-                "current_state_tag": current_state_tag,
-            },
-        )
+    engine = db_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            conn.execute(
+                text(query),
+                {
+                    "from_number": from_number,
+                    "datetime": datetime.now(),
+                    "current_state_tag": current_state_tag,
+                },
+            )
+            transaction.commit()
+        except SQLAlchemyError as e:
+            transaction.rollback()
+            print("There was an error updating the state:", e)
 
 
 def update_previous_state(from_number: str, previous_state_tag: str) -> None:
@@ -77,15 +84,22 @@ def update_previous_state(from_number: str, previous_state_tag: str) -> None:
         previous_state_tag = :previous_state_tag
     WHERE user_number = :from_number
     """
-    with db_conn.connect() as conn:
-        conn.execute(
-            text(query),
-            {
-                "from_number": from_number,
-                "datetime": datetime.now(),
-                "previous_state_tag": previous_state_tag,
-            },
-        )
+    engine = db_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            conn.execute(
+                text(query),
+                {
+                    "from_number": from_number,
+                    "datetime": datetime.now(),
+                    "previous_state_tag": previous_state_tag,
+                },
+            )
+            transaction.commit()
+        except SQLAlchemyError as e:
+            transaction.rollback()
+            print("There was an error updating the state:", e)
 
 
 def reset_state_if_inactive(from_number: str) -> None:
