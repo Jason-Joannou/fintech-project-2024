@@ -61,9 +61,12 @@ class MessageStateManager:
                 if user_action not in self.get_current_state_valid_actions():
                     return self.get_unrecognized_state_response()
 
-                return MESSAGE_STATES["unregistered_number"]["action_responses"][
-                    user_action
-                ]
+                # Do action response method
+                return self.return_twilio_formatted_message(
+                    msg=MESSAGE_STATES["unregistered_number"]["action_responses"][
+                        user_action
+                    ]
+                )
 
         # User is registered
         elif self.registration_status:
@@ -87,11 +90,11 @@ class MessageStateManager:
                 if (
                     self.get_current_state_state_selections() is not None
                 ):  # We have to transfer state
+                    self.set_previous_state()
                     self.set_current_state(
-                        MESSAGE_STATES[
-                            self.current_state["state_selection"][user_action]
-                        ]
+                        tag=self.current_state["state_selection"][user_action]
                     )
+                    self.get_current_state_message()
 
     def get_current_state_message(self):
         msg = self.current_state["message"]
