@@ -9,6 +9,7 @@ from whatsapp_utils._utils.message_config import (
 )
 
 # Need to add messages states as we go
+# TODO: Add more states
 MESSAGE_STATES = {
     "base_state": ["Hi", "Hello", "hi", "hello"],
     "unrecognized_state": "Sorry, I don't understand that action. The following actions are allowed in this state:\n",
