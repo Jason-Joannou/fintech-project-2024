@@ -1,11 +1,11 @@
 from flask import Blueprint
 
-join_stokvel_bp = Blueprint("stokvels", __name__)
+stokvel_bp = Blueprint("stokvels", __name__)
 
 BASE_ROUTE = "/stokvels"
 
 
-@join_stokvel_bp.route(BASE_ROUTE)
+@stokvel_bp.route(BASE_ROUTE)
 def stokvel() -> str:
     """
     docstrings
