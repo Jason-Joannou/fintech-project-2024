@@ -88,7 +88,9 @@ class MessageStateManager:
                     self.get_current_state_state_selections() is not None
                 ):  # We have to transfer state
                     self.set_current_state(
-                        MESSAGE_STATES[self.current_state.state_selection[user_action]]
+                        MESSAGE_STATES[
+                            self.current_state["state_selection"][user_action]
+                        ]
                     )
 
     def get_current_state_message(self):
