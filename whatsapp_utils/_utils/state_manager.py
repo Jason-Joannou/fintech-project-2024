@@ -10,6 +10,7 @@ from database.user_queries.queries import (
     check_if_number_is_admin,
 )
 from whatsapp_utils._utils.state_config import MESSAGE_STATES
+from whatsapp_utils._utils.twilio_messenger import send_conversational_message
 from whatsapp_utils.schemas.state_schema import StateSchema
 
 
@@ -91,7 +92,12 @@ class MessageStateManager:
                     )
 
     def get_current_state_message(self):
-        return self.current_state.message
+        msg = self.current_state["message"]
+        return send_conversational_message(msg)
+
+    def _get_current_state_message_formatted(self):
+        message = self.current_state["message"].split(":")[1]
+        return message
 
     def set_current_state(self, tag: str) -> None:
         # Need to set current state in the db
@@ -107,24 +113,29 @@ class MessageStateManager:
 
     def get_unrecognized_state_response(self):
         if self.current_state and self.previous_state:
-            return self.unrecognized_state + self.get_current_state_message()
+            msg = self.unrecognized_state + self._get_current_state_message_formatted()
+            return send_conversational_message(msg)
         else:
-            return "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+            msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+            return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
-        return self.current_state.valid_actions
+        return self.current_state["valid_actions"]
 
     def get_current_state_action_responses(self) -> Optional[Dict]:
-        return self.current_state.action_responses
+        return self.current_state["action_responses"]
 
     def get_current_state_action_requests(self) -> Optional[Dict]:
-        return self.current_state.action_responses
+        return self.current_state["action_requests"]
 
     def get_current_state_state_selections(self) -> Optional[Dict]:
-        return self.current_state.state_selection
+        return self.current_state["state_selection"]
 
     def get_state_tags(self) -> Tuple:
         return get_state_responses(from_number=self.user_number)
+
+    def return_twilio_formatted_message(self, msg: str) -> str:
+        return send_conversational_message(msg)
 
     def update_local_states(self) -> None:
         self.current_state, self.previous_state = self.get_state_tags()
