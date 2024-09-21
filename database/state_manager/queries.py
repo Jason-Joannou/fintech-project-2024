@@ -14,6 +14,7 @@ def insert_new_user_state(from_number: str) -> None:
     """
     Insert new user state if no state is found.
     """
+    engine = db_conn.get_engine()
     from_number = extract_whatsapp_number(from_number=from_number)
     query = """
     INSERT INTO STATE_MANAGEMENT
@@ -21,10 +22,16 @@ def insert_new_user_state(from_number: str) -> None:
     VALUES
     (:from_number, 'stateless', 'stateless', :datetime)
     """
-    with db_conn.connect() as conn:
-        conn.execute(
-            text(query), {"from_number": from_number, "datetime": datetime.now()}
-        )
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            conn.execute(
+                text(query), {"from_number": from_number, "datetime": datetime.now()}
+            )
+            transaction.commit()
+        except SQLAlchemyError as e:
+            transaction.rollback()
+            print("There was an error inserting the state:", e)
 
 
 def get_user_state(from_number: str) -> Tuple[str, str, str]:
@@ -106,13 +113,17 @@ def reset_state_if_inactive(from_number: str) -> None:
     """
     Reset user state to 'stateless' if the user has been inactive for more than an hour.
     """
-    _, _, last_interaction = get_user_state(from_number=from_number)
-    inactive_duration = datetime.now() - datetime.strptime(
-        last_interaction, "%Y-%m-%d %H:%M:%S.%f"
-    )
-    if inactive_duration > timedelta(hours=1):
-        update_current_state(from_number=from_number, current_state_tag="stateless")
-        update_previous_state(from_number=from_number, previous_state_tag="stateless")
+    result = get_user_state(from_number=from_number)
+    if result is not None:
+        _, _, last_interaction = result
+        inactive_duration = datetime.now() - datetime.strptime(
+            last_interaction, "%Y-%m-%d %H:%M:%S.%f"
+        )
+        if inactive_duration > timedelta(hours=1):
+            update_current_state(from_number=from_number, current_state_tag="stateless")
+            update_previous_state(
+                from_number=from_number, previous_state_tag="stateless"
+            )
 
 
 def check_if_user_has_state(from_number: str) -> bool:
@@ -130,7 +141,6 @@ def get_state_responses(from_number: str) -> Tuple[str, str]:
     """
     Retrieve the current and previous state tags for the user, handling all database interactions in a single transaction.
     """
-    from_number = extract_whatsapp_number(from_number=from_number)
     engine = db_conn.get_engine()
 
     with engine.connect() as connection:
@@ -142,7 +152,6 @@ def get_state_responses(from_number: str) -> Tuple[str, str]:
             reset_state_if_inactive(from_number)
 
             current_state_tag, previous_state_tag, _ = get_user_state(from_number)
-
             transaction.commit()
             return current_state_tag, previous_state_tag
 
