@@ -41,7 +41,7 @@ def check_if_number_is_admin(from_number: str) -> bool:
     """
 
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"from_number": from_number})
+        cursor = conn.execute(text(query), {"user_number": from_number})
         result = cursor.fetchone()
 
     return result[0] >= 1
