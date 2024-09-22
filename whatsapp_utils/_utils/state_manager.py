@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from database.state_manager.queries import (
     get_state_responses,
@@ -48,12 +48,12 @@ class MessageStateManager:
         self.registration_status = self.check_registration_status()
         self.is_admin = self.check_admin_status()
         self.current_state_tag, self.previous_state_tag = self.get_state_tags()
-        self.current_state: StateSchema = (
+        self.current_state: Union[StateSchema, Dict] = (
             MESSAGE_STATES[self.current_state_tag]
             if self.current_state_tag != "stateless"
             else {}
         )
-        self.previous_state: StateSchema = (
+        self.previous_state: Union[StateSchema, Dict] = (
             MESSAGE_STATES[self.previous_state_tag]
             if self.previous_state_tag != "stateless"
             else {}
@@ -157,17 +157,17 @@ class MessageStateManager:
             # If not transferable state check if it is an action response
 
             if self.get_current_state_action_responses() is not None:
-                action_responses = self.get_current_state_action_responses().keys()
-                if user_action in action_responses:
-                    msg = self.get_current_state_action_responses()[user_action]
+                action_responses = self.get_current_state_action_responses()
+                if user_action in list(action_responses.keys()):
+                    msg = action_responses[user_action]
                     return self.return_twilio_formatted_message(msg=msg)
 
             # If not action reponse, check if action request
 
             if self.get_current_state_action_requests() is not None:
-                action_requests = self.get_current_state_action_requests().keys()
-                if user_action in action_requests:
-                    endpoint = self.get_current_state_action_requests()[user_action]
+                action_requests = self.get_current_state_action_requests()
+                if user_action in list(action_requests.keys()):
+                    endpoint = action_requests[user_action]
                     msg = self.execute_action_request(endpoint=endpoint)
                     return self.return_twilio_formatted_message(msg=msg)
 
