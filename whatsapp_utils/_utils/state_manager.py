@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     get_state_responses,
@@ -49,12 +49,12 @@ class MessageStateManager:
         self.is_admin = self.check_admin_status()
         self.current_state_tag, self.previous_state_tag = self.get_state_tags()
         self.current_state: Union[StateSchema, Dict] = (
-            MESSAGE_STATES[self.current_state_tag]
+            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
             if self.current_state_tag != "stateless"
             else {}
         )
         self.previous_state: Union[StateSchema, Dict] = (
-            MESSAGE_STATES[self.previous_state_tag]
+            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
             if self.previous_state_tag != "stateless"
             else {}
         )
@@ -312,12 +312,12 @@ class MessageStateManager:
         """
         self.current_state_tag, self.previous_state_tag = self.get_state_tags()
         self.current_state = (
-            MESSAGE_STATES[self.current_state_tag]
+            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
             if self.current_state_tag != "stateless"
             else {}
         )
         self.previous_state = (
-            MESSAGE_STATES[self.previous_state_tag]
+            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
             if self.previous_state_tag != "stateless"
             else {}
         )
