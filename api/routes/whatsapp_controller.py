@@ -1,12 +1,6 @@
 from flask import Blueprint, request
 
-from database.user_queries.queries import check_if_number_exists_sqlite
-from whatsapp_utils._utils.action_handlers import handle_action
-from whatsapp_utils._utils.cache import Cache
 from whatsapp_utils._utils.state_manager import MessageStateManager
-from whatsapp_utils._utils.twilio_messenger import send_conversational_message
-
-cache = Cache()
 
 whatsapp_bp = Blueprint("whatsapp", __name__)
 
@@ -16,7 +10,15 @@ BASE_ROUTE = "/whatsapp"
 @whatsapp_bp.route(BASE_ROUTE, methods=["POST"])
 def whatsapp() -> str:
     """
-    docstring
+    Handle incoming WhatsApp messages and process user requests based on the current state.
+
+    This method is triggered by a POST request to the WhatsApp webhook endpoint. It retrieves the
+    incoming message and the sender's phone number, manages the user's state using the
+    `MessageStateManager`, and processes the user's action based on their current state. The
+    appropriate response is then generated and returned.
+
+    Returns:
+        str: A string containing the response message to be sent back to the user via WhatsApp.
     """
     incoming_msg = request.values.get("Body", "")
     from_number = request.values.get("From", "")
