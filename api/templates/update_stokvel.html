@@ -1,10 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stokvel Admin Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
 
+        .admin-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .edit-section {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .constitution-section {
+            margin-top: 30px;
+        }
+
+        .admin-list {
+            margin-top: 20px;
+        }
+
+        .admin-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .admin-entry input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .admin-entry button {
+            margin-left: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .admin-entry button:hover {
+            background-color: #d32f2f;
+        }
+
+        .add-admin-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .add-admin-btn:hover {
+            background-color: #45a049;
+        }
+
+        .intl-tel-input {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <h1>Stokvel Admin Page</h1>
+        <form action="/admin/save_stokvel" method="POST">
+            <label for="stokvelName">Stokvel Name:</label>
+            <input type="text" id="stokvelName" name="stokvelName" required>
+
+            <label for="numAdmins">Number of Admins:</label>
+            <input type="number" id="numAdmins" name="numAdmins" required min="1">
+
+            <div class="admin-list" id="adminList">
+                <h3>Admins:</h3>
+                <!-- Dynamic admin fields will be added here -->
+            </div>
+
+            <button type="button" class="add-admin-btn" id="addAdminBtn">Add Admin</button>
+
+            <label for="maxMembers">Max Number of Members:</label>
+            <input type="number" id="maxMembers" name="maxMembers" required min="1">
+
+            <label for="minContribution">Minimum Contribution Amount (R):</label>
+            <input type="number" id="minContribution" name="minContribution" required min="1">
+
+            <input type="submit" value="Save Stokvel">
+
+            <div class="constitution-section">
+                <h2>Modify Stokvel Constitution</h2>
+                <label for="constitution">Constitution:</label>
+                <textarea id="constitution" name="constitution" rows="6" placeholder="Update the constitution here"></textarea>
+                <input type="submit" value="Save Constitution">
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script>
+        let adminCount = 0;
+
+        document.getElementById('addAdminBtn').addEventListener('click', function() {
+            adminCount++;
+
+            const adminList = document.getElementById('adminList');
+            const adminEntry = document.createElement('div');
+            adminEntry.classList.add('admin-entry');
+            adminEntry.setAttribute('id', 'admin' + adminCount);
+
+            adminEntry.innerHTML = `
+                <input type="text" name="adminName${adminCount}" placeholder="Admin Name" required>
+                <input type="tel" id="phone${adminCount}" name="adminPhone${adminCount}" placeholder="Admin Phone Number" required>
+                <button type="button" onclick="removeAdmin('admin${adminCount}')">Remove</button>
+            `;
+
+            adminList.appendChild(adminEntry);
+
+            // Initialize international phone number input
+            const input = document.getElementById(`phone${adminCount}`);
+            window.intlTelInput(input, {
+                initialCountry: "za", // Default to South Africa
+                separateDialCode: true,
+            });
+        });
+
+        function removeAdmin(adminId) {
+            const adminEntry = document.getElementById(adminId);
+            adminEntry.remove();
+        }
+    </script>
 </body>
+
 </html>
