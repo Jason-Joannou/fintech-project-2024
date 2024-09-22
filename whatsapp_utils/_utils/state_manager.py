@@ -160,16 +160,16 @@ class MessageStateManager:
             return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
-        return self.current_state.get("valid_actions", None)
+        return self.current_state.get("valid_actions", [])
 
     def get_current_state_action_responses(self) -> Optional[Dict]:
-        return self.current_state.get("action_responses", None)
+        return self.current_state.get("action_responses", {})
 
     def get_current_state_action_requests(self) -> Optional[Dict]:
-        return self.current_state.get("action_requests", None)
+        return self.current_state.get("action_requests", {})
 
     def get_current_state_state_selections(self) -> Optional[Dict]:
-        return self.current_state.get("state_selection", None)
+        return self.current_state.get("state_selection", {})
 
     def get_state_tags(self) -> Tuple:
         return get_state_responses(from_number=self.user_number)
