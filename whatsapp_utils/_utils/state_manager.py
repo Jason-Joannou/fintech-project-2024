@@ -1,6 +1,3 @@
-# mypy: ignore-errors[index]
-# mypy: ignore-errors[union-attr]
-
 from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
