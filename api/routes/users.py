@@ -1,5 +1,4 @@
-from flask import Blueprint, jsonify
-from sqlalchemy import text
+from flask import Blueprint
 
 from database.sqlite_connection import SQLiteConnection
 from database.user_queries.queries import get_total_number_of_users
