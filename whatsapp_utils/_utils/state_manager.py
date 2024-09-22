@@ -78,7 +78,7 @@ class MessageStateManager:
         """
         return check_if_number_is_admin(from_number=self.user_number)
 
-    def update_registration_status(self):
+    def update_registration_status(self) -> None:
         """
         Updates the user's registration status by checking the database again.
         If the status has changed, the internal registration_status attribute
@@ -86,6 +86,8 @@ class MessageStateManager:
         """
         if not self.registration_status:
             self.registration_status = self.check_registration_status()
+
+        return None
 
     def processes_user_request(self, user_action: str) -> str:
         """
