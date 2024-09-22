@@ -64,15 +64,6 @@ def onboard_user() -> Response:
         return redirect(url_for("onboarding.failed_user_creation"))
 
 
-@onboarding_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
-def onboard_stokvel() -> Response:
-    """
-    docstring
-    """
-    return redirect(
-        url_for(f'{BASE_ROUTE.removeprefix("/")}.success_stockvel_creation')
-    )
-
 
 @onboarding_bp.route("/success_user_creation")
 def success_user_creation() -> str:
@@ -88,34 +79,3 @@ def failed_user_creation() -> str:
     docstring
     """
     return render_template("user_onboarding_failed.html")
-
-
-@onboarding_bp.route("/success_stockvel_creation")
-def success_stockvel_creation() -> str:
-    """
-    docstring
-    """
-    return redirect(url_for(f'{BASE_ROUTE.removeprefix("/")}.success_stockvel_creation'))
-
-
-# @onboarding_bp.route("/success_user_creation")
-# def success_user_creation():
-#     """
-#     docstring
-#     """
-#     return render_template("user_onboarding_success.html")
-
-# @onboarding_bp.route("/failed_user_creation")
-# def failed_user_creation():
-#     """
-#     docstring
-#     """
-#     return render_template("user_onboarding_failed.html")
-
-
-# @onboarding_bp.route("/success_stockvel_creation")
-# def success_stockvel_creation():
-#     """
-#     docstring
-#     """
-#     return "Stockvel created successfully!"

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class OnboardUserSchema(BaseModel):
@@ -16,13 +17,13 @@ class RegisterStokvelSchema(BaseModel):
     """
     docstring
     """
-    stokvel_id: int = Field(..., example=123)
+    stokvel_id: Optional[int] = Field(None, example=123)
     stokvel_name: str = Field(..., example="John's Soccer Stokvel") #unique constraint here
-    ILP_wallet: str = Field(..., example="/johns_stokvel")
-    MOMO_wallet: str = Field(..., example="MOMO10255")
-    total_members: int = Field(..., example=15)
+    ILP_wallet: Optional[str] = Field(None, example="/johns_stokvel")
+    MOMO_wallet: Optional[str] = Field(None, example="MOMO10255")
+    total_members: Optional[int] = Field(None, example=15)
     min_contributing_amount: float = Field(..., example=100.50)
     max_number_of_contributors: int = Field(..., example=20)
-    Total_contributions: float = Field(..., example=153800)
-    created_at: str = Field(..., example="2024-10-01 00:00:00")
-    updated_at: str = Field(..., example="2024-10-01 00:00:00")
+    Total_contributions: Optional[float] = Field(None, example=153800)
+    created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
+    updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
