@@ -9,7 +9,6 @@ from whatsapp_utils._utils.message_config import (
     STOKVEL_SERVICES,
     UNREGISTERED_NUMBER,
 )
-from whatsapp_utils.schemas.state_schema import StateSchema
 
 # Need to add messages states as we go
 MESSAGE_STATES: Dict[str, Union[Dict, List[str], str]] = {
