@@ -31,6 +31,9 @@ jobs:
       - name: Run Pylint
         run: pylint --recursive=y --fail-under=9.7 .
 
+      - name: Install missing stubs
+        run: mypy --install-types
+
       - name: Run MyPy
         run: mypy .
 
