@@ -1,6 +1,6 @@
 from typing import Dict, List, Union
 
-UNREGISTERED_NUMBER: Dict[str, Union[str, List, Dict]] = {
+UNREGISTERED_NUMBER: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "unregistered_number",
     "message": """
     Hi there! We noticed this number is not registered with us. Registering your number is needed to start contributing to Stokvels.
@@ -16,7 +16,7 @@ UNREGISTERED_NUMBER: Dict[str, Union[str, List, Dict]] = {
     "state": -1,
 }
 
-REGISTERED_NUMBER: Dict[str, Union[str, List, Dict]] = {
+REGISTERED_NUMBER: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "registered_number",
     "message": """
     Hi there, welcome back! Please select one of the following options to proceed:
@@ -33,7 +33,7 @@ REGISTERED_NUMBER: Dict[str, Union[str, List, Dict]] = {
     "state": 0,
 }
 
-REGISTERED_NUMBER_ADMIN: Dict[str, Union[str, List, Dict]] = {
+REGISTERED_NUMBER_ADMIN: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "registered_number_admin",
     "message": """
     Hi there, welcome back! Please select one of the following options to proceed:
@@ -52,7 +52,7 @@ REGISTERED_NUMBER_ADMIN: Dict[str, Union[str, List, Dict]] = {
     "state": 0,
 }
 
-STOKVEL_SERVICES: Dict[str, Union[str, List, Dict]] = {
+STOKVEL_SERVICES: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "stokvel_services",
     "message": """
     Please select one of the following options to proceed:
@@ -73,7 +73,7 @@ STOKVEL_SERVICES: Dict[str, Union[str, List, Dict]] = {
     "state": 1,
 }
 
-COMMUNITY_SERVICES: Dict[str, Union[str, List, Dict]] = {
+COMMUNITY_SERVICES: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "community_services",
     "message": """
     Welcome to our community services! Please select one of the following options to proceed:
@@ -96,7 +96,7 @@ COMMUNITY_SERVICES: Dict[str, Union[str, List, Dict]] = {
     "state": 1,
 }
 
-FINANCIAL_REPORTS: Dict[str, Union[str, List, Dict]] = {
+FINANCIAL_REPORTS: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "financial_reports",
     "message": """
     Welcome to your finacial reports services! Please select one of the following options to proceed:
@@ -115,7 +115,7 @@ FINANCIAL_REPORTS: Dict[str, Union[str, List, Dict]] = {
     "state": 1,
 }
 
-ADMIN_SERVICES: Dict[str, Union[str, List, Dict]] = {
+ADMIN_SERVICES: Dict[str, Union[str, List, Dict, int]] = {
     "tag": "admin_services",
     "message": """
     Welcome to your admin page! Please select one of the following options to proceed:
