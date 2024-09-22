@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 
 from whatsapp_utils._utils.message_config import (
     ADMIN_SERVICES,
