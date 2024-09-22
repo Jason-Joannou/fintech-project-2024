@@ -2,6 +2,8 @@
 from sqlalchemy import text
 
 from .sqlite_connection import SQLiteConnection
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+
 
 from datetime import datetime
 
@@ -112,12 +114,52 @@ def insert_wallet(user_id, user_wallet, userbalance):
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
 
-            # Confirm the number of rows affected
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
     except Exception as e:
         print(f"Error occurred during insert: {e}")
+    
 
+def add_user_wallet_to_db(user, wallet):
+    """
+    Onboards a new user by inserting them into the USERS table, and a corresponding entry in the USER_WALLET table.
 
+    Args:
+        user (utils.user.User): The user to be onboarded.
+        wallet (utils.wallet.Wallet): The wallet to be associated with the user.
+    """
+    sql = text("""
+    INSERT INTO USERS (user_id, user_number, user_name, user_surname, ILP_wallet) 
+    VALUES (:user_id, :user_number, :user_name, :user_surname, :ILP_wallet);
+    
+    INSERT INTO USER_WALLET (user_id, user_wallet, userbalance) 
+    VALUES (:user_id, :user_wallet, :userbalance);
+    """)
+
+    try:
+        with sqlite_conn.connect() as conn:
+
+            conn.execute(sql, {
+                'user_id': user.id_number,
+                'user_number': user.cell_number,
+                'user_name': user.name,
+                'user_surname': user.surname,
+                'ILP_wallet': user.wallet_id,
+                'user_wallet': wallet.id,
+                'userbalance': wallet.user_balance
+            })
+            conn.commit()
+
+    except IntegrityError as ie:
+        print(f"IntegrityError occurred: {ie}")
+        raise
+
+    except SQLAlchemyError as se:
+        print(f"SQLAlchemyError occurred: {se}")
+        raise
+
+    except Exception as e:
+        print(f"General Error occurred: {e}")
+        raise
