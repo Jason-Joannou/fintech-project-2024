@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import OnboardUserSchema
 from database.queries import insert_user, insert_wallet
-from whatsapp_utils._utils.twilio_messenger import send_notification_message
+# from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
@@ -50,9 +50,9 @@ def onboard_user() -> Response:
         )
 
         # Send the notification message
-        send_notification_message(
-            to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
-        )
+        # send_notification_message(
+        #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
+        # )
         return redirect(url_for("onboarding.success_user_creation"))
 
     except SQLAlchemyError as sql_error:
@@ -98,24 +98,24 @@ def success_stockvel_creation() -> str:
     return redirect(url_for(f'{BASE_ROUTE.removeprefix("/")}.success_stockvel_creation'))
 
 
-@onboarding_bp.route("/success_user_creation")
-def success_user_creation():
-    """
-    docstring
-    """
-    return render_template("user_onboarding_success.html")
+# @onboarding_bp.route("/success_user_creation")
+# def success_user_creation():
+#     """
+#     docstring
+#     """
+#     return render_template("user_onboarding_success.html")
 
-@onboarding_bp.route("/failed_user_creation")
-def failed_user_creation():
-    """
-    docstring
-    """
-    return render_template("user_onboarding_failed.html")
+# @onboarding_bp.route("/failed_user_creation")
+# def failed_user_creation():
+#     """
+#     docstring
+#     """
+#     return render_template("user_onboarding_failed.html")
 
 
-@onboarding_bp.route("/success_stockvel_creation")
-def success_stockvel_creation():
-    """
-    docstring
-    """
-    return "Stockvel created successfully!"
+# @onboarding_bp.route("/success_stockvel_creation")
+# def success_stockvel_creation():
+#     """
+#     docstring
+#     """
+#     return "Stockvel created successfully!"
