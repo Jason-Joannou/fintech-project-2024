@@ -13,6 +13,9 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 
 
 def get_total_number_of_users() -> int:
+    """
+    docstring
+    """
     engine = sqlite_conn.get_engine()
     with engine.connect() as conn:
         transaction = conn.begin()
