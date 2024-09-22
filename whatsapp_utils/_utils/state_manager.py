@@ -9,6 +9,7 @@ from database.user_queries.queries import (
     check_if_number_exists_sqlite,
     check_if_number_is_admin,
 )
+from whatsapp_utils._utils.api_requests import query_endpoint
 from whatsapp_utils._utils.state_config import MESSAGE_STATES
 from whatsapp_utils._utils.twilio_messenger import send_conversational_message
 from whatsapp_utils.schemas.state_schema import StateSchema
@@ -90,11 +91,45 @@ class MessageStateManager:
                 if (
                     self.get_current_state_state_selections() is not None
                 ):  # We have to transfer state
-                    self.set_previous_state()
-                    self.set_current_state(
-                        tag=self.current_state["state_selection"][user_action]
-                    )
-                    self.get_current_state_message()
+
+                    # Check if selection is a back state selection
+                    if user_action in self.current_state["state_selection"].keys():
+                        if (
+                            self.current_state["state_selection"][user_action]
+                            == "back_state"
+                        ):
+                            self.set_current_state(tag=self.previous_state["tag"])
+                            self.set_previous_state()
+                            return self.get_current_state_message()
+
+                        self.set_previous_state()
+                        self.set_current_state(
+                            tag=self.current_state["state_selection"][user_action]
+                        )
+                        return self.get_current_state_message()
+
+                # If not transferable state check if it is an action response
+
+                if self.get_current_state_action_responses() is not None:
+                    action_responses = self.get_current_state_action_responses().keys()
+                    if user_action in action_responses:
+                        msg = self.get_current_state_action_responses()[user_action]
+                        return self.return_twilio_formatted_message(msg=msg)
+
+                # If not action reponse, check if action request
+
+                if self.get_current_state_action_requests() is not None:
+                    action_requests = self.get_current_state_action_requests().keys()
+                    if user_action in action_requests:
+                        endpoint = self.get_current_state_action_requests()[user_action]
+                        msg = self.execute_action_request(endpoint=endpoint)
+                        return self.return_twilio_formatted_message(msg=msg)
+
+    def execute_action_request(
+        self, endpoint: str, payload: Optional[Dict] = None
+    ) -> str:
+        msg = query_endpoint(endpoint_suffix=endpoint, payload=payload)
+        return msg
 
     def get_current_state_message(self):
         msg = self.current_state["message"]
@@ -125,16 +160,16 @@ class MessageStateManager:
             return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
-        return self.current_state["valid_actions"]
+        return self.current_state.get("valid_actions", None)
 
     def get_current_state_action_responses(self) -> Optional[Dict]:
-        return self.current_state["action_responses"]
+        return self.current_state.get("action_responses", None)
 
     def get_current_state_action_requests(self) -> Optional[Dict]:
-        return self.current_state["action_requests"]
+        return self.current_state.get("action_requests", None)
 
     def get_current_state_state_selections(self) -> Optional[Dict]:
-        return self.current_state["state_selection"]
+        return self.current_state.get("state_selection", None)
 
     def get_state_tags(self) -> Tuple:
         return get_state_responses(from_number=self.user_number)
@@ -143,14 +178,14 @@ class MessageStateManager:
         return send_conversational_message(msg)
 
     def update_local_states(self) -> None:
-        self.current_state, self.previous_state = self.get_state_tags()
+        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
         self.current_state = (
-            MESSAGE_STATES[self.current_state]
-            if self.current_state != "stateless"
+            MESSAGE_STATES[self.current_state_tag]
+            if self.current_state_tag != "stateless"
             else {}
         )
         self.previous_state = (
-            MESSAGE_STATES[self.previous_state]
-            if self.previous_state != "stateless"
+            MESSAGE_STATES[self.previous_state_tag]
+            if self.previous_state_tag != "stateless"
             else {}
         )
