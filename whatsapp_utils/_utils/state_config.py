@@ -14,7 +14,7 @@ MESSAGE_STATES = {
     "base_state": ["Hi", "Hello", "hi", "hello"],
     "unrecognized_state": "Sorry, I don't understand that action. The following actions are allowed in this state:\n",
     REGISTERED_NUMBER["tag"]: REGISTERED_NUMBER,
-    REGISTERED_NUMBER["tag"]: REGISTERED_NUMBER_ADMIN,
+    REGISTERED_NUMBER_ADMIN["tag"]: REGISTERED_NUMBER_ADMIN,
     UNREGISTERED_NUMBER["tag"]: UNREGISTERED_NUMBER,
     ADMIN_SERVICES["tag"]: ADMIN_SERVICES,
     COMMUNITY_SERVICES["tag"]: COMMUNITY_SERVICES,
