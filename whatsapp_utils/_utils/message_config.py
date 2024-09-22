@@ -67,7 +67,7 @@ STOKVEL_SERVICES = {
         "3": "Please specify the amount you want to contribute in Rands and the name of the stokvel you would like to contribute to.",
         "4": "Please specify the stokvel you would like to leave.",
     },
-    "state_selection": {"5": "Back:"},
+    "state_selection": {"5": "back_state"},
     "state": 1,
 }
 
@@ -90,6 +90,7 @@ COMMUNITY_SERVICES = {
         "4": "/users/users_by_stokvel",
         "5": "/accounting/contributions_by_stokvel",
     },
+    "state_selection": {"6": "back_state"},
     "state": 1,
 }
 
@@ -108,6 +109,8 @@ FINANCIAL_REPORTS = {
         "2": "accounting/total_user_payouts",
         "3": "accoutning/audit_stokvel",
     },
+    "state_selection": {"4": "back_state"},
+    "state": 1,
 }
 
 ADMIN_SERVICES = {
@@ -116,8 +119,9 @@ ADMIN_SERVICES = {
     Welcome to your admin page! Please select one of the following options to proceed:
     1. View your stokvels
     2. View your stokvel members
-    3. Edit stokvel constitution""",
-    "valid_actions": ["1", "2", "3"],
+    3. Edit stokvel constitution
+    4. Back""",
+    "valid_actions": ["1", "2", "3", "4"],
     "action_requests": {
         "1": "admin/admin_stokvels",
         "2": "admin/admin_stokvel_members",
@@ -125,6 +129,8 @@ ADMIN_SERVICES = {
     "action_responses": {
         "3": "You can edit your stokvel constitutions through our online portal: stokvels.com"
     },
+    "state_selection": {"5": "back_state"},
+    "state": 1,
 }
 
 
