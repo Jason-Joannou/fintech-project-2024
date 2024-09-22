@@ -38,6 +38,8 @@ def query_endpoint(endpoint_suffix: str, payload: Optional[Dict] = None) -> str:
         response.raise_for_status()
         return response.text
     except requests.exceptions.HTTPError as http_err:
-        return f"HTTP error occurred: {http_err}"
+        print(f"HTTP error occurred: {http_err}")
+        return "Something went wrong, please try sending the action again."
     except Exception as err:
-        return f"Other error occurred: {err}"
+        print(f"Other error occurred: {err}")
+        return "Something went wrong, please try sending the action again."
