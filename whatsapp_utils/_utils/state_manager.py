@@ -106,16 +106,16 @@ class MessageStateManager:
             self.set_current_state(tag="unregistered_number")
             if user_action in self.base_greetings:
                 return self.get_current_state_message()
-            else:
-                if user_action not in self.get_current_state_valid_actions():
-                    return self.get_unrecognized_state_response()
 
-                # Do action response method
-                return self.return_twilio_formatted_message(
-                    msg=MESSAGE_STATES["unregistered_number"]["action_responses"][
-                        user_action
-                    ]
-                )
+            if user_action not in self.get_current_state_valid_actions():
+                return self.get_unrecognized_state_response()
+
+            # Do action response method
+            return self.return_twilio_formatted_message(
+                msg=MESSAGE_STATES["unregistered_number"]["action_responses"][
+                    user_action
+                ]
+            )
 
         # User is registered
         elif self.registration_status:
@@ -128,50 +128,48 @@ class MessageStateManager:
                     self.set_previous_state()
                 return self.get_current_state_message()
 
-            else:  # Handle other actions according to state
+            # Check if action is valid for the current state
+            if user_action not in self.get_current_state_valid_actions():
+                return self.get_unrecognized_state_response()
 
-                # Check if action is valid for the current state
-                if user_action not in self.get_current_state_valid_actions():
-                    return self.get_unrecognized_state_response()
+            # Check if we need to transfer state
+            # Back is also a transerable state
+            if (
+                self.get_current_state_state_selections() is not None
+            ):  # We have to transfer state
 
-                # Check if we need to transfer state
-                # Back is also a transerable state
-                if (
-                    self.get_current_state_state_selections() is not None
-                ):  # We have to transfer state
-
-                    # Check if selection is a back state selection
-                    if user_action in self.current_state["state_selection"].keys():
-                        if (
-                            self.current_state["state_selection"][user_action]
-                            == "back_state"
-                        ):
-                            self.set_current_state(tag=self.previous_state["tag"])
-                            self.set_previous_state()
-                            return self.get_current_state_message()
-
+                # Check if selection is a back state selection
+                if user_action in self.current_state["state_selection"].keys():
+                    if (
+                        self.current_state["state_selection"][user_action]
+                        == "back_state"
+                    ):
+                        self.set_current_state(tag=self.previous_state["tag"])
                         self.set_previous_state()
-                        self.set_current_state(
-                            tag=self.current_state["state_selection"][user_action]
-                        )
                         return self.get_current_state_message()
 
-                # If not transferable state check if it is an action response
+                    self.set_previous_state()
+                    self.set_current_state(
+                        tag=self.current_state["state_selection"][user_action]
+                    )
+                    return self.get_current_state_message()
 
-                if self.get_current_state_action_responses() is not None:
-                    action_responses = self.get_current_state_action_responses().keys()
-                    if user_action in action_responses:
-                        msg = self.get_current_state_action_responses()[user_action]
-                        return self.return_twilio_formatted_message(msg=msg)
+            # If not transferable state check if it is an action response
 
-                # If not action reponse, check if action request
+            if self.get_current_state_action_responses() is not None:
+                action_responses = self.get_current_state_action_responses().keys()
+                if user_action in action_responses:
+                    msg = self.get_current_state_action_responses()[user_action]
+                    return self.return_twilio_formatted_message(msg=msg)
 
-                if self.get_current_state_action_requests() is not None:
-                    action_requests = self.get_current_state_action_requests().keys()
-                    if user_action in action_requests:
-                        endpoint = self.get_current_state_action_requests()[user_action]
-                        msg = self.execute_action_request(endpoint=endpoint)
-                        return self.return_twilio_formatted_message(msg=msg)
+            # If not action reponse, check if action request
+
+            if self.get_current_state_action_requests() is not None:
+                action_requests = self.get_current_state_action_requests().keys()
+                if user_action in action_requests:
+                    endpoint = self.get_current_state_action_requests()[user_action]
+                    msg = self.execute_action_request(endpoint=endpoint)
+                    return self.return_twilio_formatted_message(msg=msg)
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None

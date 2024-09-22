@@ -30,6 +30,7 @@ def get_total_number_of_users() -> int:
         except Exception as e:
             transaction.rollback()
             print(f"There was an error retreiving the SQL error: {e}")
+            return 0
 
 
 def check_if_number_exists_sqlite(from_number: str) -> bool:
