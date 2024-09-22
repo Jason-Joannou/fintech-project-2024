@@ -6,7 +6,7 @@ BASE_ROUTE = "/user_info"
 
 
 @user_info_bp.route(BASE_ROUTE)
-def user_info():
+def user_info() -> str:
     """
     docstring
     """
@@ -14,7 +14,7 @@ def user_info():
 
 
 @user_info_bp.route(f"{BASE_ROUTE}/all_users", methods=["POST"])
-def get_all_users():
+def get_all_users() -> str:
     """
     docstring
     """

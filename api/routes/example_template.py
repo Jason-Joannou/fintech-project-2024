@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, Response, redirect, render_template, request, url_for
 
 example_template_bp = Blueprint("example_template", __name__)
 
@@ -7,7 +7,7 @@ BASE_ROUTE = "/example_template"
 
 
 @example_template_bp.route(BASE_ROUTE)
-def example_template():
+def example_template() -> str:
     """
     docstring
     """
@@ -15,7 +15,7 @@ def example_template():
 
 
 @example_template_bp.route(f"{BASE_ROUTE}/submit", methods=["POST"])
-def submit():
+def submit() -> Response:
     """
     docstring
     """
@@ -33,7 +33,7 @@ def submit():
 
 
 @example_template_bp.route("/success")
-def success():
+def success() -> str:
     """
     docstring
     """

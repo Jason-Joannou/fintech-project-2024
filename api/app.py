@@ -18,7 +18,10 @@ app.register_blueprint(example_template_bp)
 
 
 @app.route("/")
-def index():
+def index() -> str:
+    """
+    docstring
+    """
     return "Stokvel API"
 
 

@@ -1,7 +1,7 @@
 [MASTER]
-ignore = rafiki-services, documentation, messageBroker/, whatsapp_utils/tests, api/tests
+ignore = rafiki-services, documentation, messageBroker/, whatsapp_utils/tests, api/tests, sandbox/ilp_mini_app
 max-line-length = 150
 
 [MESSAGES CONTROL]
 # List of message IDs to disable in pylint
-disable = C0114, R0801, W0621, E0401
+disable = C0114, R0801, W0621, E0401, R0903, W0718

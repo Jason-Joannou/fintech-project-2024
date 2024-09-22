@@ -9,7 +9,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # URL refers to the openAPI address of the stokvel
 
 
-def create_stokvel_members_table_sqlite():
+def create_stokvel_members_table_sqlite() -> None:
     """
     docstrings
     """
@@ -29,7 +29,7 @@ def create_stokvel_members_table_sqlite():
         )
 
 
-def create_stokvel_table_sqlite():
+def create_stokvel_table_sqlite() -> None:
     """
     docstring
     """
@@ -39,15 +39,15 @@ def create_stokvel_table_sqlite():
             text(
                 """
             CREATE TABLE IF NOT EXISTS STOKVELS (
-                stokvel_id INTEGER PRIMARY KEY, 
+                stokvel_id INTEGER PRIMARY KEY,
                 stokvel_name TEXT UNIQUE,  -- Add UNIQUE constraint here
                 ILP_wallet TEXT,
-                MOMO_wallet TEXT, 
+                MOMO_wallet TEXT,
                 total_members INTEGER,
                 min_contributing_amount NUMBER,
                 max_number_of_contributors INTEGER,
                 Total_contributions NUMBER,
-                created_at TIMESTAMP, 
+                created_at TIMESTAMP,
                 updated_at TIMESTAMP
             );
         """
@@ -55,7 +55,7 @@ def create_stokvel_table_sqlite():
         )
 
 
-def create_user_table_sqlite():
+def create_user_table_sqlite() -> None:
     """
     docstring
     """
@@ -71,7 +71,7 @@ def create_user_table_sqlite():
                 ILP_wallet TEXT,
                 MOMO_wallet TEXT,
                 verified_KYC INTEGER,
-                created_at TIMESTAMP, 
+                created_at TIMESTAMP,
                 updated_at TIMESTAMP
             );
         """
@@ -79,7 +79,7 @@ def create_user_table_sqlite():
         )
 
 
-def create_transaction_table_sqlite():
+def create_transaction_table_sqlite() -> None:
     """
     docstring
     """
@@ -95,7 +95,7 @@ def create_transaction_table_sqlite():
                 tx_type TEXT,
                 wallet_type TEXT,
                 tx_date TEXT,
-                created_at TIMESTAMP, 
+                created_at TIMESTAMP,
                 updated_at TIMESTAMP
         );
     """
@@ -103,7 +103,7 @@ def create_transaction_table_sqlite():
         )
 
 
-def create_resource_table_sqlite():
+def create_resource_table_sqlite() -> None:
     """
     docstring
     """
@@ -112,11 +112,11 @@ def create_resource_table_sqlite():
             text(
                 """
             CREATE TABLE IF NOT EXISTS RESOURCES (
-                id INTEGER PRIMARY KEY, 
+                id INTEGER PRIMARY KEY,
                 name TEXT,
-                resource_type TEXT, 
-                url TEXT, 
-                created_at TIMESTAMP, 
+                resource_type TEXT,
+                url TEXT,
+                created_at TIMESTAMP,
                 updated_at TIMESTAMP
             );
         """
@@ -124,7 +124,7 @@ def create_resource_table_sqlite():
         )
 
 
-def create_admin_table_sqlite():
+def create_admin_table_sqlite() -> None:
     """
     docstring
     """
@@ -133,7 +133,7 @@ def create_admin_table_sqlite():
             text(
                 """
             CREATE TABLE IF NOT EXISTS ADMIN (
-                id INTEGER PRIMARY KEY, 
+                id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
                 stokvel_name TEXT,
                 user_id INTEGER,
@@ -145,7 +145,7 @@ def create_admin_table_sqlite():
         )
 
 
-def create_contributions_table_sqlite():
+def create_contributions_table_sqlite() -> None:
     """
     docstring
     """
@@ -167,7 +167,7 @@ def create_contributions_table_sqlite():
         )
 
 
-def create_userWallet_table_sqlite():
+def create_user_wallet_table_sqlite() -> None:
     """
     docstring
     """
@@ -176,7 +176,7 @@ def create_userWallet_table_sqlite():
             text(
                 """
             CREATE TABLE IF NOT EXISTS USER_WALLET (
-                id INTEGER PRIMARY KEY, 
+                id INTEGER PRIMARY KEY,
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER           );
@@ -185,7 +185,7 @@ def create_userWallet_table_sqlite():
         )
 
 
-def create_stokvelWallet_table_sqlite():
+def create_stokvel_wallet_table_sqlite() -> None:
     """
     docstring
     """
@@ -194,7 +194,7 @@ def create_stokvelWallet_table_sqlite():
             text(
                 """
             CREATE TABLE IF NOT EXISTS STOKVEL_WALLET (
-                id INTEGER PRIMARY KEY, 
+                id INTEGER PRIMARY KEY,
                 user_id INTEGER,
                 user_wallet TEXT,
                 UserBalance NUMBER            );
@@ -203,7 +203,7 @@ def create_stokvelWallet_table_sqlite():
         )
 
 
-def create_applications_table_sqlite():
+def create_applications_table_sqlite() -> None:
     """
     docstring
     """
@@ -213,7 +213,7 @@ def create_applications_table_sqlite():
                 """
             CREATE TABLE IF NOT EXISTS APPLICATIONS (
                 id INTEGER PRIMARY KEY,
-                stokvel_id INTEGER, 
+                stokvel_id INTEGER,
                 user_id INTEGER,
                 AppStatus TEXT,
                 AppDate DATETIME            );
@@ -230,6 +230,6 @@ if __name__ == "__main__":
     create_stokvel_members_table_sqlite()
     create_stokvel_table_sqlite()
     create_transaction_table_sqlite()
-    create_userWallet_table_sqlite()
-    create_stokvelWallet_table_sqlite()
+    create_user_wallet_table_sqlite()
+    create_stokvel_wallet_table_sqlite()
     create_applications_table_sqlite()
