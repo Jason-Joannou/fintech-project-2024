@@ -49,5 +49,5 @@ class TwilioClient:
         of an HTTP response to Twilio's webhook.
         """
         twiml = MessagingResponse()
-        twiml.message(message)  # Create the TwiML message
-        return str(twiml)  # Return the entire TwiML response as a string
+        twiml.message(message)  # Create the TwiML message.
+        return str(twiml)  # Return the entire TwiML response as a string.
