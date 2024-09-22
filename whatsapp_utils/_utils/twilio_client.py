@@ -9,29 +9,44 @@ load_dotenv()
 
 class TwilioClient:
     """
-    docstring
+    A client wrapper for interacting with the Twilio API to send SMS notifications
+    and handle conversational messages using TwiML.
     """
 
     def __init__(self):
+        """
+        Initializes the Twilio client using credentials from environment variables.
+        The credentials include the account SID, authentication token, and the
+        Twilio phone number from which messages will be sent.
+        """
         self.client = Client(
             os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN")
         )
         self.from_number = os.getenv("TWILIO_PHONE_NUMBER")
 
-    def send_mesage_notification(self, to: str, body: str):
+    def send_mesage_notification(self, to: str, body: str) -> None:
         """
-        docstring
-        """
-        print(to)
-        print(self.from_number)
-        print(body)
-        message = self.client.messages.create(to=to, from_=self.from_number, body=body)
+        Sends an SMS message to a specified phone number.
 
-        print(f"Message sent: {message.sid}")
+        Parameters:
+        to (str): The recipient's phone number in E.164 format.
+        body (str): The content of the SMS message.
 
-    def send_conversational_message(self, message: str):
+        Returns:
+        None
         """
-        docstring
+        self.client.messages.create(to=to, from_=self.from_number, body=body)
+
+    def send_conversational_message(self, message: str) -> str:
+        """
+        Creates a conversational message using Twilio's TwiML response format.
+
+        Parameters:
+        message (str): The text of the message to be sent in the conversation.
+
+        Returns:
+        str: The TwiML response as a string, which can be returned as part
+        of an HTTP response to Twilio's webhook.
         """
         twiml = MessagingResponse()
         twiml.message(message)  # Create the TwiML message
