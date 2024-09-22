@@ -12,7 +12,7 @@ db_conn = SQLiteConnection(database="./database/test_db.db")
 
 def insert_new_user_state(from_number: str) -> None:
     """
-    Insert new user state if no state is found
+    Insert new user state if no state is found.
     """
     engine = db_conn.get_engine()
     from_number = extract_whatsapp_number(from_number=from_number)
