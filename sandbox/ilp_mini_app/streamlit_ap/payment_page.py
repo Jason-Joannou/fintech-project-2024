@@ -1,5 +1,5 @@
-import streamlit as st
 import requests
+import streamlit as st
 
 # Title of the app
 st.title("URL and Amount Input App")
