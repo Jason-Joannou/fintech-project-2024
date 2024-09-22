@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stokvel Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="button"]:hover {
+            background-color: #45a049;
+        }
+
+        .stokvel-container {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stokvel-details {
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success-message {
+            color: green;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h1>Search or View All Stokvels</h1>
+        <input type="text" id="stokvelSearch" placeholder="Search Stokvel by name..." />
+
+        <input type="button" id="searchButton" value="Search Stokvel" onclick="searchStokvel()" />
+        <input type="button" id="viewAllButton" value="View All Stokvels" onclick="viewAllStokvels()" />
+
+        <!-- Stokvels will be dynamically generated here -->
+        <div id="stokvelList">
+            <!-- Dynamic stokvel containers will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Dummy stokvel data stored in an array
+        const stokvels = [
+            {
+                name: "Helping Hands",
+                admin: "Thabo Mokoena",
+                contribution: "R200 per month",
+                members: 15,
+                maxMembers: 20,
+                payoutFrequency: "Monthly",
+                joiningFee: "R50",
+                benefits: "Short-term loans and grocery savings",
+                isFull: false
+            },
+            {
+                name: "Family Fund",
+                admin: "Zanele Khumalo",
+                contribution: "R300 per month",
+                members: 25,
+                maxMembers: 25,
+                payoutFrequency: "Quarterly",
+                joiningFee: "R100",
+                benefits: "Large asset purchases",
+                isFull: true
+            },
+            {
+                name: "Future Savers",
+                admin: "Lerato Dlamini",
+                contribution: "R150 per month",
+                members: 10,
+                maxMembers: 15,
+                payoutFrequency: "Annually",
+                joiningFee: "R25",
+                benefits: "Educational funds",
+                isFull: false
+            }
+        ];
+
+        // Function to search and display stokvels
+        function searchStokvel() {
+            const searchQuery = document.getElementById('stokvelSearch').value.toLowerCase();
+            const stokvelList = document.getElementById('stokvelList');
+            stokvelList.innerHTML = ''; // Clear previous results
+
+            stokvels.forEach(stokvel => {
+                if (stokvel.name.toLowerCase().includes(searchQuery)) {
+                    generateStokvelContainer(stokvel);
+                }
+            });
+
+            if (stokvelList.innerHTML === '') {
+                stokvelList.innerHTML = '<p>No stokvels found matching your search.</p>';
+            }
+        }
+
+        // Function to view all stokvels
+        function viewAllStokvels() {
+            const stokvelList = document.getElementById('stokvelList');
+            stokvelList.innerHTML = ''; // Clear previous results
+
+            stokvels.forEach(stokvel => {
+                generateStokvelContainer(stokvel);
+            });
+
+            if (stokvelList.innerHTML === '') {
+                stokvelList.innerHTML = '<p>No stokvels available.</p>';
+            }
+        }
+
+        // Function to generate stokvel container
+        function generateStokvelContainer(stokvel) {
+            const stokvelList = document.getElementById('stokvelList');
+            const container = document.createElement('div');
+            container.className = 'stokvel-container';
+
+            container.innerHTML = `
+                <div class="stokvel-details">
+                    <strong>Stokvel Name:</strong> ${stokvel.name}<br>
+                    <strong>Admin:</strong> ${stokvel.admin}<br>
+                    <strong>Contribution:</strong> ${stokvel.contribution}
+                </div>
+                <div class="buttons">
+                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.name}')">
+                    ${stokvel.isFull ? '<input type="button" value="Stokvel Full" disabled>' : '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.name + '\')">'}
+                </div>
+                <div id="constitution-${stokvel.name}" class="hidden constitution-details">
+                    <strong>Max Members:</strong> ${stokvel.maxMembers}<br>
+                    <strong>Payout Frequency:</strong> ${stokvel.payoutFrequency}<br>
+                    <strong>Joining Fee:</strong> ${stokvel.joiningFee}<br>
+                    <strong>Benefits:</strong> ${stokvel.benefits}
+                </div>
+            `;
+
+            stokvelList.appendChild(container);
+        }
+
+        // Function to show constitution
+        function viewConstitution(stokvelName) {
+            const constitution = document.getElementById(`constitution-${stokvelName}`);
+            constitution.classList.toggle('hidden');
+        }
+
+        // Function to apply to join a stokvel
+        function applyToJoin(stokvelName) {
+            alert(`Sign Up confirmed for ${stokvelName}`);
+        }
+    </script>
+</body>
+
+</html>
