@@ -12,6 +12,23 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
+def get_total_number_of_users() -> int:
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            query = text("SELECT COUNT(DISTINCT user_id) FROM USERS")
+            result = conn.execute(query)
+            user_count = result.scalar()
+
+            transaction.commit()
+
+            return user_count
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retreiving the SQL error: {e}")
+
+
 def check_if_number_exists_sqlite(from_number: str) -> bool:
     """
     docstring
