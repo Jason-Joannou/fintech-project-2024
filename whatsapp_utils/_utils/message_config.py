@@ -1,4 +1,6 @@
-UNREGISTERED_NUMBER = {
+from whatsapp_utils.schemas.state_schema import StateSchema
+
+UNREGISTERED_NUMBER: StateSchema = {
     "tag": "unregistered_number",
     "message": """
     Hi there! We noticed this number is not registered with us. Registering your number is needed to start contributing to Stokvels.
@@ -14,7 +16,7 @@ UNREGISTERED_NUMBER = {
     "state": -1,
 }
 
-REGISTERED_NUMBER = {
+REGISTERED_NUMBER: StateSchema = {
     "tag": "registered_number",
     "message": """
     Hi there, welcome back! Please select one of the following options to proceed:
@@ -31,7 +33,7 @@ REGISTERED_NUMBER = {
     "state": 0,
 }
 
-REGISTERED_NUMBER_ADMIN = {
+REGISTERED_NUMBER_ADMIN: StateSchema = {
     "tag": "registered_number_admin",
     "message": """
     Hi there, welcome back! Please select one of the following options to proceed:
@@ -50,7 +52,7 @@ REGISTERED_NUMBER_ADMIN = {
     "state": 0,
 }
 
-STOKVEL_SERVICES = {
+STOKVEL_SERVICES: StateSchema = {
     "tag": "stokvel_services",
     "message": """
     Please select one of the following options to proceed:
@@ -71,7 +73,7 @@ STOKVEL_SERVICES = {
     "state": 1,
 }
 
-COMMUNITY_SERVICES = {
+COMMUNITY_SERVICES: StateSchema = {
     "tag": "community_services",
     "message": """
     Welcome to our community services! Please select one of the following options to proceed:
@@ -94,7 +96,7 @@ COMMUNITY_SERVICES = {
     "state": 1,
 }
 
-FINANCIAL_REPORTS = {
+FINANCIAL_REPORTS: StateSchema = {
     "tag": "financial_reports",
     "message": """
     Welcome to your finacial reports services! Please select one of the following options to proceed:
@@ -113,7 +115,7 @@ FINANCIAL_REPORTS = {
     "state": 1,
 }
 
-ADMIN_SERVICES = {
+ADMIN_SERVICES: StateSchema = {
     "tag": "admin_services",
     "message": """
     Welcome to your admin page! Please select one of the following options to proceed:
