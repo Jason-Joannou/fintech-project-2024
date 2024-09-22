@@ -1,3 +1,5 @@
+from typing import Dict, Union
+
 from whatsapp_utils._utils.message_config import (
     ADMIN_SERVICES,
     COMMUNITY_SERVICES,
@@ -7,9 +9,10 @@ from whatsapp_utils._utils.message_config import (
     STOKVEL_SERVICES,
     UNREGISTERED_NUMBER,
 )
+from whatsapp_utils.schemas.state_schema import StateSchema
 
 # Need to add messages states as we go
-MESSAGE_STATES = {
+MESSAGE_STATES: Dict[str, Union[StateSchema, Dict]] = {
     "base_state": ["Hi", "Hello", "hi", "hello"],
     "unrecognized_state": "Sorry, I don't understand that action. The following actions are allowed in this state:\n",
     REGISTERED_NUMBER["tag"]: REGISTERED_NUMBER,
