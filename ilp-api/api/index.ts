@@ -1,23 +1,27 @@
-import axios from "axios";
 import { getEnviromentVariables } from "../enviroment";
+import express, { Response, Request } from "express";
+import bodyParser from "body-parser";
 
-const getBackendUrl = () => {
-  const { backendUrl } = getEnviromentVariables();
-  const apiVersion = "v1";
-  const fullUrl = `${backendUrl}/${apiVersion}`;
-  return fullUrl;
-};
+// Import routers
 
-const getIlpUrl = () => {
-  const { ilpUrl } = getEnviromentVariables();
-  const apiVersion = "v1";
-  const fullUrl = `${ilpUrl}/${apiVersion}`;
-  return fullUrl;
-};
+// Initialize app
+const app = express();
 
-const createAxiosInstance = (baseURL: string) =>
-  axios.create({
-    baseURL: baseURL,
+// Middleware
+app.use(bodyParser.json());
+
+// Base index route
+app.get("/", (req: Request, res: Response) => {
+  res.json({
+    message: "Welcome to the API! This is the base endpoint.",
   });
+});
 
-export { getBackendUrl, getIlpUrl, createAxiosInstance };
+// Mount routers
+
+const { ilpUrl } = getEnviromentVariables();
+const port = 3001;
+
+app.listen(port, () => {
+  console.log(`Server running on ${ilpUrl}`);
+});
