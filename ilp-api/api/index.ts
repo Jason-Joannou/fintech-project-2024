@@ -1,6 +1,7 @@
 import { getEnviromentVariables } from "../enviroment";
 import express, { Response, Request } from "express";
 import bodyParser from "body-parser";
+import payments from "./routes/payments";
 
 // Import routers
 
@@ -17,7 +18,8 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-// Mount routers
+// Mount routers to base paths
+app.use("/payments", payments);
 
 const { ilpUrl } = getEnviromentVariables();
 const port = 3001;
