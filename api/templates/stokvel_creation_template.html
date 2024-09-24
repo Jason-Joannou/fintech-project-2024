@@ -49,7 +49,7 @@
             width: 100%;
             padding: 10px;
             margin-top: 20px;
-            background-color: #4CAF50;
+            background-color: #45a095;
             color: white;
             border: none;
             border-radius: 5px;
@@ -58,18 +58,32 @@
         }
 
         input[type="submit"]:hover {
-            background-color: #45a049;
+            background-color: #45a095;
         }
 
         .error {
             color: red;
             font-size: 14px;
         }
+
+        .header{
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #cfcfd0; /* Light grey background */
+            padding: 20px;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="form-container">
+
+        <div class="header">
+            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
+
         <h1>Stokvel Registration</h1>
         <form action="{{ url_for('create_stokvel.onboard_stokvel') }}" method="POST">
             <!-- Stokvel Name -->
@@ -101,16 +115,83 @@
 
             <!-- Frequency of Stokvel Payout -->   
 
-            <label for="payout_frequency">Minimum contribution:</label>
+            <label for="payout_frequency">Minimum contribution (ZAR):</label>
             <input type="number" id="min_contributing_amount" name="min_contributing_amount" required>
 
-            <label for="payout_frequency">Frequency of Stokvel Payout:</label>
+            <label for="payout_frequency">Stokvel Duration:</label>
+
+            <label for="payout_frequency">Start Date:</label>
+            <input type="date" id="StartDate" name="StartDate" required>
+
+            <label for="payout_frequency">End Date:</label>
+            <input type="date" id="EndDate" name="EndDate" required>
+
+            <label for="payout_frequency">Frequency of Stokvel Payout (Days):</label>
             <input type="text" id="payout_frequency" name="payout_frequency" required>
 
+            <!-- stokvel type -->
+            <label for="stokvel_type">Type of Stokvel:</label>
+            <select id="stokvel_type" name="stokvel_type" required>
+                <option value="investment">Investment</option>
+                <option value="grocery">Grocery</option>
+                <option value="funeral">Funeral</option>
+                <option value="savings">Savings</option>
+                <option value="rotational">Rotational</option>
+            </select>
+
+            <!-- Constitution Preview -->
+            <div id="constitution-preview" style="display:none; margin-top: 20px; padding: 10px; border: 1px solid #ddd;">
+                <h2>Constitution</h2>
+                <p id="constitution-text"></p>
+                <button type="button" id="confirm-button">Confirm Constitution</button>
+            </div>
+
             <!-- Submit Button -->
-            <input type="submit" value="Register Stokvel">
+            <input type="submit" id="register-button" value="Register Stokvel" disabled>
         </form>
     </div>
+
+
+    <script>
+        document.getElementById('stokvel_name').addEventListener('input', updateConstitution);
+        document.getElementById('min_contributing_amount').addEventListener('input', updateConstitution);
+        document.getElementById('StartDate').addEventListener('change', updateConstitution);
+        document.getElementById('EndDate').addEventListener('change', updateConstitution);
+        document.getElementById('payout_frequency').addEventListener('input', updateConstitution);
+
+        function updateConstitution() {
+            const stokvelName = document.getElementById('stokvel_name').value;
+            const minContribution = document.getElementById('min_contributing_amount').value;
+            const startDate = document.getElementById('StartDate').value;
+            const endDate = document.getElementById('EndDate').value;
+            const payoutFrequency = document.getElementById('payout_frequency').value;
+
+            const constitutionText = `Constitution for "${stokvelName}":
+            <br>
+            <br>
+            - Minimum contribution is ZAR ${minContribution}
+            <br>
+            - Payouts every ${payoutFrequency} days 
+            <br>
+            - Starting from ${startDate} to ${endDate}.`;
+            document.getElementById('constitution-text').textContent = constitutionText;
+
+            document.getElementById('constitution-text').innerHTML = constitutionText;
+
+
+            // Show the constitution preview only if all fields are filled
+            if (stokvelName && minContribution && startDate && endDate && payoutFrequency) {
+                document.getElementById('constitution-preview').style.display = 'block';
+            }
+        }
+
+        // Enable the register button once the constitution is confirmed
+        document.getElementById('confirm-button').addEventListener('click', function() {
+            document.getElementById('register-button').disabled = false;
+        });
+    </script>
+
+
 </body>
 
 </html>

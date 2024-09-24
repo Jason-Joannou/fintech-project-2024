@@ -40,6 +40,21 @@ def check_if_number_exists_sqlite(from_number: str) -> bool:
             return True
 
         return False
+    
+def find_user_by_number(from_number: str) -> bool:
+    """
+    docstring
+    """
+    from_number = from_number.split(":")[1]
+    query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"from_number": from_number})
+        result = cursor.fetchone()
+        print(result)
+        if result:
+            return result
+
+        return None
 
 def check_if_id_number_exists_sqlite(user_id: str) -> bool:
     """
@@ -327,3 +342,39 @@ def insert_stokvel_member(
         print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
 
+def get_all_stokvels():
+    """
+    Retrieve all stokvels from database
+    """
+    try:
+        with sqlite_conn.connect() as conn:
+
+            print("Connected in stokvel_members insert")
+            cursor = conn.execute(text('SELECT * FROM stokvels;'))
+            stokvels = cursor.fetchall()
+
+
+        stokvels_list = [
+            {
+                'stokvel_id': stokvel[0],
+                'stokvel_name': stokvel[1],
+                'ILP_wallet': stokvel[2],
+                'MOMO_wallet': stokvel[3],
+                'total_members': stokvel[4],
+                'min_contributing_amount': stokvel[5],
+                'max_number_of_contributors': stokvel[6],
+                'total_contributions': stokvel[7],
+                'created_at': stokvel[8],
+                'updated_at': stokvel[9]
+            } for stokvel in stokvels
+        ]
+
+        return stokvels_list
+    
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
+
+    except Exception as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error

@@ -51,7 +51,7 @@
             width: 100%;
             padding: 10px;
             margin-top: 20px;
-            background-color: #4CAF50;
+            background-color: #45a095;
             color: white;
             border: none;
             border-radius: 5px;
@@ -60,18 +60,32 @@
         }
 
         input[type="submit"]:hover {
-            background-color: #45a049;
+            background-color: #45a095;
         }
 
         .error {
             color: red;
             font-size: 14px;
         }
+
+        .header{
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #cfcfd0; /* Light grey background */
+            padding: 20px;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="form-container">
+
+        <div class="header">
+            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
+
         <h1>User Onboarding</h1>
         <form action="{{ url_for('onboarding.onboard_user') }}" method="POST">
             <label for="name">First Name:</label>
@@ -86,9 +100,13 @@
             <label for="id_number">ID Number:</label>
             <input type="number" maxlength="13" id="id_number" name="id_number" required>
 
+            <label for="wallet_id">ILP Wallet:</label>
+            <input type="url"  id="wallet_id" name="wallet_id" required>
+
             <input type="submit" value="Submit">
         </form>
     </div>
 </body>
 
 </html>
+

@@ -169,7 +169,8 @@
                 </div>
                 <div class="buttons">
                     <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.name}')">
-                    ${stokvel.isFull ? '<input type="button" value="Stokvel Full" disabled>' : '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.name + '\')">'}
+                    ${stokvel.isFull ? '<input type="button" value="Stokvel Full" disabled style="background-color: grey; color: white; cursor: not-allowed;">':
+                     '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.name + '\')">'}
                 </div>
                 <div id="constitution-${stokvel.name}" class="hidden constitution-details">
                     <strong>Max Members:</strong> ${stokvel.maxMembers}<br>
