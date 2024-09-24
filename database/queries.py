@@ -174,5 +174,5 @@ def check_if_number_exists_sqlite(from_number):
 
 
 if __name__ == "__main__":
-    create_user('+1234567', 'John', 'Doe')
+    #create_user('+1234567', 'John', 'Doe')
     create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
