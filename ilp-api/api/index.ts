@@ -1,4 +1,4 @@
-import { getEnviromentVariables } from "../enviroment";
+import { getEnviromentVariables } from "../enviroment/index";
 import express, { Response, Request } from "express";
 import bodyParser from "body-parser";
 import payments from "./routes/payments";
