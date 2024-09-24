@@ -1,5 +1,5 @@
-import axios from "axios";
-import { getEnviromentVariables } from "../enviroment";
+import axios from "../node_modules/axios/index";
+import { getEnviromentVariables } from "../enviroment/index";
 
 const getBackendUrl = () => {
   const { backendUrl } = getEnviromentVariables();
