@@ -25,5 +25,10 @@ class RegisterStokvelSchema(BaseModel):
     min_contributing_amount: float = Field(..., example=100.50)
     max_number_of_contributors: int = Field(..., example=20)
     Total_contributions: Optional[float] = Field(None, example=153800)
+    start_date: str = Field(..., example="2024-10-01 00:00:00")
+    end_date: str = Field(..., example="2024-10-01 00:00:00")
+    payout_frequency_int: int = Field(..., example=1),
+    payout_frequency_period: str = Field(..., example="day")
     created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
+    requesting_number: int = Field(..., example=1)

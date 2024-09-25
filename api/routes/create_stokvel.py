@@ -2,7 +2,8 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import RegisterStokvelSchema
-from database.queries import insert_stokvel
+from database.stokvel_queries import insert_stokvel, insert_stokvel_member, insert_admin
+from database.queries import find_user_by_number
 
 create_stokvel_bp = Blueprint("create_stokvel", __name__)
 
@@ -35,11 +36,30 @@ def onboard_stokvel() -> Response:
             min_contributing_amount = stokvel_data.min_contributing_amount,
             max_number_of_contributors = stokvel_data.max_number_of_contributors,
             Total_contributions = 0,
+            start_date=stokvel_data.start_date,
+            end_date= stokvel_data.end_date,
+            payout_frequency_int=stokvel_data.payout_frequency_int,
+            payout_frequency_period=stokvel_data.payout_frequency_period,
             created_at = None,
             updated_at = None,
         )
 
-        # Possibly handle adding the creator as a member automatically?
+        # add member - get whatsapp number
+
+        insert_stokvel_member(
+            stokvel_id=stokvel_data.stokvel_id,
+            user_id = find_user_by_number(stokvel_data.requesting_number)
+        )
+
+        # add admin - get whatsapp number
+        insert_admin(
+            stokvel_id = stokvel_data.stokvel_id,
+            stokvel_name= stokvel_data.stokvel_name,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            total_contributions=0,
+            total_members=1
+        )
+
 
         # Prepare the notification message
         notification_message = (
@@ -71,11 +91,27 @@ def success_stokvel_creation() -> str:
     """
     docstrings
     """
-    return render_template("stokvel_success.html")
+    action = "Stokvel Creation"
+    success_message = "Stokvel created successfully."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+
+    return render_template("action_success_template.html", 
+                           action = action,
+                           success_message = success_message,
+                           success_next_step_message = success_next_step_message)
 
 @create_stokvel_bp.route("/failed_stokvel_creation")
 def failed_stokvel_creation() -> str:
     """
     docstring
     """
-    return render_template("stokvel_failed.html")
+    action = "Stokvel Registration"
+    failed_message = "Your stokvel could not be created successfully. Please try again later."  # Define a better message here - depending on what went wrong
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+
+
+    return render_template("action_failed_template.html", 
+                           action = action,
+                           failed_message = failed_message,
+                           failed_next_step_message = failed_next_step_message)

@@ -26,197 +26,6 @@ def get_next_unique_id(conn, table_name, id_column):
     return (result[0] or 0) + 1
 
 
-def check_if_number_exists_sqlite(from_number: str) -> bool:
-    """
-    docstring
-    """
-    from_number = from_number.split(":")[1]
-    query = "SELECT * FROM USERS WHERE user_number = :from_number"
-    with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"from_number": from_number})
-        result = cursor.fetchone()
-        print(result)
-        if result:
-            return True
-
-        return False
-    
-# def find_user_by_number(from_number: str) -> bool:
-#     """
-#     docstring UNCOMMENT LATER
-#     """
-#     from_number = from_number.split(":")[1]
-#     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"from_number": from_number})
-#         result = cursor.fetchone()
-#         print(result)
-#         if result:
-#             return result
-
-#         return None
-
-
-def find_user_by_number(from_number: str) -> bool:
-    """
-    docstring
-    """
-    from_number = from_number
-    query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
-    with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"from_number": from_number})
-        result = cursor.fetchone()
-        print(result)
-        if result:
-            return result
-
-        return None
-
-def check_if_id_number_exists_sqlite(user_id: str) -> bool:
-    """
-    Check if a given user_id exists in the USERS table.
-
-    Parameters
-    ----------
-    user_id : str
-        The user_id to check.
-
-    Returns
-    -------
-    bool
-        True if the user_id exists, False otherwise.
-    """
-    user_id = user_id.split(":")[1]
-    query = "SELECT * FROM USERS WHERE id_number = :id_number"
-    with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_id": user_id})
-        result = cursor.fetchone()
-        print(result)
-        if result:
-            return True
-
-        return False
-
-def insert_user(
-    user_id: str,
-    user_number: str,
-    user_name: str,
-    user_surname: str,
-    ilp_wallet: str,
-    momo_wallet: str = "test",
-    verified_kyc: int = 1,
-    created_at: Optional[str] = None,
-    updated_at: Optional[str] = None,
-) -> None:
-    # Need to look at refactoring this
-
-    """
-    Inserts a new user into the USERS table.
-
-    Args:
-        user_id (int): The user's ID.
-        user_number (str): The user's number.
-        user_name (str): The user's name.
-        user_surname (str): The user's surname.
-        ILP_wallet (str): The user's ILP wallet.
-        MOMO_wallet (str): The user's MOMO wallet.
-        verified_KYC (int): KYC verification status (0 or 1).
-        created_at (str, optional): The timestamp when the user was created. Defaults to current time if not provided.
-        updated_at (str, optional): The timestamp when the user was last updated. Defaults to current time if not provided.
-    """
-    if created_at is None:
-        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if updated_at is None:
-        updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    insert_query = """
-    INSERT INTO USERS (
-        user_id, user_number, user_name, user_surname, ILP_wallet,
-        MOMO_wallet, verified_KYC, created_at, updated_at
-    ) VALUES (
-        :user_id, :user_number, :user_name, :user_surname, :ILP_wallet,
-        :MOMO_wallet, :verified_KYC, :created_at, :updated_at
-    )
-    """
-
-    parameters = {
-        "user_id": user_id,
-        "user_number": user_number,
-        "user_name": user_name,
-        "user_surname": user_surname,
-        "ILP_wallet": ilp_wallet,
-        "MOMO_wallet": momo_wallet,
-        "verified_KYC": verified_kyc,
-        "created_at": created_at,
-        "updated_at": updated_at,
-    }
-
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected in user insert")
-            result = conn.execute(text(insert_query), parameters)
-            conn.commit()
-
-            if result.rowcount > 0:
-                print(f"Insert successful, {result.rowcount} row(s) affected.")
-            else:
-                print("Insert failed.")
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
-
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
-
-
-
-def insert_wallet(
-        user_id: str,
-        user_wallet: str,
-        user_balance: float) -> None:
-    """
-    Inserts a new user wallet into the USER_WALLET table.
-
-    Args:
-        user_id (int): The user's ID.
-        user_wallet (str): The user's wallet address.
-        userbalance (float): The user's balance in the wallet.
-    """
-
-    insert_query = """
-    INSERT INTO USER_WALLET (
-        user_id, user_wallet, UserBalance
-    ) VALUES (
-        :user_id, :user_wallet, :UserBalance
-    )
-    """
-
-    parameters = {
-        "user_id": user_id,
-        "user_wallet": user_wallet,
-        "UserBalance": user_balance,
-    }
-
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected in wallet insert")
-            result = conn.execute(text(insert_query), parameters)
-            conn.commit()
-            if result.rowcount > 0:
-                print(f"Insert successful, {result.rowcount} row(s) affected.")
-            else:
-                print("Insert failed.")
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a wallet: {e}")  # Stops execution by raising the error
-
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a wallet: {e}")  # Stops execution by raising the error
-    
-
-
 def insert_stokvel(
     stokvel_id: int,
     stokvel_name: str, #unique constraint here
@@ -226,8 +35,14 @@ def insert_stokvel(
     min_contributing_amount: float,
     max_number_of_contributors: int,
     Total_contributions: float,
+    start_date: str,
+    end_date: str,
+    payout_frequency_int: int,
+    payout_frequency_period: str,
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
+
+
 ) -> None:
     # Need to look at refactoring this
 
@@ -255,11 +70,11 @@ def insert_stokvel(
     insert_query = """
         INSERT INTO STOKVELS (
             stokvel_id, stokvel_name, ILP_wallet, MOMO_wallet, total_members, 
-            min_contributing_amount, max_number_of_contributors, total_contributions,
+            min_contributing_amount, max_number_of_contributors, total_contributions, start_date, end_date, payout_frequency_int, payout_frequency_period,
             created_at, updated_at
         ) VALUES (
             :stokvel_id, :stokvel_name, :ILP_wallet, :MOMO_wallet, :total_members, 
-            :min_contributing_amount, :max_number_of_contributors, :total_contributions,
+            :min_contributing_amount, :max_number_of_contributors, :total_contributions, :start_date, :end_date, :payout_frequency_int, :payout_frequency_period,
             :created_at, :updated_at
         )
         """
@@ -275,7 +90,11 @@ def insert_stokvel(
         "max_number_of_contributors": max_number_of_contributors,
         "total_contributions": Total_contributions,
         "created_at": created_at,
-        "updated_at": updated_at
+        "updated_at": updated_at,
+        "start_date": start_date,
+        "end_date": end_date,
+        "payout_frequency_int": payout_frequency_int,
+        "payout_frequency_period": payout_frequency_period
     }
 
     try:
@@ -288,15 +107,16 @@ def insert_stokvel(
 
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
+                print('insert stokvel successful')
             else:
                 print("Insert failed.")
     except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
+        print(f"Error occurred during insert stokvel: {e}")
+        raise Exception(f"SQLiteError occurred during inserting a stokvel: {e}")  # Stops execution by raising the error
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
+        raise Exception(f"Exception occurred during inserting a stokvel: {e}")  # Stops execution by raising the error
     
 
 def insert_stokvel_member(
@@ -352,11 +172,11 @@ def insert_stokvel_member(
                 print("Insert failed.")
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
+        raise Exception(f"SQLiteError occurred during inserting a stokvel member: {e}")  # Stops execution by raising the error
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
+        raise Exception(f"Exception occurred during inserting a stokvel member: {e}")  # Stops execution by raising the error
 
 def get_all_stokvels():
     """
@@ -394,3 +214,59 @@ def get_all_stokvels():
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
+    
+def insert_admin(
+    stokvel_id: int, #unique constraint here
+    stokvel_name: str,
+    user_id: int,
+    total_contributions: int,
+    total_members: int,
+    created_at: Optional[str] = None,
+    updated_at: Optional[str] = None,
+) -> None:
+    # Need to look at refactoring this
+    """
+    Inserts a member as a stokvel admin.
+    """
+    if created_at is None:
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if updated_at is None:
+        updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    insert_query = """
+        INSERT INTO ADMIN (
+            id, stokvel_id, stokvel_name, user_id, total_contributions, total_members
+        ) VALUES (
+            :id, :stokvel_id, :stokvel_name, :user_id, :total_contributions, :total_members
+        )
+        """
+
+    # Parameter dictionary for executing the query
+    parameters = {
+        "id": None,
+        "stokvel_id": stokvel_id,
+        "stokvel_name":stokvel_name,
+        "user_id": user_id,
+        "total_contributions": total_contributions,
+        "total_members": total_members,
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            print("Connected in stokvel_admin insert")
+            parameters['id'] = get_next_unique_id(conn, 'ADMIN', 'id')
+
+            result = conn.execute(text(insert_query), parameters)
+            conn.commit()
+
+            if result.rowcount > 0:
+                print(f"Insert successful, {result.rowcount} row(s) affected.")
+            else:
+                print("Insert failed.")
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"SQLiteError occurred during inserting a admin: {e}")  # Stops execution by raising the error
+
+    except Exception as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"Exception occurred during inserting a admin: {e}")  # Stops execution by raising the error

@@ -28,6 +28,8 @@ def onboard_user() -> Response:
             **request.form.to_dict()
         )  # ** unpacks the dictionary
 
+        #verify_wallet() <- send request to the wallet for verification
+
         insert_user(
             user_id=user_data.id_number,
             user_number=user_data.cellphone_number,
@@ -38,7 +40,7 @@ def onboard_user() -> Response:
         insert_wallet(
             user_id=user_data.id_number,
             user_wallet=user_data.wallet_id,
-            user_balance=100,
+            user_balance=100, #how should we fund user wallets initially?
         )
         # Prepare the notification message
         notification_message = (
@@ -67,10 +69,15 @@ def onboard_user() -> Response:
 
 @onboarding_bp.route("/success_user_creation")
 def success_user_creation() -> str:
-    """
-    docstring
-    """
-    return render_template("user_onboarding_success.html")
+    action = "Onboarding"
+    success_message = "User onboarding successful! You are ready to start using the application."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+
+    return render_template("action_success_template.html", 
+                           action = action,
+                           success_message = success_message,
+                           success_next_step_message = success_next_step_message)
 
 
 @onboarding_bp.route("/failed_user_creation")
@@ -78,4 +85,13 @@ def failed_user_creation() -> str:
     """
     docstring
     """
-    return render_template("user_onboarding_failed.html")
+
+    action = "Onboarding"
+    failed_message = "User onboarding failed. Please try again later."  # Define a better message here - depending on what went wrong
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+
+
+    return render_template("action_failed_template.html", 
+                           action = action,
+                           failed_message = failed_message,
+                           failed_next_step_message = failed_next_step_message)

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onboarding Failed</title>
+    <title>Success</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,7 +17,7 @@
             height: 100vh;
         }
 
-        .failed-container {
+        .success-container {
             background-color: white;
             padding: 40px;
             border-radius: 10px;
@@ -27,7 +27,7 @@
         }
 
         h2 {
-            color: #d53030; 
+            color: #347336; 
             margin-top: 0;
         }
 
@@ -39,10 +39,10 @@
 </head>
 
 <body>
-    <div class="failed-container">
-        <h2>Onboarding Failed!</h2>
-        <h4>User onboarding failed.</h4>
-        <h6>Navigate back to WhatsApp chat for further functions.</h6>
+    <div class="success-container">
+        <h2>{{action}} Successful!</h2>
+        <h4>{{success_message}}</h4>
+        <h6>{{success_next_step_message}}</h6>
 
     </div>
 </body>
