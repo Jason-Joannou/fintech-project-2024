@@ -172,7 +172,7 @@ def check_if_user_has_state(from_number: str) -> bool:
     return result is not None
 
 
-def get_state_responses(from_number: str) -> str:
+def get_state_responses(from_number: str) -> Optional[str]:
     """
     Retrieve the current and previous state tags for the user, handling all database interactions in a single transaction.
     """
@@ -189,8 +189,10 @@ def get_state_responses(from_number: str) -> str:
             stack_state, _ = get_user_state(from_number)
             current_state_tag = stack_state[-1] if stack_state else None
             transaction.commit()
-            return current_state_tag
 
         except SQLAlchemyError as e:
             transaction.rollback()
             print("There was an error getting the state responses:", e)
+            current_state_tag = None
+
+    return current_state_tag
