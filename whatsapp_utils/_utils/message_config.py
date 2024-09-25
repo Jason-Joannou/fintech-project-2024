@@ -84,7 +84,7 @@ COMMUNITY_SERVICES = {
     """,
     "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {  # Maybe we specify the endpoint per action
-        "1": "/stokvels/total_stokvels",  # We need to specify the type of endpoint IE get or POST and then we can pass data through based on the endpoint type
+        "1": "/stokvels/total_stokvels",  # We need to specify the type of endpoint, ie endpoing:Method(post)
         "2": "/users/total_users",
         "3": "/accounting/total_contributions",
         "4": "/users/users_by_stokvel",

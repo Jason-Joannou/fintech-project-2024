@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from typing import Tuple
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
