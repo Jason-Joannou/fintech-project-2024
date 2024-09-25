@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, List, Optional, cast
 
 from database.state_manager.queries import (
     get_state_responses,
