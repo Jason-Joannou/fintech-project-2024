@@ -1,9 +1,9 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Dict, List, Optional, Union, cast
 
 from database.state_manager.queries import (
     get_state_responses,
+    pop_previous_state,
     update_current_state,
-    update_previous_state,
 )
 from database.user_queries.queries import (
     check_if_number_exists_sqlite,
@@ -47,18 +47,9 @@ class MessageStateManager:
         self.user_number = user_number
         self.registration_status = self.check_registration_status()
         self.is_admin = self.check_admin_status()
-        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
-        self.current_state: Union[StateSchema, Dict] = (
-            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag != "stateless"
-            else {}
-        )
-        self.previous_state: Union[StateSchema, Dict] = (
-            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
-            if self.previous_state_tag != "stateless"
-            else {}
-        )
-        self.state_index = 0
+        self.current_state_tag: Optional[str] = None
+        self.current_state: Union[Dict, StateSchema] = {}
+        self.update_local_states()
 
     def check_registration_status(self) -> bool:
         """
@@ -103,8 +94,8 @@ class MessageStateManager:
         self.update_registration_status()
         # User is not registered
         if not self.registration_status:
-            self.set_current_state(tag="unregistered_number")
             if user_action in self.base_greetings:
+                self.set_current_state(tag="unregistered_number")
                 return self.get_current_state_message()
 
             if user_action not in self.get_current_state_valid_actions():
@@ -118,58 +109,60 @@ class MessageStateManager:
             )
 
         # User is registered
-        elif self.registration_status:
-            if user_action in self.base_greetings:
-                if self.check_admin_status():
-                    self.set_current_state(tag="registered_number_admin")
+
+        # Unrecognized state will remain in the state manager when a user registers for the first time
+        # But will not be part of the state when the user interacts after some time
+        if user_action in self.base_greetings:
+            if self.check_admin_status():
+                self.set_current_state(tag="registered_number_admin")
+            else:
+                self.set_current_state(tag="registered_number")
+            return self.get_current_state_message()
+
+        # Check if action is valid for the current state
+        if user_action not in self.get_current_state_valid_actions():
+            return self.get_unrecognized_state_response()
+
+        # Check if we need to transfer state
+        # Back is also a transerable state
+        if (
+            self.get_current_state_state_selections() is not None
+        ):  # We have to transfer state
+
+            # Check if selection is a back state selection
+            if user_action in self.current_state["state_selection"].keys():
+                if (
+                    self.current_state["state_selection"][user_action] == "back_state"
+                ):  # Updated to stack
+                    # TODO
+                    # Update to stack for state management
+                    # Implement payload logic
+                    # Might require message config updates
+                    # Need to be able to track what stokvel we are editing
                     self.set_previous_state()
-                else:
-                    self.set_current_state(tag="registered_number")
-                    self.set_previous_state()
-                return self.get_current_state_message()
-
-            # Check if action is valid for the current state
-            if user_action not in self.get_current_state_valid_actions():
-                return self.get_unrecognized_state_response()
-
-            # Check if we need to transfer state
-            # Back is also a transerable state
-            if (
-                self.get_current_state_state_selections() is not None
-            ):  # We have to transfer state
-
-                # Check if selection is a back state selection
-                if user_action in self.current_state["state_selection"].keys():
-                    if (
-                        self.current_state["state_selection"][user_action]
-                        == "back_state"
-                    ):
-                        self.set_current_state(tag=self.previous_state["tag"])
-                        self.set_previous_state()
-                        return self.get_current_state_message()
-
-                    self.set_previous_state()
-                    self.set_current_state(
-                        tag=self.current_state["state_selection"][user_action]
-                    )
                     return self.get_current_state_message()
 
-            # If not transferable state check if it is an action response
+                self.set_current_state(
+                    tag=self.current_state["state_selection"][user_action]
+                )
+                return self.get_current_state_message()
 
-            if self.get_current_state_action_responses() is not None:
-                action_responses = self.get_current_state_action_responses()
-                if user_action in list(action_responses.keys()):
-                    msg = action_responses[user_action]
-                    return self.return_twilio_formatted_message(msg=msg)
+        # If not transferable state check if it is an action response
 
-            # If not action reponse, check if action request
+        if self.get_current_state_action_responses() is not None:
+            action_responses = self.get_current_state_action_responses()
+            if user_action in list(action_responses.keys()):
+                msg = action_responses[user_action]
+                return self.return_twilio_formatted_message(msg=msg)
 
-            if self.get_current_state_action_requests() is not None:
-                action_requests = self.get_current_state_action_requests()
-                if user_action in list(action_requests.keys()):
-                    endpoint = action_requests[user_action]
-                    msg = self.execute_action_request(endpoint=endpoint)
-                    return self.return_twilio_formatted_message(msg=msg)
+        # If not action reponse, check if action request
+
+        if self.get_current_state_action_requests() is not None:
+            action_requests = self.get_current_state_action_requests()
+            if user_action in list(action_requests.keys()):
+                endpoint = action_requests[user_action]
+                msg = self.execute_action_request(endpoint=endpoint)
+                return self.return_twilio_formatted_message(msg=msg)
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None
@@ -222,13 +215,9 @@ class MessageStateManager:
 
     def set_previous_state(self):
         """
-        Sets the previous state of the user interaction in the database and
-        updates the local state attributes.
+        Pops the previous state from the stack and sets it as the current state.
         """
-        # Need to set previous state in the db
-        update_previous_state(
-            from_number=self.user_number, previous_state_tag=self.current_state_tag
-        )
+        pop_previous_state(from_number=self.user_number)
         self.update_local_states()
 
     def get_unrecognized_state_response(self):
@@ -239,7 +228,7 @@ class MessageStateManager:
         Returns:
         str: The formatted unrecognized state message.
         """
-        if self.current_state and self.previous_state:
+        if self.current_state:
             msg = self.unrecognized_state + self._get_current_state_message_formatted()
             return send_conversational_message(msg)
         else:
@@ -284,7 +273,7 @@ class MessageStateManager:
         """
         return self.current_state.get("state_selection", {})
 
-    def get_state_tags(self) -> Tuple:
+    def get_state_tags(self) -> Optional[str]:
         """
         Retrieves the current and previous state tags from the database.
 
@@ -310,14 +299,8 @@ class MessageStateManager:
         Updates the local current and previous state attributes by retrieving
         the state tags from the database.
         """
-        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
+        self.current_state_tag = self.get_state_tags()
+        retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})
         self.current_state = (
-            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag != "stateless"
-            else {}
-        )
-        self.previous_state = (
-            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
-            if self.previous_state_tag != "stateless"
-            else {}
+            cast(StateSchema, retrieved_state) if retrieved_state else {}
         )
