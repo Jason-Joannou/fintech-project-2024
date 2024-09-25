@@ -11,6 +11,38 @@ from database.utils import extract_whatsapp_number
 db_conn = SQLiteConnection(database="./database/test_db.db")
 
 
+def check_if_unregistered_state_exists(from_number: str) -> None:
+    """
+    Check if the user has an unregistered state in the database.
+
+    Parameters:
+    from_number (str): The user's phone number.
+
+    Returns:
+    None: This function triggers a side effect (removing the unregistered state) if it exists.
+    """
+    temp_number = extract_whatsapp_number(from_number=from_number)
+    query = "SELECT stack_state FROM STATE_MANAGEMENT WHERE user_number = :from_number"
+
+    engine = db_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            result = conn.execute(text(query), {"from_number": temp_number}).fetchone()
+            # Load JSON once
+            stack_state = json.loads(result[0]) if result and result[0] else None
+
+            if stack_state and stack_state[0] == "unregistered_number":
+                pop_previous_state(from_number=from_number)
+
+            transaction.commit()
+        except SQLAlchemyError as e:
+            transaction.rollback()
+            print(
+                "There was an error checking if the user has an unregistered state:", e
+            )
+
+
 def pop_previous_state(from_number: str) -> None:
     """
     Pops the current state from the stack and returns the previous state tag or None if the stack is empty.
@@ -40,21 +72,19 @@ def pop_previous_state(from_number: str) -> None:
             ).fetchone()
             stack_state = json.loads(result[0]) if result and result[0] else []
 
-            if len(stack_state) > 1:
-                # Pop the current state (top of the stack)
+            # Pop the current state (top of the stack)
+            if stack_state:
                 stack_state.pop()
-                # Set the new current state to the new top of the stack
-                conn.execute(
-                    text(update_query),
-                    {
-                        "from_number": from_number,
-                        "stack_state": json.dumps(stack_state),
-                    },
-                )
-                transaction.commit()
-            else:
-                # If there's only one state or none, we can't pop further
-                print("State stack is empty or has only one state.")
+            # Set the new current state to the new top of the stack
+            conn.execute(
+                text(update_query),
+                {
+                    "from_number": from_number,
+                    "stack_state": json.dumps(stack_state),
+                },
+            )
+            transaction.commit()
+
         except SQLAlchemyError as e:
             print("There was an error popping the previous state:", e)
 
