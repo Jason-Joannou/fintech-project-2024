@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional, Tuple, cast
 
 from database.state_manager.queries import (
     get_state_responses,
@@ -299,14 +299,9 @@ class MessageStateManager:
         Updates the local current and previous state attributes by retrieving
         the state tags from the database.
         """
-        state_tag = self.get_state_tags()
-        if state_tag is not None:
-            self.current_state_tag = self.get_state_tags()
-
-            self.current_state: StateSchema = (
-                cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-                if self.current_state_tag is not None
-                else {}
-            )
-        else:
-            self.current_state = {}
+        self.current_state_tag: Optional[str] = self.get_state_tags()
+        self.current_state = (
+            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
+            if self.current_state_tag is not None
+            else {}
+        )
