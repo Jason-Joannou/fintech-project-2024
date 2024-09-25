@@ -2,8 +2,8 @@ from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     get_state_responses,
+    pop_previous_state,
     update_current_state,
-    update_previous_state,
 )
 from database.user_queries.queries import (
     check_if_number_exists_sqlite,
@@ -47,18 +47,9 @@ class MessageStateManager:
         self.user_number = user_number
         self.registration_status = self.check_registration_status()
         self.is_admin = self.check_admin_status()
-        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
-        self.current_state: Union[StateSchema, Dict] = (
-            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag != "stateless"
-            else {}
-        )
-        self.previous_state: Union[StateSchema, Dict] = (
-            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
-            if self.previous_state_tag != "stateless"
-            else {}
-        )
-        self.state_index = 0
+        self.current_state_tag = None
+        self.current_state = None
+        self.update_local_states()
 
     def check_registration_status(self) -> bool:
         """
@@ -103,8 +94,8 @@ class MessageStateManager:
         self.update_registration_status()
         # User is not registered
         if not self.registration_status:
-            self.set_current_state(tag="unregistered_number")
             if user_action in self.base_greetings:
+                self.set_current_state(tag="unregistered_number")
                 return self.get_current_state_message()
 
             if user_action not in self.get_current_state_valid_actions():
@@ -118,14 +109,15 @@ class MessageStateManager:
             )
 
         # User is registered
+
         elif self.registration_status:
+            # Unrecognized state will remain in the state manager when a user registers for the first time
+            # But will not be part of the state when the user interacts after some time
             if user_action in self.base_greetings:
                 if self.check_admin_status():
                     self.set_current_state(tag="registered_number_admin")
-                    self.set_previous_state()
                 else:
                     self.set_current_state(tag="registered_number")
-                    self.set_previous_state()
                 return self.get_current_state_message()
 
             # Check if action is valid for the current state
@@ -149,11 +141,9 @@ class MessageStateManager:
                         # Implement payload logic
                         # Might require message config updates
                         # Need to be able to track what stokvel we are editing
-                        self.set_current_state(tag=self.previous_state["tag"])
                         self.set_previous_state()
                         return self.get_current_state_message()
 
-                    self.set_previous_state()
                     self.set_current_state(
                         tag=self.current_state["state_selection"][user_action]
                     )
@@ -227,13 +217,9 @@ class MessageStateManager:
 
     def set_previous_state(self):
         """
-        Sets the previous state of the user interaction in the database and
-        updates the local state attributes.
+        Pops the previous state from the stack and sets it as the current state.
         """
-        # Need to set previous state in the db
-        update_previous_state(
-            from_number=self.user_number, previous_state_tag=self.current_state_tag
-        )
+        pop_previous_state(from_number=self.user_number)
         self.update_local_states()
 
     def get_unrecognized_state_response(self):
@@ -244,7 +230,7 @@ class MessageStateManager:
         Returns:
         str: The formatted unrecognized state message.
         """
-        if self.current_state and self.previous_state:
+        if self.current_state:
             msg = self.unrecognized_state + self._get_current_state_message_formatted()
             return send_conversational_message(msg)
         else:
@@ -315,14 +301,9 @@ class MessageStateManager:
         Updates the local current and previous state attributes by retrieving
         the state tags from the database.
         """
-        self.current_state_tag, self.previous_state_tag = self.get_state_tags()
+        self.current_state_tag = self.get_state_tags()
         self.current_state = (
             cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag != "stateless"
-            else {}
-        )
-        self.previous_state = (
-            cast(StateSchema, MESSAGE_STATES[self.previous_state_tag])
-            if self.previous_state_tag != "stateless"
+            if self.current_state_tag is not None
             else {}
         )
