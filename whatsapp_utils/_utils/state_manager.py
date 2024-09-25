@@ -143,7 +143,12 @@ class MessageStateManager:
                     if (
                         self.current_state["state_selection"][user_action]
                         == "back_state"
-                    ):
+                    ):  # Updated to stack
+                        # TODO
+                        # Update to stack for state management
+                        # Implement payload logic
+                        # Might require message config updates
+                        # Need to be able to track what stokvel we are editing
                         self.set_current_state(tag=self.previous_state["tag"])
                         self.set_previous_state()
                         return self.get_current_state_message()
