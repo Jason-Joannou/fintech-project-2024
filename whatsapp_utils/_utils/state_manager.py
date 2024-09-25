@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Union, cast
 
 from database.state_manager.queries import (
+    check_if_unregistered_state_exists,
     get_state_responses,
     pop_previous_state,
     update_current_state,
@@ -112,6 +113,8 @@ class MessageStateManager:
 
         # Unrecognized state will remain in the state manager when a user registers for the first time
         # But will not be part of the state when the user interacts after some time
+        check_if_unregistered_state_exists(from_number=self.user_number)
+        self.update_local_states()
         if user_action in self.base_greetings:
             if self.check_admin_status():
                 self.set_current_state(tag="registered_number_admin")
