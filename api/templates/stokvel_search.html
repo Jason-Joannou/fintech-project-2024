@@ -87,6 +87,10 @@
             <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
+
+        <label for="requesting_number">Requesting Number:</label>
+        <input type="tel" id="requesting_number" name="requesting_number" required>
+
         <h1>Search or View All Stokvels</h1>
         <!-- <form action="{{ url_for('onboarding.onboard_user') }}" method="POST"> -->
 
@@ -98,6 +102,8 @@
         <br>
         <br>
 
+        <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
+
         <!-- Stokvels will be dynamically generated here -->
         <div id="stokvelList">
             <!-- Dynamic stokvel containers will be inserted here -->
@@ -106,41 +112,45 @@
 
     <script>
         // Dummy stokvel data stored in an array
-        const stokvels = [
-            {
-                name: "Helping Hands",
-                admin: "Thabo Mokoena",
-                contribution: "R200 per month",
-                members: 15,
-                maxMembers: 20,
-                payoutFrequency: "Monthly",
-                joiningFee: "R50",
-                benefits: "Short-term loans and grocery savings",
-                isFull: false
-            },
-            {
-                name: "Family Fund",
-                admin: "Zanele Khumalo",
-                contribution: "R300 per month",
-                members: 25,
-                maxMembers: 25,
-                payoutFrequency: "Quarterly",
-                joiningFee: "R100",
-                benefits: "Large asset purchases",
-                isFull: true
-            },
-            {
-                name: "Future Savers",
-                admin: "Lerato Dlamini",
-                contribution: "R150 per month",
-                members: 10,
-                maxMembers: 15,
-                payoutFrequency: "Annually",
-                joiningFee: "R25",
-                benefits: "Educational funds",
-                isFull: false
-            }
-        ];
+
+        const stokvelsData = document.getElementById('stokvels_data').innerText;
+        const stokvels = JSON.parse(stokvelsData);
+
+        // const stokvels = [
+        //     {
+        //         name: "Helping Hands",
+        //         admin: "Thabo Mokoena",
+        //         contribution: "R200 per month",
+        //         members: 15,
+        //         maxMembers: 20,
+        //         payoutFrequency: "Monthly",
+        //         joiningFee: "R50",
+        //         benefits: "Short-term loans and grocery savings",
+        //         isFull: false
+        //     },
+        //     {
+        //         name: "Family Fund",
+        //         admin: "Zanele Khumalo",
+        //         contribution: "R300 per month",
+        //         members: 25,
+        //         maxMembers: 25,
+        //         payoutFrequency: "Quarterly",
+        //         joiningFee: "R100",
+        //         benefits: "Large asset purchases",
+        //         isFull: true
+        //     },
+        //     {
+        //         name: "Future Savers",
+        //         admin: "Lerato Dlamini",
+        //         contribution: "R150 per month",
+        //         members: 10,
+        //         maxMembers: 15,
+        //         payoutFrequency: "Annually",
+        //         joiningFee: "R25",
+        //         benefits: "Educational funds",
+        //         isFull: false
+        //     }
+        // ];
 
         // Function to search and display stokvels
         function searchStokvel() {
@@ -174,6 +184,9 @@
         }
 
         // Function to generate stokvel container
+
+        // stokvel_id': 1, '': 'Test1', 'ILP_wallet': 'ILP_TEST', 'MOMO_wallet': 'MOMO_TEST', 'total_members': None, 'min_contributing_amount': 500, 'max_number_of_contributors': 5, 'total_contributions': 0, 'created_at': '2024-09-22 23:04:40', 'updated_at': '2024-09-22 23:04:40'},
+
         function generateStokvelContainer(stokvel) {
             const stokvelList = document.getElementById('stokvelList');
             const container = document.createElement('div');
@@ -182,20 +195,18 @@
             container.innerHTML = `
             <br>
                 <div class="stokvel-details">
-                    <strong>Stokvel Name:</strong> ${stokvel.name}<br>
-                    <strong>Admin:</strong> ${stokvel.admin}<br>
-                    <strong>Contribution:</strong> ${stokvel.contribution}
+                    <strong>Stokvel Name:</strong> ${stokvel.stokvel_name}<br>
+                    <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
+                    <strong>Contribution:</strong> ${stokvel.min_contributing_amount}
                 </div>
                 <div class="buttons">
-                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.name}')">
+                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}')">
                     ${stokvel.isFull ? '<input type="button" value="Stokvel Full" disabled style="background-color: grey; color: white; cursor: not-allowed;">':
-                     '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.name + '\')">'}
+                     '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.stokvel_name + '\')">'}
                 </div>
-                <div id="constitution-${stokvel.name}" class="hidden constitution-details">
-                    <strong>Max Members:</strong> ${stokvel.maxMembers}<br>
-                    <strong>Payout Frequency:</strong> ${stokvel.payoutFrequency}<br>
-                    <strong>Joining Fee:</strong> ${stokvel.joiningFee}<br>
-                    <strong>Benefits:</strong> ${stokvel.benefits}
+                <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
+                    <strong>Max Members:</strong> ${stokvel.max_number_of_contributors}<br>
+
                 </div>
             `;
 

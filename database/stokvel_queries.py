@@ -43,11 +43,11 @@ def insert_stokvel(
     updated_at: Optional[str] = None,
 
 
-) -> None:
+) -> int:
     # Need to look at refactoring this
 
     """
-    Inserts a new stokvel into the STOKVELS table.
+    Inserts a new stokvel into the STOKVELS table AND returns the retrieved id of the stokvel
 
     Args:
         stokvel_id (int): The stokvel's ID.
@@ -97,10 +97,14 @@ def insert_stokvel(
         "payout_frequency_period": payout_frequency_period
     }
 
+    stokvel_current_id = ""
+
     try:
         with sqlite_conn.connect() as conn:
             if stokvel_id is None:
-                parameters['stokvel_id'] = get_next_unique_id(conn, 'STOKVELS', 'stokvel_id')
+                stokvel_current_id = get_next_unique_id(conn, 'STOKVELS', 'stokvel_id')
+                parameters['stokvel_id'] = stokvel_current_id
+
             print("Connected in stokvel insert")
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
@@ -108,8 +112,12 @@ def insert_stokvel(
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
                 print('insert stokvel successful')
+
             else:
                 print("Insert failed.")
+            
+            return stokvel_current_id
+        
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
         raise Exception(f"SQLiteError occurred during inserting a stokvel: {e}")  # Stops execution by raising the error

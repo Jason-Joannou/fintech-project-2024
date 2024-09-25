@@ -1,7 +1,8 @@
 from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from database.queries import get_all_stokvels, find_user_by_number, insert_stokvel_member
+from database.queries import find_user_by_number
+from database.stokvel_queries import get_all_stokvels, insert_stokvel_member
 
 
 join_stokvel_bp = Blueprint("join_stokvel", __name__)
@@ -13,7 +14,10 @@ def join_stokvel() -> str:
     """
     docstrings
     """
-    return render_template("stokvel_search.html")
+
+    stokvel_list = get_all_stokvels()
+
+    return render_template("stokvel_search.html", stokvel_list=stokvel_list)
 
 @join_stokvel_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
 def onboard_stokvel() -> Response:
@@ -28,7 +32,13 @@ def onboard_stokvel() -> Response:
             stokvel_id=10000,
             user_id=user_id,
         )
-        # Possibly handle adding the creator as a member automatically?
+
+        #Update the stokvel table <- increase the number of contributors <- count after inserting memeber, update with count
+
+        #Send a request to get the user set up with recurring grant
+        # set_up_recurring_payment()
+
+
 
         # Prepare the notification message
         notification_message = (
@@ -60,11 +70,27 @@ def success_stokvel_join() -> str:
     """
     docstrings
     """
-    return render_template("join_success.html")
+    action = "Joining Stokvel"
+    success_message = "Stokvel joined successfully."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+
+    return render_template("action_success_template.html", 
+                           action = action,
+                           success_message = success_message,
+                           success_next_step_message = success_next_step_message)
 
 @join_stokvel_bp.route("/failed_stokvel_join")
 def failed_stokvel_join() -> str:
     """
     docstring
     """
-    return render_template("join_failed.html")
+    action = "Stokvel Joining Failed"
+    failed_message = "We could not add you to the chosen stokvel.\n Please try again later."  # Define a better message here - depending on what went wrong
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+
+
+    return render_template("action_failed_template.html", 
+                           action = action,
+                           failed_message = failed_message,
+                           failed_next_step_message = failed_next_step_message)

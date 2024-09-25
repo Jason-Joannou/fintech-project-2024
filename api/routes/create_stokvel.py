@@ -27,14 +27,16 @@ def onboard_stokvel() -> Response:
             **request.form.to_dict()
         )  # ** unpacks the dictionary
 
-        insert_stokvel(
+        # Create a stokvel object
+        
+        inserted_stokvel_id = insert_stokvel(
             stokvel_id = None,
             stokvel_name = stokvel_data.stokvel_name, #unique constraint here
             ILP_wallet = "ILP_TEST",
             MOMO_wallet = "MOMO_TEST",
             total_members = stokvel_data.total_members,
             min_contributing_amount = stokvel_data.min_contributing_amount,
-            max_number_of_contributors = stokvel_data.max_number_of_contributors,
+            max_number_of_contributors = 1,#stokvel_data.max_number_of_contributors,
             Total_contributions = 0,
             start_date=stokvel_data.start_date,
             end_date= stokvel_data.end_date,
@@ -44,8 +46,9 @@ def onboard_stokvel() -> Response:
             updated_at = None,
         )
 
-        # add member - get whatsapp number
+        stokvel_data.stokvel_id = inserted_stokvel_id
 
+        # add member - get whatsapp number
         insert_stokvel_member(
             stokvel_id=stokvel_data.stokvel_id,
             user_id = find_user_by_number(stokvel_data.requesting_number)
@@ -59,6 +62,7 @@ def onboard_stokvel() -> Response:
             total_contributions=0,
             total_members=1
         )
+
 
 
         # Prepare the notification message
