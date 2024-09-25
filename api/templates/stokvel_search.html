@@ -31,7 +31,7 @@
         }
 
         input[type="button"] {
-            background-color: #4CAF50;
+            background-color: #45a095;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -40,7 +40,7 @@
         }
 
         input[type="button"]:hover {
-            background-color: #45a049;
+            background-color: #45a095;
         }
 
         .stokvel-container {
@@ -58,6 +58,7 @@
         .buttons {
             display: flex;
             gap: 10px;
+
         }
 
         .hidden {
@@ -69,16 +70,33 @@
             font-size: 16px;
             margin-top: 10px;
         }
+
+        .header{
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #cfcfd0; /* Light grey background */
+            padding: 20px;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="form-container">
+        <div class="header">
+            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
         <h1>Search or View All Stokvels</h1>
+        <!-- <form action="{{ url_for('onboarding.onboard_user') }}" method="POST"> -->
+
         <input type="text" id="stokvelSearch" placeholder="Search Stokvel by name..." />
 
         <input type="button" id="searchButton" value="Search Stokvel" onclick="searchStokvel()" />
         <input type="button" id="viewAllButton" value="View All Stokvels" onclick="viewAllStokvels()" />
+
+        <br>
+        <br>
 
         <!-- Stokvels will be dynamically generated here -->
         <div id="stokvelList">
@@ -162,6 +180,7 @@
             container.className = 'stokvel-container';
 
             container.innerHTML = `
+            <br>
                 <div class="stokvel-details">
                     <strong>Stokvel Name:</strong> ${stokvel.name}<br>
                     <strong>Admin:</strong> ${stokvel.admin}<br>
