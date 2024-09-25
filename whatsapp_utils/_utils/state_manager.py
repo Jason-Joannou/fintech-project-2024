@@ -47,8 +47,8 @@ class MessageStateManager:
         self.user_number = user_number
         self.registration_status = self.check_registration_status()
         self.is_admin = self.check_admin_status()
-        self.current_state_tag = None
-        self.current_state = None
+        self.current_state_tag: Optional[str] = None
+        self.current_state: Union[Dict, StateSchema] = {}
         self.update_local_states()
 
     def check_registration_status(self) -> bool:
