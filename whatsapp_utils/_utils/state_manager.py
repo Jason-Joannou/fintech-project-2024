@@ -301,6 +301,6 @@ class MessageStateManager:
         """
         self.current_state_tag = self.get_state_tags()
         retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})
-        self.current_state: Union[Dict, StateSchema] = (
+        self.current_state = (
             cast(StateSchema, retrieved_state) if retrieved_state else {}
         )
