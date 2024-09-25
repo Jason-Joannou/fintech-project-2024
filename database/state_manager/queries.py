@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -88,7 +88,7 @@ def insert_new_user_state(from_number: str) -> None:
             print("There was an error inserting the state:", e)
 
 
-def get_user_state(from_number: str) -> Tuple[str, str, str]:
+def get_user_state(from_number: str) -> Tuple[List[str], str]:
     """
     Retrieve the current and previous state tags and last interaction timestamp.
     """
@@ -105,7 +105,7 @@ def get_user_state(from_number: str) -> Tuple[str, str, str]:
     return stack_state, last_interaction
 
 
-def update_current_state(from_number: str, current_state_tag: str) -> None:
+def update_current_state(from_number: str, current_state_tag: Optional[str]) -> None:
     """
     Update user state with new state tags and last interaction timestamp.
     """
@@ -172,7 +172,7 @@ def check_if_user_has_state(from_number: str) -> bool:
     return result is not None
 
 
-def get_state_responses(from_number: str) -> Tuple[str, str]:
+def get_state_responses(from_number: str) -> Optional[str]:
     """
     Retrieve the current and previous state tags for the user, handling all database interactions in a single transaction.
     """
