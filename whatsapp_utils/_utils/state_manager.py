@@ -273,7 +273,7 @@ class MessageStateManager:
         """
         return self.current_state.get("state_selection", {})
 
-    def get_state_tags(self) -> str:
+    def get_state_tags(self) -> Optional[str]:
         """
         Retrieves the current and previous state tags from the database.
 
@@ -300,8 +300,4 @@ class MessageStateManager:
         the state tags from the database.
         """
         self.current_state_tag = self.get_state_tags()
-        self.current_state = (
-            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag is not None
-            else {}
-        )
+        self.current_state = MESSAGE_STATES.get(self.current_state_tag, {})
