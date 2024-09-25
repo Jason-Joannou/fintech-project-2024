@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional, Union, cast
 
 from database.state_manager.queries import (
     get_state_responses,
@@ -300,8 +300,6 @@ class MessageStateManager:
         the state tags from the database.
         """
         self.current_state_tag = self.get_state_tags()
-        self.current_state = (
-            cast(StateSchema, MESSAGE_STATES[self.current_state_tag])
-            if self.current_state_tag is not None
-            else {}
+        self.current_state: Union[Dict, StateSchema] = MESSAGE_STATES.get(
+            self.current_state_tag, {}
         )
