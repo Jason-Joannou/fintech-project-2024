@@ -243,7 +243,8 @@ def create_state_management_table() -> None:
             user_number TEXT,
             current_state_tag TEXT,
             previous_state_tag TEXT,
-            last_interaction DATETIME
+            last_interaction DATETIME,
+            stack_date TEXT
         );
         """
             )
