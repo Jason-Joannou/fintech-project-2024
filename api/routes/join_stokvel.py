@@ -2,7 +2,7 @@ from flask import Blueprint, Response, jsonify, redirect, render_template, reque
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.queries import find_user_by_number
-from database.stokvel_queries import get_all_stokvels, insert_stokvel_member, update_stokvel_members_count
+from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel
 
 from api.schemas.onboarding import JoinStokvelSchema
 
@@ -21,7 +21,7 @@ def join_stokvel() -> str:
 
     return render_template("stokvel_search.html", stokvel_list=stokvel_list)
 
-@join_stokvel_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
+@join_stokvel_bp.route(f"{BASE_ROUTE}/apply_to_join", methods=["POST"])
 def apply_to_join_stokvel() -> Response:
     """
     Handles onboarding of a new user.
@@ -47,15 +47,20 @@ def apply_to_join_stokvel() -> Response:
         #     stokvel_id=joiner_data.stokvel_id
         # )
 
-        print(user_id + " " + joiner_data.stokvel_name)
+        print("testing")
+
+        stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
+        stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
+
+        # print(str(stokvel_id) + " test " + stokvel_admin_number)
 
 
-        #Send a request to get the user set up with recurring grant
-        # set_up_recurring_payment()
+        insert_stokvel_join_application(stokvel_id=stokvel_id, user_id=user_id)
+
 
 
         # Prepare the notification message
-        notification_message = (
+        joiner_notification_message = (
             f"You have applied to join the {joiner_data.stokvel_name}.\n\n"
             f"Application has been sent to the admin.\n"
             # # f"ILP Wallet: ILP_TEST\n"
@@ -65,15 +70,30 @@ def apply_to_join_stokvel() -> Response:
             f"Thank you for applying to join!"
         )
 
+        admin_notification_message = (
+            f"A user has applied to join your stokvel: {joiner_data.stokvel_name}.\n\n"
+            f"Please authorize their application.\n"
+            # # f"ILP Wallet: ILP_TEST\n"
+            # # f"MOMO Wallet: MOMO_TEST\n"
+            # f"Total Members: {stokvel_data.total_members}\n"
+            # f"Minimum Contribution Amount: {stokvel_data.min_contributing_amount}\n\n"
+            f"Thank you!"
+        )
+
         # Send the notification message
         # send_notification_message(
         #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
+        # )
+
+        # Send the notification message
+        # send_notification_message(
+        #     to=f"whatsapp:{stokvel_admin_number}", body=notification_message
         # )
         return redirect(url_for("join_stokvel.success_stokvel_join_application"))
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("join_stokvel.failed_stokvel_join"))
+        return redirect(url_for("join_stokvel.failed_stokvel_join_application"))
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")

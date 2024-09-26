@@ -25,6 +25,41 @@ def get_next_unique_id(conn, table_name, id_column):
     # If no result exists (table is empty), return 1, otherwise increment the max id
     return (result[0] or 0) + 1
 
+def get_stokvel_id_by_name(stokvel_name):
+    """
+    docstring
+    """
+    print(stokvel_name)
+    query = "SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name"
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"stokvel_name": stokvel_name})
+        result = cursor.fetchone()[0]
+        print(result)
+        if result:
+            return result
+
+        return None
+    
+def get_admin_by_stokvel(stokvel_id):
+    """
+    docstring
+    """
+    print(stokvel_id)
+    query = f"""
+        SELECT 
+            u.user_number 
+        FROM 
+            USERS u 
+        WHERE 
+            u.user_id = (SELECT a.user_id FROM ADMIN a WHERE a.stokvel_id = :stokvel_id);
+    """
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"stokvel_id": stokvel_id})
+        result = cursor.fetchone()[0]
+        print(result)
+        if result:
+            return result
+        return None
 
 def insert_stokvel(
     stokvel_id: int,
@@ -176,7 +211,7 @@ def get_all_stokvels():
             cursor = conn.execute(text('SELECT * FROM stokvels;'))
             stokvels = cursor.fetchall()
 
-            print(stokvels)
+            # print(stokvels)
 
 
         stokvels_list = [
@@ -314,7 +349,7 @@ def insert_stokvel_join_application(
         AppStatus = "Application Submitted"
 
     insert_query = """
-        INSERT INTO STOKVEL_MEMBERS (
+        INSERT INTO APPLICATIONS (
             id, stokvel_id, user_id, AppStatus, AppDate
         ) VALUES (
             :id, :stokvel_id, :user_id, :AppStatus, :AppDate
@@ -332,8 +367,8 @@ def insert_stokvel_join_application(
     try:
         with sqlite_conn.connect() as conn:
             if stokvel_id is None:
-                stokvel_current_id = get_next_unique_id(conn, 'APPLICATIONS', 'id')
-                parameters['stokvel_id'] = stokvel_current_id
+                current_application_id = get_next_unique_id(conn, 'APPLICATIONS', 'id')
+                parameters['id'] = current_application_id
 
             print("Connected in application insert")
             result = conn.execute(text(insert_query), parameters)
@@ -346,7 +381,7 @@ def insert_stokvel_join_application(
             else:
                 print("Insert failed.")
             
-            return stokvel_current_id
+            # return current_application_id
         
     except sqlite3.Error as e:
         print(f"Error occurred during insert application: {e}")

@@ -38,6 +38,12 @@ class JoinStokvelSchema(BaseModel):
     """
     docstring
     """
-    cellphone_number: int = Field(..., example=1234567890)
+    requesting_number: int = Field(..., example=1234567890)
     stokvel_name: str = Field(..., example="John's Soccer Stokvel") #unique constraint here
     stokvel_id: int = Field(None, example=123)
+
+class UpdateUser(BaseModel):
+    """
+    docstring
+    """
+    
