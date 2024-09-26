@@ -1,4 +1,4 @@
-from typing import Collection, Dict, List, Optional, Tuple, Union, cast
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     check_if_unregistered_state_exists,
