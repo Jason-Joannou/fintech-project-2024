@@ -351,7 +351,7 @@ class MessageStateManager:
         self.current_state_tag = self.get_state_tags()
 
         # Initialize to an empty dictionary in case no state is found
-        retrieved_state: Union[Dict, Collection] = {}
+        retrieved_state = {}
 
         if self.current_state_tag is not None and ":" in self.current_state_tag:
             sub_state_split = self.current_state_tag.split(":")
