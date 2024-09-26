@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Collection, Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     check_if_unregistered_state_exists,
@@ -351,7 +351,7 @@ class MessageStateManager:
         self.current_state_tag = self.get_state_tags()
 
         # Initialize to an empty dictionary in case no state is found
-        retrieved_state: Dict = {}
+        retrieved_state: Union[Dict, Collection] = {}
 
         if self.current_state_tag is not None and ":" in self.current_state_tag:
             sub_state_split = self.current_state_tag.split(":")
@@ -390,13 +390,13 @@ class MessageStateManager:
         valid_type = self.current_state.get("valid_type")
         try:
             if valid_type == float:
-                user_input = float(user_input)
+                converted_input = float(user_input)
             elif valid_type == int:
-                user_input = int(user_input)
+                converted_input = int(user_input)
             elif valid_type == str:
-                user_input = str(user_input)
+                converted_input = str(user_input)
             else:
                 raise ValueError("Unsupported input type.")
-            return True, user_input
+            return True, converted_input
         except ValueError:
             return False, None
