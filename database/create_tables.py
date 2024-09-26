@@ -242,6 +242,28 @@ def create_state_management_table() -> None:
         )
 
 
+def create_otp_table() -> None:
+    """
+    docstring
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+        CREATE TABLE OTPS (
+        id INTEGER PRIMARY KEY,            -- Unique identifier for the OTP entry
+        user_number VARCHAR(15) NOT NULL, -- User's phone number
+        otp INT NOT NULL,                 -- Generated OTP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the OTP was created
+        expires_at TIMESTAMP NOT NULL,    -- When the OTP expires
+        is_verified BOOLEAN DEFAULT FALSE  -- Status of OTP verification
+    );
+        """
+            )
+        )
+
+
 if __name__ == "__main__":
     create_user_table_sqlite()
     create_resource_table_sqlite()
@@ -254,3 +276,4 @@ if __name__ == "__main__":
     create_stokvel_wallet_table_sqlite()
     create_applications_table_sqlite()
     create_state_management_table()
+    create_otp_table()
