@@ -79,9 +79,7 @@ class MessageStateManager:
         if not self.registration_status:
             self.registration_status = self.check_registration_status()
 
-    def processes_user_request(
-        self, user_action: Union[Optional[float], Optional[int], Optional[str]]
-    ) -> str:
+    def processes_user_request(self, user_action: str) -> str:
         """
         Processes the user's action based on their current state and registration status.
         Handles transitions between states, returns appropriate responses, and
@@ -136,7 +134,7 @@ class MessageStateManager:
             isinstance(self.current_state_tag, str)
             and "input_request" in self.current_state_tag
         ):
-            flag, user_action = self.handle_input_state_validation(
+            flag, user_input = self.handle_input_state_validation(
                 user_input=user_action
             )
             if not flag:
@@ -201,7 +199,7 @@ class MessageStateManager:
             endpoint = action_requests[endpoint_action]
             msg = self.execute_action_request(
                 endpoint=endpoint,
-                payload={"user_input": user_action, "user_number": self.user_number},
+                payload={"user_input": user_input, "user_number": self.user_number},
             )
             return self.return_twilio_formatted_message(msg=msg)
 
