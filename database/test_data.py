@@ -30,11 +30,11 @@ def create_test_data():
 
             test_user = {
                 'user_id': user_id,
-                'user_number': '+1234567',
+                'user_number': '+2345678',
                 'user_name': "John",
                 'user_surname': "Doe" ,
-                'ILP_wallet': "123ILP" ,
-                'MOMO_wallet': "123MOMO",
+                'ILP_wallet': "456ILP" ,
+                'MOMO_wallet': "456MOMO",
                 'verified_KYC': 1,
                 'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'updated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

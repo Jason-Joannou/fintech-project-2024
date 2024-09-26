@@ -12,6 +12,7 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
+
 def get_total_number_of_users() -> int:
     """
     docstrings
