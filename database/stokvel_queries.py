@@ -41,25 +41,11 @@ def insert_stokvel(
     payout_frequency_period: str,
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
-
-
 ) -> int:
     # Need to look at refactoring this
 
     """
     Inserts a new stokvel into the STOKVELS table AND returns the retrieved id of the stokvel
-
-    Args:
-        stokvel_id (int): The stokvel's ID.
-        stokvel_name (str): The stokvel's name. Unique constraint.
-        ILP_wallet (str): The stokvel's ILP wallet address.
-        MOMO_wallet (str): The stokvel's MOMO wallet address.
-        total_members (int): The total number of members in the stokvel.
-        min_contributing_amount (float): The minimum amount a member can contribute to the stokvel.
-        max_number_of_contributors (int): The maximum number of contributors to the stokvel.
-        Total_contributions (float): The total amount of contributions made to the stokvel.
-        created_at (Optional[str], optional): The time the stokvel was created. Defaults to None.
-        updated_at (Optional[str], optional): The time the stokvel was last updated. Defaults to None.
     """
 
     if created_at is None:
@@ -137,13 +123,6 @@ def insert_stokvel_member(
 
     """
     Inserts a new stokvel member into the STOKVEL_MEMBERS table.
-
-    Args:
-        stokvel_id (int): The unique ID of the stokvel.
-        user_id (int): The unique ID of the user.
-        created_at (str, optional): The timestamp when the user was created. Defaults to current time if not provided.
-        updated_at (str, optional): The timestamp when the user was last updated. Defaults to current time if not provided.
-
     Raises:
         Exception: If an error occurs during insert.
     """
@@ -197,6 +176,8 @@ def get_all_stokvels():
             cursor = conn.execute(text('SELECT * FROM stokvels;'))
             stokvels = cursor.fetchall()
 
+            print(stokvels)
+
 
         stokvels_list = [
             {
@@ -209,7 +190,11 @@ def get_all_stokvels():
                 'max_number_of_contributors': stokvel[6],
                 'total_contributions': stokvel[7],
                 'created_at': stokvel[8],
-                'updated_at': stokvel[9]
+                'updated_at': stokvel[9],
+                'start_date':stokvel[10],
+                'end_date':stokvel[11],
+                'payout_frequency_int':stokvel[12],
+                'payout_frequency_period':stokvel[13],
             } for stokvel in stokvels
         ]
 
@@ -278,3 +263,95 @@ def insert_admin(
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a admin: {e}")  # Stops execution by raising the error
+
+def update_stokvel_members_count(stokvel_id):
+    """
+    Updates the stokvel members count
+    """
+
+    count_query = "SELECT COUNT(*) FROM group_members WHERE stokvel_id = :stokvel_id;"
+    parameters = {
+        "stokvel_id": stokvel_id
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            print("Connected to the database for stokvel members update")
+            
+            cursor = conn.execute(text(count_query), parameters)
+            total_members = cursor.fetchone()[0]
+            
+            update_query = "UPDATE STOKVELS SET total_members = :total_members WHERE stokvel_id = :stokvel_id;"
+            
+            update_parameters = {
+                "stokvel_id": stokvel_id,
+                "total_members": total_members
+            }
+            
+            conn.execute(text(update_query), update_parameters)
+            conn.commit() 
+            
+            print(f"Updated total_members for stokvel_id {stokvel_id} to {total_members}")
+            
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+def insert_stokvel_join_application(
+    stokvel_id: int, #unique constraint here
+    user_id: int,
+    AppStatus: Optional[str] = None,
+    AppDate: Optional[str] = None,
+):
+    """
+    docstring
+    """
+
+    if AppDate is None:
+        AppDate = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if AppStatus is None:
+        AppStatus = "Application Submitted"
+
+    insert_query = """
+        INSERT INTO STOKVEL_MEMBERS (
+            id, stokvel_id, user_id, AppStatus, AppDate
+        ) VALUES (
+            :id, :stokvel_id, :user_id, :AppStatus, :AppDate
+        )
+        """
+    
+    parameters = {
+        "id" : None,
+        "stokvel_id": stokvel_id,
+        "user_id": user_id,
+        "AppStatus": AppStatus,
+        "AppDate": AppDate
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            if stokvel_id is None:
+                stokvel_current_id = get_next_unique_id(conn, 'APPLICATIONS', 'id')
+                parameters['stokvel_id'] = stokvel_current_id
+
+            print("Connected in application insert")
+            result = conn.execute(text(insert_query), parameters)
+            conn.commit()
+
+            if result.rowcount > 0:
+                print(f"Insert successful, {result.rowcount} row(s) affected.")
+                print('insert application successful')
+
+            else:
+                print("Insert failed.")
+            
+            return stokvel_current_id
+        
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert application: {e}")
+        raise Exception(f"SQLiteError occurred during inserting a application: {e}")  # Stops execution by raising the error
+
+    except Exception as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"Exception occurred during inserting a application: {e}")  # Stops execution by raising the error

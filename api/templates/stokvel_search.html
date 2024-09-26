@@ -22,7 +22,7 @@
             margin: auto;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"], input[type="tel"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -88,8 +88,6 @@
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <label for="requesting_number">Requesting Number:</label>
-        <input type="tel" id="requesting_number" name="requesting_number" required>
 
         <h1>Search or View All Stokvels</h1>
         <!-- <form action="{{ url_for('onboarding.onboard_user') }}" method="POST"> -->
@@ -103,54 +101,19 @@
         <br>
 
         <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
-
-        <!-- Stokvels will be dynamically generated here -->
+        <!-- <p>{{stokvel_list | tojson}}</p> -->
+        
         <div id="stokvelList">
-            <!-- Dynamic stokvel containers will be inserted here -->
         </div>
     </div>
 
     <script>
-        // Dummy stokvel data stored in an array
 
         const stokvelsData = document.getElementById('stokvels_data').innerText;
         const stokvels = JSON.parse(stokvelsData);
+        const joinStokvelUrl = "{{ url_for('join_stokvel.apply_to_join_stokvel') }}";
 
-        // const stokvels = [
-        //     {
-        //         name: "Helping Hands",
-        //         admin: "Thabo Mokoena",
-        //         contribution: "R200 per month",
-        //         members: 15,
-        //         maxMembers: 20,
-        //         payoutFrequency: "Monthly",
-        //         joiningFee: "R50",
-        //         benefits: "Short-term loans and grocery savings",
-        //         isFull: false
-        //     },
-        //     {
-        //         name: "Family Fund",
-        //         admin: "Zanele Khumalo",
-        //         contribution: "R300 per month",
-        //         members: 25,
-        //         maxMembers: 25,
-        //         payoutFrequency: "Quarterly",
-        //         joiningFee: "R100",
-        //         benefits: "Large asset purchases",
-        //         isFull: true
-        //     },
-        //     {
-        //         name: "Future Savers",
-        //         admin: "Lerato Dlamini",
-        //         contribution: "R150 per month",
-        //         members: 10,
-        //         maxMembers: 15,
-        //         payoutFrequency: "Annually",
-        //         joiningFee: "R25",
-        //         benefits: "Educational funds",
-        //         isFull: false
-        //     }
-        // ];
+
 
         // Function to search and display stokvels
         function searchStokvel() {
@@ -159,7 +122,7 @@
             stokvelList.innerHTML = ''; // Clear previous results
 
             stokvels.forEach(stokvel => {
-                if (stokvel.name.toLowerCase().includes(searchQuery)) {
+                if (stokvel.stokvel_name.toLowerCase().includes(searchQuery)) {
                     generateStokvelContainer(stokvel);
                 }
             });
@@ -182,11 +145,7 @@
                 stokvelList.innerHTML = '<p>No stokvels available.</p>';
             }
         }
-
-        // Function to generate stokvel container
-
         // stokvel_id': 1, '': 'Test1', 'ILP_wallet': 'ILP_TEST', 'MOMO_wallet': 'MOMO_TEST', 'total_members': None, 'min_contributing_amount': 500, 'max_number_of_contributors': 5, 'total_contributions': 0, 'created_at': '2024-09-22 23:04:40', 'updated_at': '2024-09-22 23:04:40'},
-
         function generateStokvelContainer(stokvel) {
             const stokvelList = document.getElementById('stokvelList');
             const container = document.createElement('div');
@@ -197,17 +156,39 @@
                 <div class="stokvel-details">
                     <strong>Stokvel Name:</strong> ${stokvel.stokvel_name}<br>
                     <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
-                    <strong>Contribution:</strong> ${stokvel.min_contributing_amount}
                 </div>
+                
                 <div class="buttons">
                     <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}')">
-                    ${stokvel.isFull ? '<input type="button" value="Stokvel Full" disabled style="background-color: grey; color: white; cursor: not-allowed;">':
-                     '<input type="button" value="Apply to Join" onclick="applyToJoin(\'' + stokvel.stokvel_name + '\')">'}
                 </div>
-                <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
-                    <strong>Max Members:</strong> ${stokvel.max_number_of_contributors}<br>
+                
+                <br>
 
-                </div>
+                <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
+                    <strong>Minimum Contribution: R</strong> ${stokvel.min_contributing_amount}<br>
+                    <strong>Max Members:</strong> ${stokvel.max_number_of_contributors}<br>
+                    <strong>Stokvel start date:</strong> ${stokvel.start_date}<br>
+                    <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
+                    <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
+
+                    <br>
+
+
+
+                    <form action="${joinStokvelUrl}" method="POST">
+                        <label for="requesting_number_${stokvel.stokvel_name}">Cellphone Number:</label>
+                        <input type="tel" id="requesting_number_${stokvel.stokvel_name}" name="requesting_number" required>
+
+                        <!-- Hidden field for selected stokvel -->
+                        <input type="hidden" name="selected_stokvel" value="${stokvel.stokvel_name}">
+                        
+                        ${stokvel.isFull 
+                        ? '<input type="button" value="Stokvel Full" disabled style="background-color: grey; color: white; cursor: not-allowed;">' 
+                        : '<input type="button" value="Agree and Apply to Join">'}
+                    
+                    </form>
+                
+                     </div>
             `;
 
             stokvelList.appendChild(container);
