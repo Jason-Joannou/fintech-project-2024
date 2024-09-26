@@ -35,3 +35,12 @@ class StateSchema(BaseModel):
         {}, examples={"1": "/stokvels/total_stokvels"}
     )
     state_selection: Optional[Dict] = Field({}, examples={"1": "community_services"})
+    input_request_states: Optional[Dict[str, Dict]] = Field(
+        {},
+        examples={
+            "1": {
+                "tag": "fund_wallet_input_state",
+                "message": "Please enter the amount you want to fund",
+            }
+        },
+    )
