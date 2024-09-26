@@ -359,13 +359,13 @@ class MessageStateManager:
 
             # Traverse through each sub-state to reach the most nested one
             for state_tag in sub_state_split:
-                retrieved_state = inital_state.get(state_tag, {})
+                retrieved_state = inital_state.get(state_tag, {})  # type: ignore
                 if not retrieved_state:
                     break  # Exit if a sub-state doesn't exist
                 inital_state = retrieved_state  # Move deeper into the state
         else:
             # Handle the case where there are no sub-states
-            retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})
+            retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})  # type: ignore
 
         # Set the current state based on whether the retrieval was successful
         self.current_state = (
@@ -394,7 +394,7 @@ class MessageStateManager:
             elif valid_type == int:
                 converted_input = int(user_input)
             elif valid_type == str:
-                converted_input = str(user_input)
+                converted_input = str(user_input)  # type: ignore
             else:
                 raise ValueError("Unsupported input type.")
             return True, converted_input
