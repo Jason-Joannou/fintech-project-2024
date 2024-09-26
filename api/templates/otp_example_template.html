@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Optional: Add some basic styling */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 2px 2px 12px #aaa;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Example OTP</h1>
+
+        <!-- Phone Number Input -->
+        <form id="otp-form" method="POST" action="{{ url_for('otp.send_otp') }}">
+            <label for="user_number">Phone Number:</label>
+            <input type="text" id="user_number" name="user_number" required>
+            <input type="submit" value="Send OTP">
+        </form>
+
+        <!-- OTP Input -->
+        <form id="verify-otp-form" class="hidden" method="POST" action="{{ url_for('otp.verify_otp_endpoint') }}">
+            <label for="user_otp">OTP:</label>
+            <input type="text" id="user_otp" name="user_otp" required>
+            <input type="submit" value="Verify OTP">
+        </form>
+
+        <!-- Onboarding Input Fields -->
+        <form id="onboarding-form" class="hidden" action="{{ url_for('onboarding.onboard_user') }}">
+            <label for="surname">Last Name:</label>
+            <input type="text" id="surname" name="surname" required>
+
+            <label for="cellphone_number">Cellphone Number:</label>
+            <input type="tel" id="cellphone_number" name="cellphone_number" required>
+
+            <label for="id_number">ID Number:</label>
+            <input type="number" maxlength="13" id="id_number" name="id_number" required>
+
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle the OTP form submission
+            $('#otp-form').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+                const phoneNumber = $('#user_number').val();
+
+                $.post('/otp/send_otp', { user_number: phoneNumber }, function(response) {
+                    if (response.status === 'otp_sent') {
+                        $('#otp-form').hide(); // Hide the phone number form
+                        $('#verify-otp-form').removeClass('hidden').show(); // Show OTP form
+                    } else if (response.status == 'otp_pending'){
+                        $('#otp-form').hide(); // Hide the phone number form
+                        $('#verify-otp-form').removeClass('hidden').show();
+                    }
+                    else {
+                        alert("Something went wrong, please try again.")
+                    }
+                });
+            });
+
+            // Handle the OTP verification form submission
+            $('#verify-otp-form').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+                const otp = $('#user_otp').val();
+
+                $.post('/otp/verify_otp', { user_number: $('#user_number').val(), user_otp: otp }, function(response) {
+                    if (response.status === 'otp_verified') {
+                        $('#verify-otp-form').hide(); // Hide the OTP form
+                        $('#onboarding-form').removeClass('hidden').show(); // Show onboarding form
+                    } else if (response.status === 'otp_expired') {
+                        alert('The OTP has expired, please request a new OTP');
+                    }
+                    else{
+                        alert("Invalid OTP, please try again.")
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
