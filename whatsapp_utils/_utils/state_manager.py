@@ -79,7 +79,9 @@ class MessageStateManager:
         if not self.registration_status:
             self.registration_status = self.check_registration_status()
 
-    def processes_user_request(self, user_action: str) -> str:
+    def processes_user_request(
+        self, user_action: Union[Optional[float], Optional[int], Optional[str]]
+    ) -> str:
         """
         Processes the user's action based on their current state and registration status.
         Handles transitions between states, returns appropriate responses, and
