@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Collection, Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     check_if_unregistered_state_exists,
@@ -351,7 +351,7 @@ class MessageStateManager:
         self.current_state_tag = self.get_state_tags()
 
         # Initialize to an empty dictionary in case no state is found
-        retrieved_state = {}
+        retrieved_state = {}  # type: ignore
 
         if self.current_state_tag is not None and ":" in self.current_state_tag:
             sub_state_split = self.current_state_tag.split(":")
