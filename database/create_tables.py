@@ -72,8 +72,6 @@ def create_user_table_sqlite() -> None:
                 MOMO_wallet TEXT,
                 verified_KYC INTEGER,
                 created_at TIMESTAMP,
-                updated_at TIMESTAMP
-                created_at TIMESTAMP, 
                 updated_at TIMESTAMP,
                 UNIQUE (user_id)  -- Ensure user_id is unique
             );

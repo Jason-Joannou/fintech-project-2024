@@ -8,6 +8,42 @@ from .sqlite_connection import SQLiteConnection
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
+def get_linked_stokvels(user_number):
+    """
+    Get the stokvels a user is linked to, and check if they are an admin.
+    """
+    query = """
+    SELECT 
+        a.stokvel_name,
+        CASE 
+            WHEN b.user_id IN (
+                SELECT user_id 
+                FROM USERS 
+                WHERE user_number = :user_number
+            ) 
+            THEN 1 
+            ELSE 0 
+        END AS admin_ind
+    FROM STOKVELS as a
+    LEFT JOIN ADMIN as b ON a.stokvel_id = b.stokvel_id
+    WHERE a.stokvel_id IN (
+        SELECT stokvel_id 
+        FROM STOKVEL_MEMBERS 
+        WHERE user_id IN (
+            SELECT user_id FROM USERS WHERE user_number = :user_number
+        )
+    );
+    """
+    
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"user_number": user_number})
+        result = cursor.fetchall()
+    
+    # Process the results into a list of (stokvel_name, admin_ind)
+    linked_accounts = [(row[0], row[1]) for row in result]
+    
+    return linked_accounts
+
 def get_next_unique_id(conn, table_name, id_column):
     """
     Get the next unique id for the given table and id column.
@@ -175,4 +211,5 @@ def check_if_number_exists_sqlite(from_number):
 
 if __name__ == "__main__":
     #create_user('+1234567', 'John', 'Doe')
-    create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
+    #create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
+    print(create_stokvel_state('+1234567'))
