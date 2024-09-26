@@ -93,9 +93,12 @@ def create_user_table_sqlite() -> None:
                 verified_KYC INTEGER,
 <<<<<<< HEAD
                 created_at TIMESTAMP,
+<<<<<<< HEAD
 =======
                 created_at TIMESTAMP, 
 >>>>>>> fa44206 (Created test data. in the test_data.py script.)
+=======
+>>>>>>> 9b015a5 (Changes to message config and data queries)
                 updated_at TIMESTAMP,
                 UNIQUE (user_id)  -- Ensure user_id is unique
             );
