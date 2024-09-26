@@ -1,7 +1,8 @@
-from flask import Blueprint
+from flask import Blueprint, request
 
 from database.sqlite_connection import SQLiteConnection
 from database.user_queries.queries import get_total_number_of_users
+from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
 users_bp = Blueprint("users", __name__)
@@ -29,4 +30,24 @@ def get_all_users() -> str:
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_all_users.__name__}: {e}")
+        return msg
+
+
+@users_bp.route(f"{BASE_ROUTE}/fund_wallet", methods=["POST"])
+def example_fund_wallet() -> str:
+    """
+    This is an example endpoint on how we would manage post requests from the state manager.
+    """
+    try:
+        user_number = request.json.get("user_number")
+        send_notification_message(
+            to=user_number,
+            body="Thank you, we are currently processing your request...",
+        )
+        ammount = request.json.get("user_input")
+        msg = f"Your wallet has been funded with R{ammount}."
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {example_fund_wallet.__name__}: {e}")
         return msg

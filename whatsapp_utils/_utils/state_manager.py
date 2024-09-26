@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
+    check_if_unregistered_state_exists,
     get_state_responses,
     pop_previous_state,
     update_current_state,
@@ -112,6 +113,8 @@ class MessageStateManager:
 
         # Unrecognized state will remain in the state manager when a user registers for the first time
         # But will not be part of the state when the user interacts after some time
+        check_if_unregistered_state_exists(from_number=self.user_number)
+        self.update_local_states()
         if user_action in self.base_greetings:
             if self.check_admin_status():
                 self.set_current_state(tag="registered_number_admin")
@@ -120,14 +123,30 @@ class MessageStateManager:
             return self.get_current_state_message()
 
         # Check if action is valid for the current state
-        if user_action not in self.get_current_state_valid_actions():
+        if (
+            self.current_state_tag is not None
+            and "input_request" not in self.current_state_tag
+            and user_action not in self.get_current_state_valid_actions()
+        ):
             return self.get_unrecognized_state_response()
+
+        # Validation for input state
+        if (
+            isinstance(self.current_state_tag, str)
+            and "input_request" in self.current_state_tag
+        ):
+            flag, user_input = self.handle_input_state_validation(
+                user_input=user_action
+            )
+            if not flag:
+                # If false we want execution to stop, if true we want execution to carry on
+                msg = self.current_state["invalid_message"]
+                self.set_previous_state()  # Need to move back to state before
+                return self.return_twilio_formatted_message(msg=msg)
 
         # Check if we need to transfer state
         # Back is also a transerable state
-        if (
-            self.get_current_state_state_selections() is not None
-        ):  # We have to transfer state
+        if self.get_current_state_state_selections():  # We have to transfer state
 
             # Check if selection is a back state selection
             if user_action in self.current_state["state_selection"].keys():
@@ -149,20 +168,41 @@ class MessageStateManager:
 
         # If not transferable state check if it is an action response
 
-        if self.get_current_state_action_responses() is not None:
+        if self.get_current_state_action_responses():
             action_responses = self.get_current_state_action_responses()
             if user_action in list(action_responses.keys()):
                 msg = action_responses[user_action]
                 return self.return_twilio_formatted_message(msg=msg)
 
         # If not action reponse, check if action request
-
-        if self.get_current_state_action_requests() is not None:
+        if self.get_current_state_action_requests():
             action_requests = self.get_current_state_action_requests()
             if user_action in list(action_requests.keys()):
+                # Need to check if the action request has an input_state
+                input_action_states = self.get_current_state_input_action_states()
+                if user_action in list(input_action_states.keys()):
+                    input_action_states = input_action_states[user_action]
+                    self.set_current_state(tag=input_action_states["tag"])
+                    msg = input_action_states["message"]
+                    return self.return_twilio_formatted_message(msg=msg)
+
                 endpoint = action_requests[user_action]
                 msg = self.execute_action_request(endpoint=endpoint)
                 return self.return_twilio_formatted_message(msg=msg)
+
+        if (
+            isinstance(self.current_state_tag, str)
+            and "input_request" in self.current_state_tag
+        ):
+            endpoint_action = self.current_state["action"]
+            self.set_previous_state()
+            action_requests = self.get_current_state_action_requests()
+            endpoint = action_requests[endpoint_action]
+            msg = self.execute_action_request(
+                endpoint=endpoint,
+                payload={"user_input": user_input, "user_number": self.user_number},
+            )
+            return self.return_twilio_formatted_message(msg=msg)
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None
@@ -263,6 +303,15 @@ class MessageStateManager:
         """
         return self.current_state.get("action_requests", {})
 
+    def get_current_state_input_action_states(self) -> Optional[Dict]:
+        """
+        Retrieves the input action states for the current state.
+
+        Returns:
+        Optional[Dict]: A dictionary mapping actions to input states for the current state.
+        """
+        return self.current_state.get("input_request_states", {})
+
     def get_current_state_state_selections(self) -> Optional[Dict]:
         """
         Retrieves the state selections for the current state, allowing the user
@@ -297,10 +346,57 @@ class MessageStateManager:
     def update_local_states(self) -> None:
         """
         Updates the local current and previous state attributes by retrieving
-        the state tags from the database.
+        the state tags from the database and navigating to the most nested sub-state.
         """
         self.current_state_tag = self.get_state_tags()
-        retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})
+
+        # Initialize to an empty dictionary in case no state is found
+        retrieved_state = {}  # type: ignore
+
+        if self.current_state_tag is not None and ":" in self.current_state_tag:
+            sub_state_split = self.current_state_tag.split(":")
+            inital_state = MESSAGE_STATES  # Start with the base state dictionary
+
+            # Traverse through each sub-state to reach the most nested one
+            for state_tag in sub_state_split:
+                retrieved_state = inital_state.get(state_tag, {})  # type: ignore
+                if not retrieved_state:
+                    break  # Exit if a sub-state doesn't exist
+                inital_state = retrieved_state  # Move deeper into the state
+        else:
+            # Handle the case where there are no sub-states
+            retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})  # type: ignore
+
+        # Set the current state based on whether the retrieval was successful
         self.current_state = (
             cast(StateSchema, retrieved_state) if retrieved_state else {}
         )
+
+    def handle_input_state_validation(
+        self, user_input: str
+    ) -> Tuple[bool, Union[Optional[float], Optional[int], Optional[str]]]:
+        """
+        Validates the user input based on the current state's valid_type.
+
+        Args:
+            user_input (str): The input provided by the user.
+
+        Returns:
+            Tuple[bool, Union[Optional[float], Optional[int], Optional[str]]]:
+            A tuple where the first element is a boolean indicating if the input is valid,
+            and the second element is the validated input converted to the appropriate type,
+            or None if the validation fails.
+        """
+        valid_type = self.current_state.get("valid_type")
+        try:
+            if valid_type == float:
+                converted_input = float(user_input)
+            elif valid_type == int:
+                converted_input = int(user_input)
+            elif valid_type == str:
+                converted_input = str(user_input)  # type: ignore
+            else:
+                raise ValueError("Unsupported input type.")
+            return True, converted_input
+        except ValueError:
+            return False, None
