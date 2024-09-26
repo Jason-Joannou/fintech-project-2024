@@ -130,7 +130,10 @@ class MessageStateManager:
             return self.get_unrecognized_state_response()
 
         # Validation for input state
-        if "input_request" in self.current_state_tag:
+        if (
+            isinstance(self.current_state_tag, str)
+            and "input_request" in self.current_state_tag
+        ):
             flag, user_action = self.handle_input_state_validation(
                 user_input=user_action
             )
@@ -186,7 +189,10 @@ class MessageStateManager:
                 msg = self.execute_action_request(endpoint=endpoint)
                 return self.return_twilio_formatted_message(msg=msg)
 
-        if "input_request" in self.current_state_tag:
+        if (
+            isinstance(self.current_state_tag, str)
+            and "input_request" in self.current_state_tag
+        ):
             endpoint_action = self.current_state["action"]
             self.set_previous_state()
             action_requests = self.get_current_state_action_requests()
@@ -344,7 +350,7 @@ class MessageStateManager:
         self.current_state_tag = self.get_state_tags()
 
         # Initialize to an empty dictionary in case no state is found
-        retrieved_state = {}
+        retrieved_state: Dict = {}
 
         if self.current_state_tag is not None and ":" in self.current_state_tag:
             sub_state_split = self.current_state_tag.split(":")
