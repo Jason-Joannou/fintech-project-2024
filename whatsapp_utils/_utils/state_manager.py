@@ -124,7 +124,8 @@ class MessageStateManager:
 
         # Check if action is valid for the current state
         if (
-            "input_request" not in self.current_state_tag
+            self.current_state_tag is not None
+            and "input_request" not in self.current_state_tag
             and user_action not in self.get_current_state_valid_actions()
         ):
             return self.get_unrecognized_state_response()
