@@ -80,17 +80,28 @@ COMMUNITY_SERVICES = {
     3. Total Number of Contributions
     4. Total Number of Members grouped by Stokvel
     5. Total Contributions grouped by Stokvel
-    6. Back
+    6. Fund wallet
+    7. Back
     """,
-    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    "valid_actions": ["1", "2", "3", "4", "5", "6", "7"],
     "action_requests": {  # Maybe we specify the endpoint per action
         "1": "/stokvels/total_stokvels",  # We need to specify the type of endpoint, ie endpoing:Method(post)
         "2": "/users/total_users",
         "3": "/accounting/total_contributions",
         "4": "/users/users_by_stokvel",
         "5": "/accounting/contributions_by_stokvel",
+        "6": "/users/fund_wallet",
     },
-    "state_selection": {"6": "back_state"},
+    "state_selection": {"7": "back_state"},
+    "input_request_states": {
+        "6": {
+            "tag": "community_services:input_request_states:6",
+            "message": "Please specify the amount you would like to fund your wallet in Rands.",
+            "valid_type": float,
+            "invalid_message": "Please make sure the amount is numeric and greater than 0. Returning you to the previous menu.",
+            "action": "6",
+        }
+    },
     "state": 1,
 }
 
