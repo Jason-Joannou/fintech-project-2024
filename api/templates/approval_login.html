@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Approvals</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+
+        input[type="tel"] {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="url"] {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="number"] {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #45a095;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a095;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .header{
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #cfcfd0; /* Light grey background */
+            padding: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+
+        <div class="header">
+            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
+
+        <h1>Application Approvals</h1>
+        <form action="{{ url_for('approve_stokvel.approve_stokvels') }}" method="POST">
+            <label for="requesting_number">Cellphone Number:</label>
+            <input type="tel" id="requesting_number" name="requesting_number" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+
+</html>
+

@@ -61,6 +61,69 @@ def get_admin_by_stokvel(stokvel_id):
             return result
         return None
 
+# def get_all_applications(user_id):
+#     query = "SELECT * FROM APPLICATIONS where user_id = :user_id"
+#     applicant_data_query = "select user_number, user_name, user_surname from USERS where user_id = :user_id"
+    
+#     with sqlite_conn.connect() as conn:
+#         cursor = conn.execute(text(query), {"user_id": user_id})
+#         result = cursor.fetchall()
+
+#         applicant_cursor = conn.execute(text(applicant_data_query), {"user_id": user_id})
+#         applicant_result = applicant_cursor.fetchone()  # Assuming one user with one ID
+
+#         applications = [
+#             {
+#                 'id':i[0],
+#                 'stokvel_id': i[1],
+#                 'user_id': i[2],
+#                 'AppStatus': i[3],
+#                 'AppDate': i[4],
+#                 'user_number': applicant_result[0],
+#                 'user_name': applicant_result[1],
+#                 'user_surname': applicant_result[2]
+#             } for i in result
+#         ]
+#         return applications
+
+def get_all_applications(user_id):
+    query = """
+    SELECT 
+        a.id, 
+        a.stokvel_id, 
+        a.user_id, 
+        a.AppStatus, 
+        a.AppDate, 
+        u.user_number, 
+        u.user_name, 
+        u.user_surname, 
+        s.stokvel_name
+    FROM APPLICATIONS a
+    JOIN USERS u ON a.user_id = u.user_id
+    JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
+    WHERE a.user_id = :user_id and a.AppStatus = 'Application Submitted'
+    """
+    
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"user_id": user_id})
+        result = cursor.fetchall()
+        
+        applications = [
+            {
+                'id': i[0],
+                'stokvel_id': i[1],
+                'user_id': i[2],
+                'AppStatus': i[3],
+                'AppDate': i[4],
+                'user_number': i[5],
+                'user_name': i[6],
+                'user_surname': i[7],
+                'stokvel_name': i[8]
+            } for i in result
+        ]
+        
+        return applications
+
 def insert_stokvel(
     stokvel_id: int,
     stokvel_name: str, #unique constraint here
@@ -390,3 +453,45 @@ def insert_stokvel_join_application(
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a application: {e}")  # Stops execution by raising the error
+
+def update_application_status(
+        id:int,
+        AppStatus: str
+):
+    update_query = """
+        UPDATE APPLICATIONS
+        SET 
+            AppStatus = :AppStatus
+        WHERE 
+            id = :id
+    """
+
+    parameters = {
+        "id" : id,
+        "AppStatus": AppStatus,
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            print("Connected in application update")
+            result = conn.execute(text(update_query), parameters)
+            conn.commit()
+
+            if result.rowcount > 0:
+                print(f"Insert successful, {result.rowcount} row(s) affected.")
+                print('insert application successful')
+
+            else:
+                print("Insert failed.")
+        
+        # return current_application_id
+    
+    except sqlite3.Error as e:
+        print(f"Error occurred during insert application: {e}")
+        raise Exception(f"SQLiteError occurred during inserting a application: {e}")  # Stops execution by raising the error
+
+    except Exception as e:
+        print(f"Error occurred during insert: {e}")
+        raise Exception(f"Exception occurred during inserting a application: {e}")  # Stops execution by raising the error
+
+
