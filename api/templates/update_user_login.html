@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Approvals</title>
+    <title>Update User Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -102,32 +102,13 @@
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <h1>Application Approvals:</h1>
-            <!-- <p>{{ applications }}</p> -->
-            {% for app in applications %}
-            <form method="POST" action="{{ url_for('approve_stokvel.process_application') }}">
-            <div class="application">
-                <h3>Stokvel: {{app.stokvel_name}}</h3>
-                <strong>Application ID: {{ app.id }}</strong>
-                <br>
-                <strong>Application Status: {{ app.AppStatus }}</strong>
-                <br>
-                <strong>Applicant Name: {{ app.user_name }} {{ app.user_surname }}</strong> 
-                <br>
-                <strong> Applicant Number: {{ app.user_number }}</strong>
-                
-                <input type="hidden" name="application_id" value="{{ app.id }}">
-                <input type="hidden" name="requesting_number" value="{{ requesting_number }}">
-                <input type="hidden" name="user_id" value="{{app.user_id }}">
-                <input type="hidden" name="stokvel_id" value="{{ app.stokvel_id }}">
-                <input type="hidden" name="admin_id" value="{{ admin_id }}">
-
-                <br>
-                <button type="submit" name="action" value="approve">Approve</button>
-                <button type="submit" name="action" value="decline">Decline</button>
-            </div>
+        <h1>Update User Details</h1>
+        <form action="{{ url_for('update_user_details.update_user_details') }}" method="POST">
+            <label for="requesting_number">Cellphone Number:</label>
+            <input type="tel" id="requesting_number" name="requesting_number" required>
+            <br>
+            <input type="submit" value="Submit">
         </form>
-        {% endfor %}
     </div>
 </body>
 

@@ -101,33 +101,32 @@
 
 <div class="update-container">
     <h1>Update User Details</h1>
-    <form id="userForm">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" placeholder="Enter your name">
+    <form action="{{ url_for('update_user_details.update_user_details') }}" method="POST" >
+        <label for="name">Name:</label>
+        <input type="text" id="user_name" name="user_name" placeholder="Enter your name">
 
-        <label for="surname">Surname</label>
-        <input type="text" id="surname" name="surname" placeholder="Enter your surname">
+        <label for="surname">Surname:</label>
+        <input type="text" id="user_surname" name="user_surname" placeholder="Enter your surname">
 
-        <label for="username">Username</label>
+        <label for="username">Username:</label>
         <input type="text" id="username" name="username" placeholder="Enter your username">
 
-        <label for="idNumber">ID Number</label>
-        <input type="text" id="idNumber" name="idNumber" placeholder="Enter your ID number">
+        <label for="idNumber">ID Number:</label>
+        <input type="text" id="user_id" name="user_id" placeholder="Enter your ID number">
 
-        <div id="documentContainer">
+        <!-- <div id="documentContainer">
             <label for="document">Upload Document</label>
             <div class="document-field">
                 <input type="file" id="document" name="document[]">
             </div>
         </div>
 
-        <button type="button" class="add-button" onclick="addDocument()">Add Document</button>
-
+        <button type="button" class="add-button" onclick="addDocument()">Add Document</button> -->
         <input type="submit" value="Update Details">
     </form>
 </div>
 
-<script>
+<!-- <script>
     function addDocument() {
         const documentContainer = document.getElementById('documentContainer');
 
@@ -156,7 +155,7 @@
         // Append the div to the document container
         documentContainer.appendChild(documentField);
     }
-</script>
+</script> -->
 
 </body>
 

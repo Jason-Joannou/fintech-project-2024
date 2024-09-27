@@ -8,7 +8,7 @@ class UpdateUserSchema(BaseModel):
     """
     name: Optional[str] = Field(None, example="John")
     surname: Optional[str] = Field(None, example="Doe")
-    cellphone_number: Optional[str] = Field(None, example="1234567890")
+    cellphone_number: str = Field(None, example="1234567890")
     id_number: Optional[str] = Field(None, example="ID123456")
     wallet_id: Optional[str] = Field("TestWallet", example="WalletABC")
 
@@ -30,6 +30,6 @@ class UpdateStokvelSchema(BaseModel):
     payout_frequency_period: Optional[str] = Field(None, example="day")
     created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
-    requesting_number: Optional[int] = Field(None, example=1)
+    requesting_number: str = Field(None, example="123456")
 
     
