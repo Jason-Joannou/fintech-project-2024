@@ -88,20 +88,22 @@ def get_admin_by_stokvel(stokvel_id):
 
 def get_all_applications(user_id):
     query = """
-    SELECT 
-        a.id, 
-        a.stokvel_id, 
-        a.user_id, 
-        a.AppStatus, 
-        a.AppDate, 
-        u.user_number, 
-        u.user_name, 
-        u.user_surname, 
-        s.stokvel_name
-    FROM APPLICATIONS a
-    JOIN USERS u ON a.user_id = u.user_id
-    JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
-    WHERE a.user_id = :user_id and a.AppStatus = 'Application Submitted'
+        SELECT 
+            a.id, 
+            a.stokvel_id, 
+            a.user_id, 
+            a.AppStatus, 
+            a.AppDate, 
+            u.user_number, 
+            u.user_name, 
+            u.user_surname, 
+            s.stokvel_name
+        FROM APPLICATIONS a
+        JOIN USERS u ON a.user_id = u.user_id
+        JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
+        JOIN ADMIN ad ON s.stokvel_id = ad.stokvel_id  -- Join ADMIN to check admin link
+        WHERE ad.user_id = :user_id          -- Check if requesting number is an admin
+        AND a.AppStatus = 'Application Submitted'    -- Application status filter
     """
     
     with sqlite_conn.connect() as conn:
@@ -367,7 +369,7 @@ def update_stokvel_members_count(stokvel_id):
     Updates the stokvel members count
     """
 
-    count_query = "SELECT COUNT(*) FROM group_members WHERE stokvel_id = :stokvel_id;"
+    count_query = "SELECT COUNT(*) FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id;"
     parameters = {
         "stokvel_id": stokvel_id
     }

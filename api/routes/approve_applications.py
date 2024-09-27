@@ -2,7 +2,7 @@ from flask import Blueprint, Response, jsonify, redirect, render_template, reque
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.queries import find_user_by_number
-from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel, get_all_applications, update_application_status
+from database.stokvel_queries import get_all_applications, update_application_status, insert_stokvel_member, update_stokvel_members_count
 
 # from api.schemas.onboarding import JoinStokvelSchema
 
@@ -43,16 +43,34 @@ def approve_stokvels() -> Response:
 @approve_stokvel_bp.route(f"{BASE_ROUTE}/process_applications", methods=["POST"])
 def process_application():
     application_id = request.form.get('application_id')
+    application_stokvel_id = request.form.get('stokvel_id')
+    print('stokvelid - ', application_stokvel_id)
+    application_joiner_id = request.form.get('user_id')
+    print('stokvelid - ', application_joiner_id)
     action = request.form.get('action')
 
+
     if action == 'approve':
-        # Logic to approve the application
         print(application_id, ' Approved')
         update_application_status(application_id, 'Approved')
+
+        insert_stokvel_member(
+            application_stokvel_id,
+            application_joiner_id
+        )
+
+        update_stokvel_members_count(
+            application_stokvel_id
+        )
+        
+        #send approved message to user
+
     elif action == 'decline':
         # Logic to decline the application
         print(application_id, ' Declined')
         update_application_status(application_id, 'Declined')
+
+        #send declined message to user
 
 
     

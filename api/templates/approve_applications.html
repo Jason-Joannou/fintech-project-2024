@@ -118,9 +118,9 @@
                 
                 <input type="hidden" name="application_id" value="{{ app.id }}">
                 <input type="hidden" name="requesting_number" value="{{ requesting_number }}">
-                <input type="hidden" name="user_id" value="{{ user_id }}">
-               
-                
+                <input type="hidden" name="user_id" value="{{app.user_id }}">
+                <input type="hidden" name="stokvel_id" value="{{ app.stokvel_id }}">
+
                 <br>
                 <button type="submit" name="action" value="approve">Approve</button>
                 <button type="submit" name="action" value="decline">Decline</button>
@@ -130,7 +130,7 @@
     </div>
 
 
-    <script>
+    <!-- <script>
         // Function to handle button clicks
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', function(event) {
@@ -158,7 +158,7 @@
                 .catch(error => console.error('Error:', error));
             });
         });
-    </script>
+    </script> -->
 
 
 </body>
