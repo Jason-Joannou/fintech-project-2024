@@ -55,12 +55,12 @@ def onboard_stokvel() -> Response:
         print(stokvel_data.requesting_number)
 
         user_id = find_user_by_number(stokvel_data.requesting_number)
-        print(user_id)
 
 
 
         # add member - get whatsapp number
         insert_stokvel_member(
+            application_id=None,
             stokvel_id=inserted_stokvel_id,
             user_id = find_user_by_number(stokvel_data.requesting_number)
         )
@@ -103,7 +103,15 @@ def onboard_stokvel() -> Response:
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("create_stokvel.failed_stokvel_creation"))
+        error_string = str(e)
+        
+        if "'NoneType' object is not subscriptable" in str(error_string):
+            error_message = "This cellphone number does not exist in the system. Please try again."
+        elif "STOKVELS.stokvel_name" in str(error_string):
+            error_message = "This stokvel already exists in the system. Please choose another name."
+        else:
+            error_message = "An unknown error occurred."
+        return redirect(url_for("create_stokvel.failed_stokvel_creation", error_message = error_message)) #tis was changed
 
 @create_stokvel_bp.route("/success_stokvel_creation")
 def success_stokvel_creation() -> str:
@@ -126,7 +134,11 @@ def failed_stokvel_creation() -> str:
     docstring
     """
     action = "Stokvel Registration"
-    failed_message = "Your stokvel could not be created successfully. Please try again later."  # Define a better message here - depending on what went wrong
+    if request.args.get("error_message"):
+        error_message = request.args.get("error_message")
+    else:
+        error_message = "Stokvel could not be registered. Please try again later."
+    failed_message = error_message
     failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
 
 

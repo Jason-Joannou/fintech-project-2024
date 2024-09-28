@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from database.queries import find_user_by_number
+from database.queries import find_user_by_number, find_number_by_userid
 from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel, check_application_pending_approved
 
 from api.schemas.onboarding import JoinStokvelSchema
@@ -37,6 +37,7 @@ def apply_to_join_stokvel() -> Response:
 
         stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
         stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
+        stokvel_admin_cell_number = find_number_by_userid(user_id=stokvel_admin_number)
 
         print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_number)
 
@@ -53,31 +54,23 @@ def apply_to_join_stokvel() -> Response:
         joiner_notification_message = (
             f"You have applied to join the {joiner_data.stokvel_name}.\n\n"
             f"Application has been sent to the admin.\n"
-            # # f"ILP Wallet: ILP_TEST\n"
-            # # f"MOMO Wallet: MOMO_TEST\n"
-            # f"Total Members: {stokvel_data.total_members}\n"
-            # f"Minimum Contribution Amount: {stokvel_data.min_contributing_amount}\n\n"
             f"Thank you for applying to join!"
         )
 
         admin_notification_message = (
             f"A user has applied to join your stokvel: {joiner_data.stokvel_name}.\n\n"
-            f"Please authorize their application.\n"
-            # # f"ILP Wallet: ILP_TEST\n"
-            # # f"MOMO Wallet: MOMO_TEST\n"
-            # f"Total Members: {stokvel_data.total_members}\n"
-            # f"Minimum Contribution Amount: {stokvel_data.min_contributing_amount}\n\n"
+            f"Please review their application.\n"
             f"Thank you!"
         )
 
         # Send the notification message
         # send_notification_message(
-        #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
+        #     to=f"whatsapp:{joiner_data.requesting_number}", body=joiner_notification_message
         # )
 
         # Send the notification message
         # send_notification_message(
-        #     to=f"whatsapp:{stokvel_admin_number}", body=notification_message
+        #     to=f"whatsapp:{stokvel_admin_number}", body=admin_notification_message
         # )
         return redirect(url_for("join_stokvel.success_stokvel_join_application"))
 
@@ -92,8 +85,8 @@ def apply_to_join_stokvel() -> Response:
         if "'NoneType' object is not subscriptable" in str(error_string):
             error_message = "This cellphone number does not exist in the system. Please try again."
         else:
-            error_message = "An unknown integrity error occurred."
-        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
+            error_message = "An unknown error occurred."
+        return redirect(url_for("join_stokvel.failed_stokvel_join_application", error_message = error_message)) #tis was changed
 
 @join_stokvel_bp.route("/success_stokvel_join")
 def success_stokvel_join_application() -> str:

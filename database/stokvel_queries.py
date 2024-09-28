@@ -309,22 +309,30 @@ def insert_stokvel_member(
                     conn.commit()
 
                     # Fetch IDs of the declined applications after the update
-                    declined_apps_query = """
-                        SELECT id, AppStatus FROM APPLICATIONS 
-                        WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
+                    # declined_apps_query = """
+                    #     SELECT id, AppStatus, user_id FROM APPLICATIONS 
+                    #     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
+                    # """
+
+                    declined_users_query = """
+                        SELECT u.user_number FROM APPLICATIONS a
+                        JOIN USERS u ON a.user_id = u.user_id
+                        WHERE a.stokvel_id = :stokvel_id AND a.AppStatus = 'Declined' AND a.AppDate > :latest_created_at
                     """
-                    declined_apps = conn.execute(text(declined_apps_query), {
+
+                    declined_apps_numbers = conn.execute(text(declined_users_query), {
                         'stokvel_id': stokvel_id,
                         'latest_created_at': latest_created_at
                     }).fetchall()
 
-                    print(declined_apps)
+                    # print(declined_apps_numbers)
 
                     # Store the IDs of the declined applications
-                    declined_applications_list = [app[0] for app in declined_apps]
+                    declined_applications_list = [app[0] for app in declined_apps_numbers]
                     print("Declined Applications IDs:", declined_applications_list)
 
-                    raise Exception(f"General error occurred during inserting a stokvel member stokvel_full")  # Stops execution by raising the error
+                    return declined_applications_list
+                    # raise Exception(f"General error occurred during inserting a stokvel member stokvel_full")  # Stops execution by raising the error
 
 
     except sqlite3.Error as e:
