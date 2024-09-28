@@ -112,6 +112,7 @@
      
         #joinStokvelForm {
         display: none; /* Hide the form initially */
+        background-color: #d0efeb;
         }
 
     </style>
@@ -140,7 +141,9 @@
         </div>
 
         <form id = "joinStokvelForm" class = "hidden" action="{{ url_for('join_stokvel.apply_to_join_stokvel') }}" method="POST">
-            <h3>Join selected stokvel: </h3>
+            <h2>Application Form:</h2>
+            <h3>Join selected stokvel: <span id="stokvel_display_name"></span></h3><br>
+            <!-- <h3 id = "stokvel_display_name"></h3> -->
             <label for="requesting_number">Cellphone Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
 
@@ -225,7 +228,9 @@
                     <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
                     <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
 
-                    <br>               
+                    <br>  
+                    
+                    <p>Complete form below to apply to join.</p>
                 
 
 
@@ -256,18 +261,32 @@
             const joinForm = document.getElementById("joinStokvelForm");
 
             // Show the constitution
-            constitution.style.display = "block"; // Ensure the constitution is visible
+            // constitution.style.display = "block"; // Ensure the constitution is visible
 
-            // Show the join form when constitution is clicked
-            if (available_space > 0){    
+
+
+            constitution.classList.toggle('hidden');
+
+                        // // Show the join form when constitution is clicked
+            if (available_space > 0 & !constitution.classList.contains('hidden')) {
+                
                 joinForm.style.display = "block"; // Show the join form
             }
             else{
                 joinForm.style.display = "none";
             }
 
+// // Show or hide the join form based on available space
+// if (available_space > 0) {
+//     joinForm.classList.remove('hidden'); // Show the join form
+// } else {
+//     joinForm.classList.add('hidden'); // Hide the join form
+// }
+
             // Set the stokvel name in the join form
             document.getElementById('stokvel_name').value = stokvelName;
+            document.getElementById('stokvel_display_name').textContent = stokvelName;
+
         }
 
         // Function to apply to join a stokvel
