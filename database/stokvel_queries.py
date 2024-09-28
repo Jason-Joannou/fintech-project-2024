@@ -212,6 +212,20 @@ def insert_stokvel(
         print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a stokvel: {e}")  # Stops execution by raising the error
     
+def check_if_stokvel_member(user_id, stokvel_id):
+    """
+    Checks if a user is already a member of a stokvel
+    """
+    query = f"SELECT * FROM STOKVEL_MEMBERS WHERE user_id = {user_id} AND stokvel_id = {stokvel_id}"
+
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query))
+        result = cursor.fetchall()
+
+        if len(result) > 0:
+            return True
+        else:
+            return False
 
 def insert_stokvel_member(
     stokvel_id: int, #unique constraint here
@@ -220,6 +234,8 @@ def insert_stokvel_member(
     updated_at: Optional[str] = None,
 ) -> None:
     # Need to look at refactoring this
+
+    print('user id from inserting member: ', user_id)
 
     """
     Inserts a new stokvel member into the STOKVEL_MEMBERS table.
@@ -250,8 +266,12 @@ def insert_stokvel_member(
     try:
         with sqlite_conn.connect() as conn:
             print("Connected in stokvel_members insert")
-            result = conn.execute(text(insert_query), parameters)
-            conn.commit()
+
+            if not check_if_stokvel_member(user_id, stokvel_id):
+                result = conn.execute(text(insert_query), parameters)
+                conn.commit()
+            else:
+                print(f'could not insert, user {user_id} is already a member of this stokvel {stokvel_id}')
 
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
@@ -285,16 +305,17 @@ def get_all_stokvels():
                 'stokvel_name': stokvel[1],
                 'ILP_wallet': stokvel[2],
                 'MOMO_wallet': stokvel[3],
-                'total_members': stokvel[4],
+                'total_members': stokvel[4] if stokvel[4] is not None else 0,  # Set to 0 if None
                 'min_contributing_amount': stokvel[5],
                 'max_number_of_contributors': stokvel[6],
                 'total_contributions': stokvel[7],
                 'created_at': stokvel[8],
                 'updated_at': stokvel[9],
-                'start_date':stokvel[10],
-                'end_date':stokvel[11],
-                'payout_frequency_int':stokvel[12],
-                'payout_frequency_period':stokvel[13],
+                'start_date': stokvel[10],
+                'end_date': stokvel[11],
+                'payout_frequency_int': stokvel[12],
+                'payout_frequency_period': stokvel[13],
+                'available_space': max((stokvel[6] if stokvel[6] is not None else 0) - (stokvel[4] if stokvel[4] is not None else 0), 0),  # Calculate available space
             } for stokvel in stokvels
         ]
 
@@ -333,6 +354,8 @@ def insert_admin(
             :id, :stokvel_id, :stokvel_name, :user_id, :total_contributions, :total_members
         )
         """
+    print('user id from inserting admin: ', user_id)
+
 
     # Parameter dictionary for executing the query
     parameters = {
@@ -396,6 +419,50 @@ def update_stokvel_members_count(stokvel_id):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def check_application_pending_approved(user_id):
+    """    
+    Check if a user already has a pending application in the database. 
+    """
+    query = "SELECT * FROM APPLICATIONS WHERE user_id = :user_id AND (AppStatus = 'Application Submitted' or AppStatus = 'Approved');"
+    parameters = {
+        "user_id": user_id
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            cursor = conn.execute(text(query), parameters)
+            result = cursor.fetchone()
+            if result is not None:
+                print("User has an application in the database")
+                return True
+            else:
+                print("No app in db for this user")
+                return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def check_available_space_in_stokvel(stokvel_id):
+    """Checks that there is space available in a stokvel before inserting a user
+    """
+
+    query = "SELECT total_members, max_number_of_contributors FROM STOKVELS WHERE stokvel_id = :stokvel_id;"
+    parameters = {
+        "stokvel_id": stokvel_id
+    }
+
+    print('checking space of : ', str(stokvel_id))
+
+    try:
+        with sqlite_conn.connect() as conn:
+            cursor = conn.execute(text(query), parameters)
+            contributors, max_contributors = cursor.fetchone()
+            # print('contribs = ', contributors, ' max contributors ' + max_contributors)
+            if contributors < max_contributors:
+                return True
+            else:
+                return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 def insert_stokvel_join_application(
     stokvel_id: int, #unique constraint here
@@ -431,20 +498,23 @@ def insert_stokvel_join_application(
 
     try:
         with sqlite_conn.connect() as conn:
-            if stokvel_id is None:
-                current_application_id = get_next_unique_id(conn, 'APPLICATIONS', 'id')
-                parameters['id'] = current_application_id
+            if check_available_space_in_stokvel(stokvel_id):
+                if stokvel_id is None:
+                    current_application_id = get_next_unique_id(conn, 'APPLICATIONS', 'id')
+                    parameters['id'] = current_application_id
 
-            print("Connected in application insert")
-            result = conn.execute(text(insert_query), parameters)
-            conn.commit()
+                print("Connected in application insert")
+                result = conn.execute(text(insert_query), parameters)
+                conn.commit()
 
-            if result.rowcount > 0:
-                print(f"Insert successful, {result.rowcount} row(s) affected.")
-                print('insert application successful')
+                if result.rowcount > 0:
+                    print(f"Insert successful, {result.rowcount} row(s) affected.")
+                    print('insert application successful')
 
+                else:
+                    print("Insert failed.")
             else:
-                print("Insert failed.")
+                print("No space in stokvel")
             
             # return current_application_id
         

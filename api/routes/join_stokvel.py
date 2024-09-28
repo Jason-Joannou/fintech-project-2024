@@ -2,7 +2,7 @@ from flask import Blueprint, Response, jsonify, redirect, render_template, reque
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.queries import find_user_by_number
-from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel
+from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel, check_application_pending_approved
 
 from api.schemas.onboarding import JoinStokvelSchema
 
@@ -38,7 +38,16 @@ def apply_to_join_stokvel() -> Response:
         stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
         stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
 
-        insert_stokvel_join_application(stokvel_id=stokvel_id, user_id=user_id)
+        print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_number)
+
+        if not check_application_pending_approved(user_id): 
+            #check if a user is either already approved/inserted into stokvel or if they have already applied and applic is pending
+            insert_stokvel_join_application(stokvel_id=stokvel_id, user_id=user_id)
+        
+        else:
+            print('you have already applied to join this application')
+            error_message = "You have already applied to join this stokvel. Please allow for processing."
+            return redirect(url_for("join_stokvel.failed_stokvel_join_application", error_message = error_message))
 
         # Prepare the notification message
         joiner_notification_message = (
@@ -75,10 +84,16 @@ def apply_to_join_stokvel() -> Response:
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
         return redirect(url_for("join_stokvel.failed_stokvel_join_application"))
-
+    
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("join_stokvel.failed_stokvel_join_application"))
+        error_string = str(e)
+        
+        if "'NoneType' object is not subscriptable" in str(error_string):
+            error_message = "This cellphone number does not exist in the system. Please try again."
+        else:
+            error_message = "An unknown integrity error occurred."
+        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
 
 @join_stokvel_bp.route("/success_stokvel_join")
 def success_stokvel_join_application() -> str:
@@ -101,7 +116,11 @@ def failed_stokvel_join_application() -> str:
     docstring
     """
     action = "Application"
-    failed_message = "We could not process your application."  # Define a better message here - depending on what went wrong
+    if request.args.get("error_message"):
+        error_message = request.args.get("error_message")
+    else:
+        error_message = "Application to join has failed. Please try again later."
+    failed_message = error_message
     failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
 
 

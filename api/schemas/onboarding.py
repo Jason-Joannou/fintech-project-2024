@@ -31,14 +31,14 @@ class RegisterStokvelSchema(BaseModel):
     payout_frequency_period: str = Field(..., example="day")
     created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
-    requesting_number: int = Field(..., example=1)
+    requesting_number: str = Field(..., example="1234567890")
 
 
 class JoinStokvelSchema(BaseModel):
     """
     docstring
     """
-    requesting_number: int = Field(..., example=1234567890)
+    requesting_number: str = Field(..., example="1234567890")
     stokvel_name: str = Field(..., example="John's Soccer Stokvel") #unique constraint here
     stokvel_id: int = Field(None, example=123)
 

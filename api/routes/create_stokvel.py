@@ -2,7 +2,7 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import RegisterStokvelSchema
-from database.stokvel_queries import insert_stokvel, insert_stokvel_member, insert_admin
+from database.stokvel_queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count
 from database.queries import find_user_by_number
 
 create_stokvel_bp = Blueprint("create_stokvel", __name__)
@@ -36,7 +36,7 @@ def onboard_stokvel() -> Response:
             MOMO_wallet = "MOMO_TEST",
             total_members = stokvel_data.total_members,
             min_contributing_amount = stokvel_data.min_contributing_amount,
-            max_number_of_contributors = 1,#stokvel_data.max_number_of_contributors,
+            max_number_of_contributors = stokvel_data.max_number_of_contributors,#stokvel_data.max_number_of_contributors,
             Total_contributions = 0,
             start_date=stokvel_data.start_date,
             end_date= stokvel_data.end_date,
@@ -48,15 +48,30 @@ def onboard_stokvel() -> Response:
 
         stokvel_data.stokvel_id = inserted_stokvel_id
 
+        print('stokvel created id = ')
+        print(stokvel_data.stokvel_id)
+
+        print('Printing requseting number id = ')
+        print(stokvel_data.requesting_number)
+
+        user_id = find_user_by_number(stokvel_data.requesting_number)
+        print(user_id)
+
+
+
         # add member - get whatsapp number
         insert_stokvel_member(
-            stokvel_id=stokvel_data.stokvel_id,
+            stokvel_id=inserted_stokvel_id,
             user_id = find_user_by_number(stokvel_data.requesting_number)
         )
 
+        #update the number of contributors
+        update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
+
+
         # add admin - get whatsapp number
         insert_admin(
-            stokvel_id = stokvel_data.stokvel_id,
+            stokvel_id=inserted_stokvel_id,
             stokvel_name= stokvel_data.stokvel_name,
             user_id = find_user_by_number(stokvel_data.requesting_number),
             total_contributions=0,

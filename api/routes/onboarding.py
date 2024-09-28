@@ -1,5 +1,6 @@
 from flask import Blueprint, Response, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 
 from api.schemas.onboarding import OnboardUserSchema
 from database.queries import insert_user, insert_wallet
@@ -56,14 +57,26 @@ def onboard_user() -> Response:
         #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
         # )
         return redirect(url_for("onboarding.success_user_creation"))
+    
+    except IntegrityError as integrity_error:
+        print(f"SQL Error occurred during insert operations: {integrity_error}")
+        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
         return redirect(url_for("onboarding.failed_user_creation"))
-
+    
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("onboarding.failed_user_creation"))
+        error_string = str(e)
+        if "USERS.user_id" in str(error_string):
+            error_message = "A user with this ID number already exists."
+        elif "USERS.user_number" in str(error_string):
+            error_message = "A user with this cellphone number already exists."
+        else:
+            error_message = "An unknown integrity error occurred."
+
+        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
 
 
 
@@ -87,7 +100,11 @@ def failed_user_creation() -> str:
     """
 
     action = "Onboarding"
-    failed_message = "User onboarding failed. Please try again later."  # Define a better message here - depending on what went wrong
+    if request.args.get("error_message"):
+        error_message = request.args.get("error_message")
+    else:
+        error_message = "User onboarding failed. Please try again later."
+    failed_message = error_message
     failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
 
 

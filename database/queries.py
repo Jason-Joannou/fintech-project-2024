@@ -57,11 +57,12 @@ def check_if_number_exists_sqlite(from_number: str) -> bool:
 #         return None
 
 
-def find_user_by_number(from_number: str) -> bool:
+def find_user_by_number(from_number: str) -> Optional[str]:
     """
     docstring
     """
-    from_number = "0"+str(from_number)
+    # from_number = "0"+str(from_number)
+    # print(from_number)
     print(from_number)
     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
@@ -162,12 +163,18 @@ def insert_user(
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
+    
+    except sqlite3.IntegrityError as integrity_error:
+        # Catch integrity errors such as unique constraint violations
+        print(f"IntegrityError during insert: {integrity_error}")
+        raise sqlite3.IntegrityError(f"IntegrityError during insert: {integrity_error}")
+    
     except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
+        # print(f"Error occurred during insert: {e}")
         raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
 
     except Exception as e:
-        print(f"Error occurred during insert: {e}")
+        # print(f"Error occurred during insert: {e}")
         raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
 
 

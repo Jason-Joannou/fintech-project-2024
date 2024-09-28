@@ -22,10 +22,10 @@ def approve_stokvels() -> Response:
     """
     try:
         requesting_number = request.form.get("requesting_number")
-        print('req no ' + requesting_number)
+        # print('req no ' + requesting_number)
         admin_id = find_user_by_number(requesting_number.lstrip('0'))
         applications = get_all_applications(user_id=admin_id)
-        print(applications)
+        # print(applications)
         return redirect(url_for('approve_stokvel.display_applications', admin_id=admin_id, requesting_number=requesting_number, applications=applications))
 
     except SQLAlchemyError as sql_error:
@@ -47,13 +47,13 @@ def process_application():
     admin_id = request.form.get('admin_id')
 
     if action == 'approve':
-        print(application_id, ' Approved')
+        # print(application_id, ' Approved')
         update_application_status(application_id, 'Approved')
         insert_stokvel_member(application_stokvel_id, application_joiner_id)
         update_stokvel_members_count(application_stokvel_id)
 
     elif action == 'decline':
-        print(application_id, ' Declined')
+        # print(application_id, ' Declined')
         update_application_status(application_id, 'Declined')
 
     # Redirect to a route that fetches the latest applications with the requesting_number

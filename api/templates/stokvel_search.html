@@ -77,6 +77,10 @@
             background-color: #cfcfd0; /* Light grey background */
             padding: 20px;
         }
+     
+        #joinStokvelForm {
+        display: none; /* Hide the form initially */
+        }
 
     </style>
 </head>
@@ -89,11 +93,9 @@
         </div>
 
 
-        <h1>Search or View All Stokvels</h1>
-        <!-- <form action="{{ url_for('onboarding.onboard_user') }}" method="POST"> -->
+        <h1>Search for a Stokvel:</h1>
 
         <input type="text" id="stokvelSearch" placeholder="Search Stokvel by name..." />
-
         <input type="button" id="searchButton" value="Search Stokvel" onclick="searchStokvel()" />
         <!-- <input type="button" id="viewAllButton" value="View All Stokvels" onclick="viewAllStokvels()" /> -->
 
@@ -101,7 +103,6 @@
         <br>
 
         <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
-        <!-- <p>{{stokvel_list | tojson}}</p> -->
                 
         <div id="stokvelList">
         </div>
@@ -124,14 +125,17 @@
 
         const stokvelsData = document.getElementById('stokvels_data').innerText;
         const stokvels = JSON.parse(stokvelsData);
-        const joinStokvelUrl = "{{ url_for('join_stokvel.apply_to_join_stokvel') }}";
-
 
 
         // Function to search and display stokvels
         function searchStokvel() {
             const searchQuery = document.getElementById('stokvelSearch').value.toLowerCase();
             const stokvelList = document.getElementById('stokvelList');
+            const searchForm = document.querySelector('.form-container'); // Reference to the form container
+
+            const joinForm = document.getElementById("joinStokvelForm");
+            joinForm.style.display = "none"; // hide the foem away
+
             stokvelList.innerHTML = ''; // Clear previous results
 
             stokvels.forEach(stokvel => {
@@ -143,6 +147,8 @@
             if (stokvelList.innerHTML === '') {
                 stokvelList.innerHTML = '<p>No stokvels found matching your search.</p>';
             }
+            
+
         }
 
         // Function to view all stokvels
@@ -169,10 +175,11 @@
                 <div class="stokvel-details">
                     <strong>Stokvel Name:</strong> ${stokvel.stokvel_name}<br>
                     <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
+                    ${stokvel.available_space === 0 ? '<h4 style="color: red;">Stokvel is full</h4>' : ''}
                 </div>
                 
                 <div class="buttons">
-                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}')">
+                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}', '${stokvel.available_space}')">
                 </div>
                 
                 <br>
@@ -180,29 +187,55 @@
                 <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
                     <strong>Minimum Contribution: R</strong> ${stokvel.min_contributing_amount}<br>
                     <strong>Max Members:</strong> ${stokvel.max_number_of_contributors}<br>
+                    <strong>Total Members:</strong> ${stokvel.total_members}<br>
+                    <strong>Available Spaces:</strong> ${stokvel.available_space}<br>
                     <strong>Stokvel start date:</strong> ${stokvel.start_date}<br>
                     <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
                     <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
 
                     <br>               
-                     </div>
+                
+
+
+                </div>
             `;
 
             stokvelList.appendChild(container);
         }
 
         // Function to show constitution
-        function viewConstitution(stokvelName) {
-            console.log(stokvelName)
+        // function viewConstitution(stokvelName) {
+        //     console.log(stokvelName)
+
+        //     const constitution = document.getElementById(`constitution-${stokvelName}`);
+        //     constitution.classList.toggle('hidden');
+
+        //     const joinForm = document.getElementById("joinStokvelForm");
+        //     joinForm.classList.toggle('hidden');  // Toggle form visibility            
+            
+        //     document.getElementById('stokvel_name').value = stokvelName;
+
+        // }
+
+        function viewConstitution(stokvelName, available_space) {
+            console.log(stokvelName);
 
             const constitution = document.getElementById(`constitution-${stokvelName}`);
-            constitution.classList.toggle('hidden');
-
             const joinForm = document.getElementById("joinStokvelForm");
-            joinForm.classList.toggle('hidden');  // Toggle form visibility            
-            
-            document.getElementById('stokvel_name').value = stokvelName;
 
+            // Show the constitution
+            constitution.style.display = "block"; // Ensure the constitution is visible
+
+            // Show the join form when constitution is clicked
+            if (available_space > 0){    
+                joinForm.style.display = "block"; // Show the join form
+            }
+            else{
+                joinForm.style.display = "none";
+            }
+
+            // Set the stokvel name in the join form
+            document.getElementById('stokvel_name').value = stokvelName;
         }
 
         // Function to apply to join a stokvel
