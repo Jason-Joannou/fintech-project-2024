@@ -34,30 +34,11 @@ def apply_to_join_stokvel() -> Response:
 
         user_id = find_user_by_number(joiner_data.requesting_number)
 
-        # Add to application
-
-
-        # Add the below to the database after authorizing the join
-        # insert_stokvel_member(
-        #     stokvel_id=joiner_data.stokvel_id,
-        #     user_id=user_id,
-        # )
-
-        # update_stokvel_members_count(
-        #     stokvel_id=joiner_data.stokvel_id
-        # )
-
-        print("testing")
 
         stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
         stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
 
-        # print(str(stokvel_id) + " test " + stokvel_admin_number)
-
-
         insert_stokvel_join_application(stokvel_id=stokvel_id, user_id=user_id)
-
-
 
         # Prepare the notification message
         joiner_notification_message = (

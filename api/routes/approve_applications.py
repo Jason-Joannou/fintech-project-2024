@@ -1,11 +1,8 @@
-from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for, make_response
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.queries import find_user_by_number
 from database.stokvel_queries import get_all_applications, update_application_status, insert_stokvel_member, update_stokvel_members_count
-
-# from api.schemas.onboarding import JoinStokvelSchema
-
 
 approve_stokvel_bp = Blueprint("approve_stokvel", __name__)
 
@@ -24,13 +21,12 @@ def approve_stokvels() -> Response:
     Handles onboarding of a new user.
     """
     try:
-
         requesting_number = request.form.get("requesting_number")
         print('req no ' + requesting_number)
         admin_id = find_user_by_number(requesting_number.lstrip('0'))
         applications = get_all_applications(user_id=admin_id)
         print(applications)
-        return render_template("approve_applications.html", requesting_number = requesting_number, admin_id=admin_id, applications=applications)
+        return redirect(url_for('approve_stokvel.display_applications', admin_id=admin_id, requesting_number=requesting_number, applications=applications))
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
@@ -39,7 +35,7 @@ def approve_stokvels() -> Response:
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
         return redirect(url_for("approve_stokvel.failed_approval_login"))
-
+    
 @approve_stokvel_bp.route(f"{BASE_ROUTE}/process_applications", methods=["POST"])
 def process_application():
     application_id = request.form.get('application_id')
@@ -47,67 +43,35 @@ def process_application():
     application_joiner_id = request.form.get('user_id')
     action = request.form.get('action')
 
+    requesting_number = request.form.get('requesting_number')  # Get from form
+    admin_id = request.form.get('admin_id')
 
     if action == 'approve':
         print(application_id, ' Approved')
-        
         update_application_status(application_id, 'Approved')
-
-        insert_stokvel_member(
-            application_stokvel_id,
-            application_joiner_id
-        )
-
-        update_stokvel_members_count(
-            application_stokvel_id
-        )
-        # user_id = request.form.get('user_id') #this needs to be the admin id, not the applicant id
-        requesting_number = request.form.get('requesting_number')
-        admin_id = request.form.get('admin_id')
-        applications = get_all_applications(user_id=admin_id)
-
-        print(admin_id, ' ', requesting_number, ' ', applications)
-        #send approved message to user
-        return render_template("approve_applications.html", requesting_number = requesting_number, admin_id=admin_id, applications=applications)
-
+        insert_stokvel_member(application_stokvel_id, application_joiner_id)
+        update_stokvel_members_count(application_stokvel_id)
 
     elif action == 'decline':
-        # Logic to decline the application
         print(application_id, ' Declined')
-        
         update_application_status(application_id, 'Declined')
 
-        requesting_number = request.form.get('requesting_number')
-        admin_id = request.form.get('admin_id')
-        applications = get_all_applications(user_id=admin_id)
+    # Redirect to a route that fetches the latest applications with the requesting_number
+    return redirect(url_for('approve_stokvel.display_applications', admin_id=admin_id, requesting_number=requesting_number))
 
-        print(admin_id, ' ', requesting_number, ' ', applications)
+@approve_stokvel_bp.route(f"{BASE_ROUTE}/applications", methods=["GET"])
+def display_applications():
+    admin_id = request.args.get('admin_id')  # Get admin_id from query parameters
+    requesting_number = request.args.get('requesting_number')  # Get requesting_number from query parameters
 
-        return render_template("approve_applications.html", requesting_number = requesting_number, admin_id=admin_id, applications=applications)
+    applications = get_all_applications(user_id=admin_id)
 
+    response = make_response(render_template("approve_applications.html", requesting_number=requesting_number, admin_id=admin_id, applications=applications))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
 
-        #send declined message to user
-
-    # user_id = request.form.get('user_id')
-    # requesting_number = request.form.get('requesting_number')
-    # applications = get_all_applications(user_id=user_id)
-
-
-
-# @approve_stokvel_bp.route("/success_approval_login")
-# def success_stokvel_join_application() -> str:
-#     """
-#     docstrings
-#     """
-#     action = "Login"
-#     success_message = "Application to join selected stokvel has been sent."
-#     success_next_step_message = "Please navigate back to WhatsApp for further functions."
-
-
-#     return render_template("action_success_template.html", 
-#                            action = action,
-#                            success_message = success_message,
-#                            success_next_step_message = success_next_step_message)
+    return response
 
 @approve_stokvel_bp.route("/failed_approval_login")
 def failed_approval_login() -> str:
