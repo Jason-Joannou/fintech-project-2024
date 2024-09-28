@@ -323,12 +323,9 @@ def insert_stokvel_member(
                     # Store the IDs of the declined applications
                     declined_applications_list = [app[0] for app in declined_apps]
                     print("Declined Applications IDs:", declined_applications_list)
-            # else:
-            #     print(f'could not insert, stokvel {stokvel_id} is full')
-            #     #delete all applications where stokvel_id = stokvel_id
-            #     #find the latest application with Approved, Decline all applications that are 'A
-            #     #store a list of all applications that have been Declined because of fullness
-            #     raise Exception(f"General Error occurred during inserting a stokvel member stokvel_full {e}")  # Stops execution by raising the error
+
+                    raise Exception(f"General error occurred during inserting a stokvel member stokvel_full")  # Stops execution by raising the error
+
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")

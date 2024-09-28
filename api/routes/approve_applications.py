@@ -49,8 +49,18 @@ def process_application():
     if action == 'approve':
         # print(application_id, ' Approved')
         # update_application_status(application_id, 'Approved')
-        insert_stokvel_member(application_id= application_id, stokvel_id=application_stokvel_id, user_id=application_joiner_id)
-        update_stokvel_members_count(application_stokvel_id)
+        try:
+            insert_stokvel_member(application_id= application_id, stokvel_id=application_stokvel_id, user_id=application_joiner_id)
+            update_stokvel_members_count(application_stokvel_id)
+        except Exception as e:
+            print(f"General Error occurred during insert operations: {e}")
+            error_string = str(e)
+            
+            if "stokvel_full" in str(error_string):
+                error_message = "The stokvel is now full. No new members can be added"
+            else:
+                error_message = "An unknown integrity error occurred."
+            return redirect(url_for("approve_stokvel.failed_approval_sv_full", error_message = error_message))
 
     elif action == 'decline':
         # print(application_id, ' Declined')
@@ -81,6 +91,30 @@ def failed_approval_login() -> str:
     action = "Approval Login"
     failed_message = "We could not process your login."  # Define a better message here - depending on what went wrong
     failed_next_step_message = "Please go back and try again."  # Define a better message here - depending on what needs to happen next
+
+
+    return render_template("action_failed_template.html", 
+                           action = action,
+                           failed_message = failed_message,
+                           failed_next_step_message = failed_next_step_message)
+
+
+@approve_stokvel_bp.route("/failed_approval_sv_full")
+def failed_approval_sv_full() -> str:
+    """
+    docstring
+    """
+    """
+    docstring
+    """
+
+    action = "Application Approval"
+    if request.args.get("error_message"):
+        error_message = request.args.get("error_message")
+    else:
+        error_message = "User onboarding failed. Please try again later."
+    failed_message = error_message
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
 
 
     return render_template("action_failed_template.html", 
