@@ -228,6 +228,7 @@ def check_if_stokvel_member(user_id, stokvel_id):
             return False
 
 def insert_stokvel_member(
+    application_id: int,
     stokvel_id: int, #unique constraint here
     user_id: int,
     created_at: Optional[str] = None,
@@ -266,17 +267,69 @@ def insert_stokvel_member(
     try:
         with sqlite_conn.connect() as conn:
             print("Connected in stokvel_members insert")
-
-            if not check_if_stokvel_member(user_id, stokvel_id):
-                result = conn.execute(text(insert_query), parameters)
-                conn.commit()
+            if check_available_space_in_stokvel(stokvel_id):
+                update_application_status(application_id, 'Approved')
+                if not check_if_stokvel_member(user_id, stokvel_id): 
+                    result = conn.execute(text(insert_query), parameters)
+                    conn.commit()
+                else:
+                    print(f'could not insert, user {user_id} is already a member of this stokvel {stokvel_id}')
+                    raise Exception(f"General Error occurred during inserting a stokvel member already_member: {e}")  # Stops execution by raising the error
             else:
-                print(f'could not insert, user {user_id} is already a member of this stokvel {stokvel_id}')
+                print(f'Could not insert, stokvel {stokvel_id} is full')
 
-            if result.rowcount > 0:
-                print(f"Insert successful, {result.rowcount} row(s) affected.")
-            else:
-                print("Insert failed.")
+                # Find the most recently accepted application for the stokvel
+                latest_application_query = """
+                    SELECT * FROM APPLICATIONS 
+                    WHERE stokvel_id = :stokvel_id AND AppStatus = 'Approved'
+                    ORDER BY AppDate DESC
+                    LIMIT 1
+                """
+                latest_application = conn.execute(text(latest_application_query), {'stokvel_id': stokvel_id}).fetchone()
+
+                print('latest app = ' , latest_application)
+
+                if latest_application:
+                    print('AGAIN latest app = ' , latest_application)
+
+                    latest_created_at = latest_application[4]
+                    print(f'Latest accepted application created at: {latest_created_at}')
+
+                    # Decline all applications after the latest accepted application
+                    decline_applications_query = """
+                        UPDATE APPLICATIONS 
+                        SET AppStatus = 'Declined' 
+                        WHERE stokvel_id = :stokvel_id AND AppDate > :latest_created_at
+                    """
+                    conn.execute(text(decline_applications_query), {
+                        'stokvel_id': stokvel_id,
+                        'latest_created_at': latest_created_at
+                    })
+
+                    conn.commit()
+
+                    # Fetch IDs of the declined applications after the update
+                    declined_apps_query = """
+                        SELECT id, AppStatus FROM APPLICATIONS 
+                        WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
+                    """
+                    declined_apps = conn.execute(text(declined_apps_query), {
+                        'stokvel_id': stokvel_id,
+                        'latest_created_at': latest_created_at
+                    }).fetchall()
+
+                    print(declined_apps)
+
+                    # Store the IDs of the declined applications
+                    declined_applications_list = [app[0] for app in declined_apps]
+                    print("Declined Applications IDs:", declined_applications_list)
+            # else:
+            #     print(f'could not insert, stokvel {stokvel_id} is full')
+            #     #delete all applications where stokvel_id = stokvel_id
+            #     #find the latest application with Approved, Decline all applications that are 'A
+            #     #store a list of all applications that have been Declined because of fullness
+            #     raise Exception(f"General Error occurred during inserting a stokvel member stokvel_full {e}")  # Stops execution by raising the error
+
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
         raise Exception(f"SQLiteError occurred during inserting a stokvel member: {e}")  # Stops execution by raising the error
@@ -419,13 +472,20 @@ def update_stokvel_members_count(stokvel_id):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def check_application_pending_approved(user_id):
+def check_application_pending_approved(user_id, stokvel_id):
     """    
     Check if a user already has a pending application in the database. 
     """
-    query = "SELECT * FROM APPLICATIONS WHERE user_id = :user_id AND (AppStatus = 'Application Submitted' or AppStatus = 'Approved');"
+    query = "SELECT * FROM APPLICATIONS WHERE user_id = :user_id AND stokvel_id = :stokvel_id AND (AppStatus = 'Application Submitted' or AppStatus = 'Approved');"
     parameters = {
-        "user_id": user_id
+        "user_id": user_id,
+        "stokvel_id": stokvel_id
+    }
+
+    members_query = "select * from STOKVEL_MEMBERS where user_id = :user_id and stokvel_id = :stokvel_id;"
+    members_parameters = {
+        "user_id": user_id,
+        "stokvel_id": stokvel_id
     }
 
     try:
@@ -437,7 +497,12 @@ def check_application_pending_approved(user_id):
                 return True
             else:
                 print("No app in db for this user")
-                return False
+                members_cursor = conn.execute(text(members_query), members_parameters)
+                members_result = members_cursor.fetchone()
+                if members_result is not None:
+                    print("user is a member in the database")
+                    return True
+            return False
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -456,6 +521,7 @@ def check_available_space_in_stokvel(stokvel_id):
         with sqlite_conn.connect() as conn:
             cursor = conn.execute(text(query), parameters)
             contributors, max_contributors = cursor.fetchone()
+            contributors = 0 if contributors is None else contributors
             # print('contribs = ', contributors, ' max contributors ' + max_contributors)
             if contributors < max_contributors:
                 return True

@@ -48,8 +48,8 @@ def process_application():
 
     if action == 'approve':
         # print(application_id, ' Approved')
-        update_application_status(application_id, 'Approved')
-        insert_stokvel_member(application_stokvel_id, application_joiner_id)
+        # update_application_status(application_id, 'Approved')
+        insert_stokvel_member(application_id= application_id, stokvel_id=application_stokvel_id, user_id=application_joiner_id)
         update_stokvel_members_count(application_stokvel_id)
 
     elif action == 'decline':

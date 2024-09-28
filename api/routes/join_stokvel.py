@@ -40,13 +40,13 @@ def apply_to_join_stokvel() -> Response:
 
         print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_number)
 
-        if not check_application_pending_approved(user_id): 
+        if not check_application_pending_approved(user_id, stokvel_id): 
             #check if a user is either already approved/inserted into stokvel or if they have already applied and applic is pending
             insert_stokvel_join_application(stokvel_id=stokvel_id, user_id=user_id)
         
         else:
             print('you have already applied to join this application')
-            error_message = "You have already applied to join this stokvel. Please allow for processing."
+            error_message = "You are already a member or \nyou have already applied to join this stokvel. Please apply to join another stokvel."
             return redirect(url_for("join_stokvel.failed_stokvel_join_application", error_message = error_message))
 
         # Prepare the notification message
