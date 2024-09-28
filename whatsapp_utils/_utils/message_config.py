@@ -59,8 +59,8 @@ STOKVEL_SERVICES = {
     """,
     "valid_actions": ["1", "2", "3", "4"],
     "action_responses": {
-        "1": "Please register through our online portal: https://stokvels.com/register",
-        "2": "Please register through our online portal: https://stokvels.com/register"},
+        "1": "Please join a stokvel through our online portal: https://stokvels.com/register",
+        "2": "Please create a new stokvel through our online portal: https://stokvels.com/register"},
     "action_requests": {
         "3": "stokvels/my_stokvels"},
     "state_selection": {
@@ -161,16 +161,24 @@ STOKVEL_ACTIONS_USER = {
         "2": "admin/change_contribution",
         "3": "admin/view_constitution",
         "4": "admin/make_contribution",
-        "5": "admin/leave_stokvel",
     },
-    "state_selection": {"6": "back_state"},
+    "state_selection": {
+        "5": "leave_stokvel",
+        "6": "back_state"},
     "input_request_states": {
         "2": {
             "tag": "stokvel_actions_user:input_request_states:2",
-            "message": "Please provide contribution amount for to your stokvel.",
+            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
             "valid_type": float, 
-            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "2",
+        },
+        "4": {
+            "tag": "stokvel_actions_user:input_request_states:4",
+            "message": "Please enter the contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "4",
         },
     },
     "state": 1,
@@ -194,20 +202,42 @@ STOKVEL_ACTIONS_ADMIN = {
         "2": "admin/change_contribution",
         "3": "admin/view_constitution",
         "4": "admin/make_contribution",
-        "5": "admin/leave_stokvel",
     },
     "state_selection": {
+        "5": "leave_stokvel",
         "6": "admin_services",
         "7": "back_state"},
     "input_request_states": {
         "2": {
-            "tag": "stokvel_actions_user:input_request_states:2",
-            "message": "Please provide contribution amount for to your stokvel.",
+            "tag": "stokvel_actions_admin:input_request_states:2",
+            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
             "valid_type": float, 
-            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "2",
         },
+        "4": {
+            "tag": "stokvel_actions_admin:input_request_states:4",
+            "message": "Please enter the contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "4",
+        },
     },
+    "state": 1,
+}
+
+LEAVE_STOKVEL = {
+    "tag": "leave_stokvel",
+    "message": """
+    Are you are sure you want to leave this stokvel? You will lose your interest earned on your contributions:
+    1. Leave stokvel 
+    2. Back 
+    """,
+    "valid_actions": ["1", "2"],
+    "action_requests": {
+        "1": "admin/leave_stokvel"},    
+    "state_selection": {
+        "2": "back_state"},
     "state": 1,
 }
 
@@ -287,17 +317,17 @@ VIEW_PROFILE = {
     Please select what you would view to see on your profile:
     1. View user name
     2. View user surname
-    3. View wallet my addresses
-    4. View my wallet balances
+    3. View wallet my address
+    4. View my wallet balance
     5. My transactions
     6. Back""",
     "valid_actions": ["1", "2", "3","4","5","6"],
     "action_requests": {
-        "1": "admin/view_username",
-        "2": "admin/view_usersurname",
-        "3": "admin/view_wallet_address",
-        "4": "admin/view_wallet_balances",
-        "5": "admin/view_transactions",
+        "1": "stokvel/view_username",
+        "2": "stokvel/view_usersurname",
+        "3": "stokvel/view_wallet_address",
+        "4": "stokvel/view_wallet_balances",
+        "5": "stokvel/view_transactions",
     },
     "state_selection": {
         "6": "back_state"},
@@ -311,18 +341,14 @@ UPDATE_PROFILE = {
     Please select what you would like to update:
     1. Update user name
     2. Update user surname
-    3. Update wallet my addresses
-    4. Update my cellphone number
-    5. Back""",
-    "valid_actions": ["1", "2", "3","4","5"],
+    3. Back""",
+    "valid_actions": ["1", "2", "3"],
     "action_requests": {
         "1": "admin/update_username",
         "2": "admin/update_usersurname",
-        "3": "admin/update_wallet_address",
-        "4": "admin/update_cellnumber",
     },
     "state_selection": {
-        "5": "back_state"},
+        "3": "back_state"},
     "input_request_states": {
         "1": {
             "tag": "update_profile:input_request_states:1",
@@ -338,20 +364,6 @@ UPDATE_PROFILE = {
             "invalid_message": "Please make ensure your new surnamename is at least one character long. Returning to previous menu.",
             "action": "1",
         },
-        "3": {
-            "tag": "update_profile:input_request_states:3",
-            "message": "Please enter your new wallet address.",
-            "valid_type": str,
-            "invalid_message": "Please make sure the new wallet address is at least one character long. Returning you to the previous menu.",
-            "action": "3",
-        },
-        "4": {
-            "tag": "update_profile:input_request_states:4",
-            "message": "Please enter your new wallet new cell phone number.",
-            "valid_type": str,
-            "invalid_message": "Please make sure your new cell phone number is at least one character long. Returning you to the previous menu.",
-            "action": "4",
-        }
     },
     "state": 1,
 }
