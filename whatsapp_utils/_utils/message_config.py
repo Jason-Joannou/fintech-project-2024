@@ -382,7 +382,7 @@ STOKVEL_ACTIONS_USER = {
             "message": "Please provide contribution amount for to your stokvel.",
             "valid_type": float, 
             "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
-            "action": "5",
+            "action": "2",
         },
     },
     "state": 1,
@@ -411,6 +411,15 @@ STOKVEL_ACTIONS_ADMIN = {
     "state_selection": {
         "6": "admin_services",
         "7": "back_state"},
+    "input_request_states": {
+        "2": {
+            "tag": "stokvel_actions_user:input_request_states:2",
+            "message": "Please provide contribution amount for to your stokvel.",
+            "valid_type": float, 
+            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "action": "2",
+        },
+    },
     "state": 1,
 }
 
@@ -422,7 +431,8 @@ STOKVEL_ADMIN_SERVICES = {
     2. Change maximum member number 
     3. Change minimum contributing amount
     4. Change payout date 
-    5. Back
+    5. View pending applications
+    6. Back
     """,
     "valid_actions": ["1", "2", "3", "4", "5"],
     "action_requests": {  # Maybe we specify the endpoint per action
@@ -431,7 +441,10 @@ STOKVEL_ADMIN_SERVICES = {
         "3": "/accounting/change_contributing_amt",
         "4": "/users/change_payout_date",
     },
-    "state_selection": {"5": "back_state"},
+    "state_selection": {"6": "back_state"},
+    "action_responses": {
+        "5": "View pending applications here: https://stokvels.com/register",
+    },
     "input_request_states": {
         "1": {
             "tag": "admin_services:input_request_states:1",
@@ -441,21 +454,21 @@ STOKVEL_ADMIN_SERVICES = {
             "action": "1",
         },
         "2": {
-            "tag": "admin_services:input_request_states:6",
+            "tag": "admin_services:input_request_states:2",
             "message": "Please specify new maximum amount of members in your stokvel.",
             "valid_type": float,
             "invalid_message": "Please make sure the number of members is numeric and greater than 0. Returning you to the previous menu.",
             "action": "2",
         },
         "3": {
-            "tag": "admin_services:input_request_states:6",
+            "tag": "admin_services:input_request_states:3",
             "message": "Please specify the minimum contributing for your stokvel.",
             "valid_type": float,
             "invalid_message": "Please make sure the amount is numeric and greater than 0. Returning you to the previous menu.",
             "action": "3",
         },
         "4": {
-            "tag": "admin_services:input_request_states:6",
+            "tag": "admin_services:input_request_states:4",
             "message": "Please specify the new payout date for your stokvel in the format dd/mm/yyy.",
             "valid_type": str,
             "invalid_message": "Please make sure you provide the new payout date in the format dd/mm/yyyy. Returning you to the previous menu.",
@@ -522,6 +535,36 @@ UPDATE_PROFILE = {
     },
     "state_selection": {
         "5": "back_state"},
+    "input_request_states": {
+        "1": {
+            "tag": "update_profile:input_request_states:1",
+            "message": "Please update your updated name. A minimum of one character is required.",
+            "valid_type": str,
+            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "action": "1",
+        },
+        "2": {
+            "tag": "update_profile:input_request_states:2",
+            "message": "Please update your updated surname. A minimum of one character is required.",
+            "valid_type": str,
+            "invalid_message": "Please make ensure your new surnamename is at least one character long. Returning to previous menu.",
+            "action": "1",
+        },
+        "3": {
+            "tag": "update_profile:input_request_states:3",
+            "message": "Please enter your new wallet address.",
+            "valid_type": str,
+            "invalid_message": "Please make sure the new wallet address is at least one character long. Returning you to the previous menu.",
+            "action": "3",
+        },
+        "4": {
+            "tag": "update_profile:input_request_states:4",
+            "message": "Please enter your new wallet new cell phone number.",
+            "valid_type": str,
+            "invalid_message": "Please make sure your new cell phone number is at least one character long. Returning you to the previous menu.",
+            "action": "4",
+        }
+    },
     "state": 1,
 }
 
