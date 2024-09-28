@@ -14,7 +14,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
         }
 
         .form-container {
@@ -98,23 +98,15 @@
     <div class="form-container">
 
         <div class="header">
-            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <img src= "{{url_for('static', filename='/wallet.png')}}" >
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <h1>User Onboarding</h1>
+        <h2>Join </h2>
         <form action="{{ url_for('onboarding.onboard_user') }}" method="POST">
-            <label for="name">First Name:</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="surname">Last Name:</label>
-            <input type="text" id="surname" name="surname" required>
-
+        
             <label for="cellphone_number">Cellphone Number:</label>
             <input type="tel" id="cellphone_number" name="cellphone_number" required>
-
-            <label for="id_number">ID Number:</label>
-            <input type="number" maxlength="13" id="id_number" name="id_number" required>
 
             <label for="wallet_id">ILP Wallet Address:</label>
             <input type="url"  id="wallet_id" name="wallet_id" required>

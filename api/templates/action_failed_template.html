@@ -14,7 +14,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
         }
 
         .failed-container {
@@ -35,11 +35,40 @@
             color: #333;
             margin-top: 10px;
         }
+
+        .header {
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #f5f5f5; /* Light grey background */
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .header img {
+        width: 40px; /* Adjust size to your liking */
+        height: 40px; /* Adjust size to your liking */
+        margin-right: 10px; /* Space between the image and the text */
+    }
+
+    .company-name {
+        font-weight: bold;
+    }
     </style>
 </head>
 
 <body>
+
+
+
     <div class="failed-container">
+
+        <div class="header">
+            <img src= "{{url_for('static', filename='/wallet.png')}}" >
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
+
         <h2>{{action}} Failed!</h2>
         <h4>{{failed_message}}</h4>
         <h6>{{failed_next_step_message}}</h6>

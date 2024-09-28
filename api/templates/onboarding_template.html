@@ -14,7 +14,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
         }
 
         .form-container {
@@ -83,13 +83,29 @@
             color: red;
             font-size: 14px;
         }
+        .header {
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #f5f5f5; /* Light grey background */
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-        .header{
-            text-align: center;
-            margin-bottom: 20px;
-            background-color: #cfcfd0; /* Light grey background */
-            padding: 20px;
-        }
+    .header img {
+        width: 40px; /* Adjust size to your liking */
+        height: 40px; /* Adjust size to your liking */
+        margin-right: 10px; /* Space between the image and the text */
+    }
+
+    .company-name {
+        font-weight: bold;
+    }
+
+    .rafiki_link{
+        text-align: center;
+    }
 
     </style>
 </head>
@@ -98,11 +114,11 @@
     <div class="form-container">
 
         <div class="header">
-            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
+            <img src= "{{url_for('static', filename='/wallet.png')}}" >
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <h1>User Onboarding</h1>
+        <h2>User Onboarding</h2>
         <form action="{{ url_for('onboarding.onboard_user') }}" method="POST">
             <label for="name">First Name:</label>
             <input type="text" id="name" name="name" required>
@@ -122,7 +138,9 @@
             <br>
             <br>
             <br>
-            <a href = "https://rafiki.money/auth/signup">Create Rafiki Wallet</a>
+            <div class = "rafiki_link">
+                <a href = "https://rafiki.money/auth/signup">Create Rafiki Wallet</a>
+            </div>
 
             <input type="submit" value="Submit">
         </form>
