@@ -37,7 +37,7 @@ def apply_to_join_stokvel() -> Response:
 
         stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
         stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
-        stokvel_admin_cell_number = find_number_by_userid(user_id=stokvel_admin_number)
+        # stokvel_admin_cell_number = find_number_by_userid(user_id=stokvel_admin_number)
 
         print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_number)
 

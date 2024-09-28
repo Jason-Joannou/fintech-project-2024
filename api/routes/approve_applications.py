@@ -48,7 +48,7 @@ def process_application():
     requesting_number = request.form.get('requesting_number')  # Get from form - this is the phone number of the admin that is processing the apps
     admin_id = request.form.get('admin_id')
 
-    applicant_cell_number = find_number_by_userid(application_joiner_id)
+    # applicant_cell_number = find_number_by_userid(application_joiner_id)
 
     if action == 'approve':
         # print(application_id, ' Approved')

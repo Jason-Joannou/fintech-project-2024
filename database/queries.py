@@ -74,16 +74,16 @@ def find_user_by_number(from_number: str) -> Optional[str]:
 
         return None
 
-def find_number_by_userid(from_number: str) -> Optional[str]:
+def find_number_by_userid(user_id: str) -> Optional[str]:
     """
     docstring
     """
     # from_number = "0"+str(from_number)
     # print(from_number)
-    print(from_number)
-    query = "SELECT user_number FROM USERS WHERE user_id = :from_number"
+    print(user_id)
+    query = "SELECT user_number FROM USERS WHERE user_id = :user_id"
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_id": from_number})
+        cursor = conn.execute(text(query), {"user_id": user_id})
         result = cursor.fetchone()[0]
         print(result)
         if result:
