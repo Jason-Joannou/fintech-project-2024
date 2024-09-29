@@ -3,13 +3,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.exc import IntegrityError
 
 from api.schemas.onboarding import OnboardUserSchema
-<<<<<<< HEAD
-from database.queries import insert_user, insert_wallet
+# from database.queries import insert_user, insert_wallet
 # from whatsapp_utils._utils.twilio_messenger import send_notification_message
-=======
 from database.user_queries.queries import insert_user, insert_wallet
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
->>>>>>> main
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
@@ -82,7 +79,7 @@ def onboard_user() -> Response:
             error_message = "An unknown integrity error occurred."
 
         return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
-
+    
 
 
 @onboarding_bp.route("/success_user_creation")

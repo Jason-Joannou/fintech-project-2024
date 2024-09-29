@@ -93,28 +93,5 @@
             Your details have been successfully updated!
         </div>
     </div>
-
-    <script>
-        function handleFormSubmit(event) {
-            event.preventDefault(); // Prevent form submission
-
-            // Get form values and store them in variables
-            const name = document.getElementById('name').value;
-            const surname = document.getElementById('surname').value;
-            const username = document.getElementById('username').value;
-            const idNumber = document.getElementById('idNumber').value;
-
-            // Perform your update logic here (e.g., send data to a server)
-
-            // Show the success message directly after the form submission
-            const successMessage = document.getElementById('successMessage');
-            successMessage.style.display = 'block';
-
-            // Hide the message after 3 seconds
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 3000);
-        }
-    </script>
 </body>
 </html>
