@@ -241,9 +241,9 @@ def create_state_management_table() -> None:
         CREATE TABLE IF NOT EXISTS STATE_MANAGEMENT (
             id INTEGER PRIMARY KEY,
             user_number TEXT,
-            current_state_tag TEXT,
-            previous_state_tag TEXT,
-            last_interaction DATETIME
+            last_interaction DATETIME,
+            current_stokvel Text,
+            stack_state TEXT
         );
         """
             )
