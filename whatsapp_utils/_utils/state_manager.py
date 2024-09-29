@@ -192,7 +192,7 @@ class MessageStateManager:
                     return self.return_twilio_formatted_message(msg=msg)
 
                 # Need to check for dynamic state
-                if action_requests[user_action] == "stokvels/my_stokvels":
+                if action_requests[user_action] == "/stokvel/my_stokvels":
 
                     self.set_current_state(tag="my_stokvels")
                     return self.get_current_state_message()
@@ -427,7 +427,7 @@ class MessageStateManager:
             )
         else:
             retrieved_state = self.execute_action_request(
-                endpoint="/stokvels/my_stokvels",
+                endpoint="/stokvel/my_stokvels",
                 payload={"user_number": self.user_number},
             )
             self.current_state = json.loads(retrieved_state) if retrieved_state else {}
