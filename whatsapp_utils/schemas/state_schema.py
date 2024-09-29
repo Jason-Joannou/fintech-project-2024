@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -44,3 +44,4 @@ class StateSchema(BaseModel):
             }
         },
     )
+    current_stokvels: Optional[List] = Field([], examples=["Stokvel1", "Stokvel2"])
