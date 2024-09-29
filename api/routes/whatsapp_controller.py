@@ -1,15 +1,6 @@
 from flask import Blueprint, request
 
-from database.queries import check_if_number_exists_sqlite
-from whatsapp_utils._utils.action_handlers import handle_action
-from whatsapp_utils._utils.cache import Cache
-from whatsapp_utils._utils.message_config import (
-    GREET_MESSAGE_REGISTERED,
-    GREET_MESSAGE_UNREGISTERED,
-)
-from whatsapp_utils._utils.twilio_messenger import send_conversational_message
-
-cache = Cache()
+from whatsapp_utils._utils.state_manager import MessageStateManager
 
 whatsapp_bp = Blueprint("whatsapp", __name__)
 
@@ -19,31 +10,20 @@ BASE_ROUTE = "/whatsapp"
 @whatsapp_bp.route(BASE_ROUTE, methods=["POST"])
 def whatsapp() -> str:
     """
-    docstring
+    Handle incoming WhatsApp messages and process user requests based on the current state.
+
+    This method is triggered by a POST request to the WhatsApp webhook endpoint. It retrieves the
+    incoming message and the sender's phone number, manages the user's state using the
+    `MessageStateManager`, and processes the user's action based on their current state. The
+    appropriate response is then generated and returned.
+
+    Returns:
+        str: A string containing the response message to be sent back to the user via WhatsApp.
     """
-    incoming_msg = request.values.get("Body", "").lower()
+    incoming_msg = request.values.get("Body", "")
     from_number = request.values.get("From", "")
 
-    user = cache.get(from_number)
-    if user is None:
-        user = check_if_number_exists_sqlite(from_number=from_number)
-        if user:
-            cache.set(from_number, user)
-
-    if user:
-        print("here registered")
-        if incoming_msg in ["hi", "hello"]:
-            msg = send_conversational_message(GREET_MESSAGE_REGISTERED["message"])
-        else:
-            msg = handle_action(from_number=from_number, action=incoming_msg)
-
-    else:
-        print("User not registered")
-        if incoming_msg in ["hi", "hello"]:
-            msg = send_conversational_message(
-                message=GREET_MESSAGE_UNREGISTERED["message"]
-            )
-        else:
-            msg = handle_action(from_number=from_number, action=incoming_msg)
+    state_manager = MessageStateManager(user_number=from_number)
+    msg = state_manager.processes_user_request(user_action=incoming_msg)
 
     return str(msg)
