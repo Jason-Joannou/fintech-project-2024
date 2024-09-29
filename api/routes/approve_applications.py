@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for, make_response
 from sqlalchemy.exc import SQLAlchemyError
 
-from database.queries import find_user_by_number, find_number_by_userid
+from database.queries import find_user_by_number2, find_number_by_userid
 from database.stokvel_queries import get_all_applications, update_application_status, insert_stokvel_member, update_stokvel_members_count
 
 
@@ -24,7 +24,7 @@ def approve_stokvels() -> Response:
     try:
         requesting_number = request.form.get("requesting_number")
         # print('req no ' + requesting_number)
-        admin_id = find_user_by_number(requesting_number.lstrip('0'))
+        admin_id = find_user_by_number2(requesting_number.lstrip('0'))
         applications = get_all_applications(user_id=admin_id)
         # print(applications)
         return redirect(url_for('approve_stokvel.display_applications', admin_id=admin_id, requesting_number=requesting_number, applications=applications))
@@ -48,7 +48,8 @@ def process_application():
     requesting_number = request.form.get('requesting_number')  # Get from form - this is the phone number of the admin that is processing the apps
     admin_id = request.form.get('admin_id')
 
-    # applicant_cell_number = find_number_by_userid(application_joiner_id)
+    applicant_cell_number = find_number_by_userid(application_joiner_id)
+    print('applicant cell number: ' , applicant_cell_number)
 
     if action == 'approve':
         # print(application_id, ' Approved')

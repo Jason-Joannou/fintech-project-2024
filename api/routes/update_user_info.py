@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from database.queries import find_user_by_number
+from database.queries import find_user_by_number2
 from database.stokvel_queries import get_all_applications, update_application_status, insert_stokvel_member, update_stokvel_members_count
 
 # from api.schemas.onboarding import JoinStokvelSchema
@@ -26,11 +26,11 @@ def update_user_details() -> Response:
     try:
         requesting_number = requesting_number = request.form.get("requesting_number").lstrip('0')
         print('req no ' + requesting_number)
-        user_id = find_user_by_number(requesting_number)
+        user_id = find_user_by_number2(requesting_number)
         applications = get_all_applications(user_id=user_id)
         print(applications)
 
-        return render_template("update_user.html")
+        return render_template("update_user.html", requesting_number = requesting_number)
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")

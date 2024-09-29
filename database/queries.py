@@ -41,23 +41,23 @@ def check_if_number_exists_sqlite(from_number: str) -> bool:
 
         return False
     
-# def find_user_by_number(from_number: str) -> bool:
-#     """
-#     docstring UNCOMMENT LATER
-#     """
-#     from_number = from_number.split(":")[1]
-#     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"from_number": from_number})
-#         result = cursor.fetchone()
-#         print(result)
-#         if result:
-#             return result
+def find_user_by_number(from_number: str) -> bool:
+    """
+    docstring UNCOMMENT LATER
+    """
+    from_number = from_number.split(":")[1]
+    query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"from_number": from_number})
+        result = cursor.fetchone()
+        print(result)
+        if result:
+            return result
 
-#         return None
+        return None
 
 
-def find_user_by_number(from_number: str) -> Optional[str]:
+def find_user_by_number2(from_number: str) -> Optional[str]:
     """
     docstring
     """

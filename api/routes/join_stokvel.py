@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, jsonify, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from database.queries import find_user_by_number, find_number_by_userid
+from database.queries import find_user_by_number2, find_number_by_userid
 from database.stokvel_queries import get_all_stokvels, insert_stokvel_join_application, get_stokvel_id_by_name, get_admin_by_stokvel, check_application_pending_approved
 
 from api.schemas.onboarding import JoinStokvelSchema
@@ -32,14 +32,14 @@ def apply_to_join_stokvel() -> Response:
             **request.form.to_dict()
         )  
 
-        user_id = find_user_by_number(joiner_data.requesting_number)
+        user_id = find_user_by_number2(joiner_data.requesting_number)
 
 
         stokvel_id = get_stokvel_id_by_name(joiner_data.stokvel_name)
-        stokvel_admin_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
+        stokvel_admin_cell_number = get_admin_by_stokvel(stokvel_id=stokvel_id)
         # stokvel_admin_cell_number = find_number_by_userid(user_id=stokvel_admin_number)
 
-        print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_number)
+        print(stokvel_id,  " user id applying", user_id, " admin number = ", stokvel_admin_cell_number)
 
         if not check_application_pending_approved(user_id, stokvel_id): 
             #check if a user is either already approved/inserted into stokvel or if they have already applied and applic is pending
@@ -70,7 +70,7 @@ def apply_to_join_stokvel() -> Response:
 
         # Send the notification message
         # send_notification_message(
-        #     to=f"whatsapp:{stokvel_admin_number}", body=admin_notification_message
+        #     to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
         # )
         return redirect(url_for("join_stokvel.success_stokvel_join_application"))
 

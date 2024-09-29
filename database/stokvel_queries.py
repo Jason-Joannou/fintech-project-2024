@@ -42,7 +42,7 @@ def get_stokvel_id_by_name(stokvel_name):
     
 def get_admin_by_stokvel(stokvel_id):
     """
-    docstring
+    Returns admins cellphone number
     """
     print(stokvel_id)
     query = f"""
@@ -268,8 +268,8 @@ def insert_stokvel_member(
         with sqlite_conn.connect() as conn:
             print("Connected in stokvel_members insert")
             if check_available_space_in_stokvel(stokvel_id):
-                update_application_status(application_id, 'Approved')
                 if not check_if_stokvel_member(user_id, stokvel_id): 
+                    update_application_status(application_id, 'Approved')
                     result = conn.execute(text(insert_query), parameters)
                     conn.commit()
                 else:

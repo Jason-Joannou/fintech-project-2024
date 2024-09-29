@@ -48,7 +48,11 @@ def create_stokvel_table_sqlite() -> None:
                 max_number_of_contributors INTEGER,
                 Total_contributions NUMBER,
                 created_at TIMESTAMP,
-                updated_at TIMESTAMP
+                updated_at TIMESTAMP,
+                start_date	TEXT,
+                end_date	TEXT,
+                payout_frequency_int	INTEGER,
+                payout_frequency_period	TEXT,
             );
         """
             )
