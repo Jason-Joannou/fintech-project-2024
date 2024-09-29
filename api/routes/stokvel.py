@@ -30,10 +30,12 @@ def my_stokvels_dynamic_state():
     # Initialize variables for the dynamic state
     valid_actions = []
     state_selection = {}
+    current_stokvels = []
 
     # Loop through linked accounts and dynamically build the state
     for i, (stokvel_name, admin_ind) in enumerate(linked_accounts, 1):
         valid_actions.append(str(i))  # Action is the index as a string
+        current_stokvels.append(stokvel_name)
 
         # Depending on admin status, select the appropriate next state
         if admin_ind == 1:
@@ -62,6 +64,7 @@ def my_stokvels_dynamic_state():
         "message": message,
         "valid_actions": valid_actions,
         "state_selection": state_selection,
+        "current_stokvels": current_stokvels,
     }
 
     return jsonify(my_stokvels)
