@@ -6,7 +6,7 @@ from api.schemas.onboarding import OnboardUserSchema
 # from database.queries import insert_user, insert_wallet
 # from whatsapp_utils._utils.twilio_messenger import send_notification_message
 from database.user_queries.queries import insert_user, insert_wallet
-from whatsapp_utils._utils.twilio_messenger import send_notification_message
+# from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
