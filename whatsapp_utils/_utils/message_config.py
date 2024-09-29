@@ -43,46 +43,9 @@ STOKVEL_SERVICES = {
         "1": "Please join a stokvel through our online portal: https://stokvels.com/register",
         "2": "Please create a new stokvel through our online portal: https://stokvels.com/register",
     },
-    "action_requests": {"3": "stokvels/my_stokvels"},
+    "action_requests": {"3": "/stokvel/my_stokvels"},
     "state_selection": {"4": "back_state"},
     "state": 1,
-}
-
-
-ADMIN_SERVICES = {
-    "tag": "admin_services",
-    "message": """
-    Welcome to your admin page! Please select one of the following options to proceed:
-    1. View stokvel applications
-    2. Change stokvel name
-    3. Change maximum member number
-    4. Change minimum contributing amount
-    5. Change payout date
-    6. Back
-    """,
-    "valid_actions": ["1", "2", "3", "4", "5", "6"],
-    "action_requests": {
-        "1": "admin/admin_stokvels",
-        "2": "admin/admin_stokvel_members",
-    },
-    "action_responses": {
-        "3": "You can edit your stokvel constitutions through our online portal: stokvels.com"
-    },
-    "state_selection": {"5": "back_state"},
-    "state": 1,
-}
-
-# Will be removed once the dynamic state is created
-MY_STOKVELS = {
-    "tag": "my_stokvels",
-    "message": """ <insert message here> """,
-    "valid_actions": ["1", "2", "3", "4"],
-    "state_selection": {
-        "1": "stokvel_actions_user",
-        "2": "stokvel_actions_user",
-        "3": "stokvel_actions_admin",
-        "5": "back_state",
-    },
 }
 
 STOKVEL_ACTIONS_USER = {
@@ -97,10 +60,10 @@ STOKVEL_ACTIONS_USER = {
     6. Back""",
     "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
-        "1": "admin/stokvel_summary",
-        "2": "admin/change_contribution",
-        "3": "admin/view_constitution",
-        "4": "admin/make_contribution",
+        "1": "/stokvel/stokvel_summary",
+        "2": "/stokvel/change_contribution",
+        "3": "/stokvel/view_constitution",
+        "4": "/stokvel/make_contribution",
     },
     "state_selection": {"5": "leave_stokvel", "6": "back_state"},
     "input_request_states": {
@@ -136,10 +99,10 @@ STOKVEL_ACTIONS_ADMIN = {
     7. Back""",
     "valid_actions": ["1", "2", "3", "4", "5", "6", "7"],
     "action_requests": {
-        "1": "admin/stokvel_summary",
-        "2": "admin/change_contribution",
-        "3": "admin/view_constitution",
-        "4": "admin/make_contribution",
+        "1": "/stokvel/stokvel_summary",
+        "2": "/stokvel/change_contribution",
+        "3": "/stokvel/view_constitution",
+        "4": "/stokvel/make_contribution",
     },
     "state_selection": {"5": "leave_stokvel", "6": "admin_services", "7": "back_state"},
     "input_request_states": {
@@ -187,10 +150,10 @@ Welcome to stokvel administration! Please select one of the following options to
 """,
     "valid_actions": ["1", "2", "3", "4", "5"],
     "action_requests": {  # Maybe we specify the endpoint per action
-        "1": "/stokvels/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
-        "2": "/users/change_member_number",
-        "3": "/accounting/change_contributing_amt",
-        "4": "/users/change_payout_date",
+        "1": "/stokvel/admin/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
+        "2": "/stokvel/admin/change_member_number",
+        "3": "/stokvel/admin/change_contributing_amt",
+        "4": "/stokvel/admin/change_payout_date",
     },
     "state_selection": {"6": "back_state"},
     "action_responses": {
@@ -253,11 +216,11 @@ VIEW_PROFILE = {
     6. Back""",
     "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
-        "1": "stokvel/view_username",
-        "2": "stokvel/view_usersurname",
-        "3": "stokvel/view_wallet_address",
-        "4": "stokvel/view_wallet_balances",
-        "5": "stokvel/view_transactions",
+        "1": "/stokvel/view_username",
+        "2": "/stokvel/view_usersurname",
+        "3": "/stokvel/view_wallet_address",
+        "4": "/stokvel/view_wallet_balances",
+        "5": "/stokvel/view_transactions",
     },
     "state_selection": {"6": "back_state"},
     "state": 2,
@@ -273,8 +236,8 @@ UPDATE_PROFILE = {
     3. Back""",
     "valid_actions": ["1", "2", "3"],
     "action_requests": {
-        "1": "admin/update_username",
-        "2": "admin/update_usersurname",
+        "1": "/admin/update_username",
+        "2": "/admin/update_usersurname",
     },
     "state_selection": {"3": "back_state"},
     "input_request_states": {
