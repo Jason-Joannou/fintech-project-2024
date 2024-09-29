@@ -12,7 +12,6 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
-
 def get_total_number_of_users() -> int:
     """
     docstrings
@@ -179,40 +178,42 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
     except Exception as e:
         print(f"Error occurred during insert: {e}")
 
+
 def get_linked_stokvels(user_number):
     """
     Get the stokvels a user is linked to, and check if they are an admin.
     """
+    user_number = extract_whatsapp_number(from_number=user_number)
     query = """
-    SELECT 
+    SELECT
         a.stokvel_name,
-        CASE 
+        CASE
             WHEN b.user_id IN (
-                SELECT user_id 
-                FROM USERS 
+                SELECT user_id
+                FROM USERS
                 WHERE user_number = :user_number
-            ) 
-            THEN 1 
-            ELSE 0 
+            )
+            THEN 1
+            ELSE 0
         END AS admin_ind
     FROM STOKVELS as a
     LEFT JOIN ADMIN as b ON a.stokvel_id = b.stokvel_id
     WHERE a.stokvel_id IN (
-        SELECT stokvel_id 
-        FROM STOKVEL_MEMBERS 
+        SELECT stokvel_id
+        FROM STOKVEL_MEMBERS
         WHERE user_id IN (
             SELECT user_id FROM USERS WHERE user_number = :user_number
         )
     );
     """
-    
+
     with sqlite_conn.connect() as conn:
         cursor = conn.execute(text(query), {"user_number": user_number})
         result = cursor.fetchall()
-    
+
     # Process the results into a list of (stokvel_name, admin_ind)
     linked_accounts = [(row[0], row[1]) for row in result]
-    
+
     return linked_accounts
 
 def find_user_by_number(from_number: str) -> Optional[str]:
