@@ -29,97 +29,25 @@ REGISTERED_NUMBER = {
     "state": 0,
 }
 
-REGISTERED_NUMBER_ADMIN = {
-    "tag": "registered_number_admin",
-    "message": """
-    Hi there, welcome back! Please select one of the following options to proceed:
-    1. Stokvel Services
-    2. Community Services
-    3. Financial Reports
-    4. Admin Services
-    """,
-    "valid_actions": ["1", "2", "3", "4"],
-    "state_selection": {
-        "1": "stokvel_services",
-        "2": "community_services",
-        "3": "financial_reports",
-        "4": "admin_services",
-    },
-    "state": 0,
-}
-
 STOKVEL_SERVICES = {
     "tag": "stokvel_services",
     "message": """
     Please select one of the following options to proceed:
-    1. Join a stokvel 
-    2. Create a stokvel 
+    1. Join a stokvel
+    2. Create a stokvel
     3. My stokvels
     4. Back
     """,
     "valid_actions": ["1", "2", "3", "4"],
     "action_responses": {
         "1": "Please join a stokvel through our online portal: https://stokvels.com/register",
-        "2": "Please create a new stokvel through our online portal: https://stokvels.com/register"},
-    "action_requests": {
-        "3": "stokvels/my_stokvels"},
-    "state_selection": {
-        "4": "back_state"},
-    "state": 1,
-}
-
-COMMUNITY_SERVICES = {
-    "tag": "community_services",
-    "message": """
-    Welcome to our community services! Please select one of the following options to proceed:
-    1. Total Number of Stokvels
-    2. Total Number of Members
-    3. Total Number of Contributions
-    4. Total Number of Members grouped by Stokvel
-    5. Total Contributions grouped by Stokvel
-    6. Fund wallet
-    7. Back
-    """,
-    "valid_actions": ["1", "2", "3", "4", "5", "6", "7"],
-    "action_requests": {  # Maybe we specify the endpoint per action
-        "1": "/stokvels/total_stokvels",  # We need to specify the type of endpoint, ie endpoing:Method(post)
-        "2": "/users/total_users",
-        "3": "/accounting/total_contributions",
-        "4": "/users/users_by_stokvel",
-        "5": "/accounting/contributions_by_stokvel",
-        "6": "/users/fund_wallet",
+        "2": "Please create a new stokvel through our online portal: https://stokvels.com/register",
     },
-    "state_selection": {"7": "back_state"},
-    "input_request_states": {
-        "6": {
-            "tag": "community_services:input_request_states:6",
-            "message": "Please specify the amount you would like to fund your wallet in Rands.",
-            "valid_type": float,
-            "invalid_message": "Please make sure the amount is numeric and greater than 0. Returning you to the previous menu.",
-            "action": "6",
-        }
-    },
-    "state": 1,
-}
-
-FINANCIAL_REPORTS = {
-    "tag": "financial_reports",
-    "message": """
-    Welcome to your finacial reports services! Please select one of the following options to proceed:
-    1. Your total contributions
-    2. Your total stokvel payouts
-    3. Audit a stokvel
-    4. Back
-    """,
-    "valid_actions": ["1", "2", "3", "4"],
-    "action_requests": {
-        "1": "accounting/total_user_contributions",
-        "2": "accounting/total_user_payouts",
-        "3": "accoutning/audit_stokvel",
-    },
+    "action_requests": {"3": "stokvels/my_stokvels"},
     "state_selection": {"4": "back_state"},
     "state": 1,
 }
+
 
 ADMIN_SERVICES = {
     "tag": "admin_services",
@@ -127,9 +55,9 @@ ADMIN_SERVICES = {
     Welcome to your admin page! Please select one of the following options to proceed:
     1. View stokvel applications
     2. Change stokvel name
-    3. Change maximum member number 
+    3. Change maximum member number
     4. Change minimum contributing amount
-    5. Change payout date 
+    5. Change payout date
     6. Back
     """,
     "valid_actions": ["1", "2", "3", "4", "5", "6"],
@@ -153,7 +81,8 @@ MY_STOKVELS = {
         "1": "stokvel_actions_user",
         "2": "stokvel_actions_user",
         "3": "stokvel_actions_admin",
-        "5": "back_state"},
+        "5": "back_state",
+    },
 }
 
 STOKVEL_ACTIONS_USER = {
@@ -173,21 +102,19 @@ STOKVEL_ACTIONS_USER = {
         "3": "admin/view_constitution",
         "4": "admin/make_contribution",
     },
-    "state_selection": {
-        "5": "leave_stokvel",
-        "6": "back_state"},
+    "state_selection": {"5": "leave_stokvel", "6": "back_state"},
     "input_request_states": {
         "2": {
             "tag": "stokvel_actions_user:input_request_states:2",
             "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
-            "valid_type": float, 
+            "valid_type": float,
             "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "2",
         },
         "4": {
             "tag": "stokvel_actions_user:input_request_states:4",
             "message": "Please enter the contribution amount for your stokvel in Rands.",
-            "valid_type": float, 
+            "valid_type": float,
             "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "4",
         },
@@ -207,29 +134,26 @@ STOKVEL_ACTIONS_ADMIN = {
     5. Leave stokvel
     6. Administrative actions
     7. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5", "6","7"],
+    "valid_actions": ["1", "2", "3", "4", "5", "6", "7"],
     "action_requests": {
         "1": "admin/stokvel_summary",
         "2": "admin/change_contribution",
         "3": "admin/view_constitution",
         "4": "admin/make_contribution",
     },
-    "state_selection": {
-        "5": "leave_stokvel",
-        "6": "admin_services",
-        "7": "back_state"},
+    "state_selection": {"5": "leave_stokvel", "6": "admin_services", "7": "back_state"},
     "input_request_states": {
         "2": {
             "tag": "stokvel_actions_admin:input_request_states:2",
             "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
-            "valid_type": float, 
+            "valid_type": float,
             "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "2",
         },
         "4": {
             "tag": "stokvel_actions_admin:input_request_states:4",
             "message": "Please enter the contribution amount for your stokvel in Rands.",
-            "valid_type": float, 
+            "valid_type": float,
             "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
             "action": "4",
         },
@@ -241,28 +165,26 @@ LEAVE_STOKVEL = {
     "tag": "leave_stokvel",
     "message": """
     Are you are sure you want to leave this stokvel? You will lose your interest earned on your contributions:
-    1. Leave stokvel 
-    2. Back 
+    1. Leave stokvel
+    2. Back
     """,
     "valid_actions": ["1", "2"],
-    "action_requests": {
-        "1": "admin/leave_stokvel"},    
-    "state_selection": {
-        "2": "back_state"},
+    "action_requests": {"1": "admin/leave_stokvel"},
+    "state_selection": {"2": "back_state"},
     "state": 1,
 }
 
 STOKVEL_ADMIN_SERVICES = {
     "tag": "admin_services",
     "message": """
-    Welcome to stokvel administration! Please select one of the following options to proceed:
-    1. Change stokvel name
-    2. Change maximum member number 
-    3. Change minimum contributing amount
-    4. Change payout date 
-    5. View pending applications
-    6. Back
-    """,
+Welcome to stokvel administration! Please select one of the following options to proceed:
+1. Change stokvel name
+2. Change maximum member number
+3. Change minimum contributing amount
+4. Change payout date
+5. View pending applications
+6. Back
+""",
     "valid_actions": ["1", "2", "3", "4", "5"],
     "action_requests": {  # Maybe we specify the endpoint per action
         "1": "/stokvels/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
@@ -302,7 +224,7 @@ STOKVEL_ADMIN_SERVICES = {
             "valid_type": str,
             "invalid_message": "Please make sure you provide the new payout date in the format dd/mm/yyyy. Returning you to the previous menu.",
             "action": "4",
-        }
+        },
     },
     "state": 1,
 }
@@ -315,10 +237,7 @@ MY_PROFILE = {
     2. Update my profile
     3. Back""",
     "valid_actions": ["1", "2", "3"],
-    "state_selection": {
-        "1": "view_profile",
-        "2": "update_profile",
-        "3": "back_state"},
+    "state_selection": {"1": "view_profile", "2": "update_profile", "3": "back_state"},
     "state": 1,
 }
 
@@ -332,7 +251,7 @@ VIEW_PROFILE = {
     4. View my wallet balance
     5. My transactions
     6. Back""",
-    "valid_actions": ["1", "2", "3","4","5","6"],
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
         "1": "stokvel/view_username",
         "2": "stokvel/view_usersurname",
@@ -340,8 +259,7 @@ VIEW_PROFILE = {
         "4": "stokvel/view_wallet_balances",
         "5": "stokvel/view_transactions",
     },
-    "state_selection": {
-        "6": "back_state"},
+    "state_selection": {"6": "back_state"},
     "state": 2,
 }
 
@@ -358,8 +276,7 @@ UPDATE_PROFILE = {
         "1": "admin/update_username",
         "2": "admin/update_usersurname",
     },
-    "state_selection": {
-        "3": "back_state"},
+    "state_selection": {"3": "back_state"},
     "input_request_states": {
         "1": {
             "tag": "update_profile:input_request_states:1",
