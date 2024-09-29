@@ -26,9 +26,9 @@ from database.stokvel_queries.queries import (
 )
 from database.user_queries.queries import find_number_by_userid, find_user_by_number
 
-stokvel_bp = Blueprint("stokvels", __name__)
+stokvel_bp = Blueprint("stokvel", __name__)
 
-BASE_ROUTE = "/stokvels"
+BASE_ROUTE = "/stokvel"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -37,6 +37,48 @@ def stokvel() -> str:
     docstrings
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])
+def update_stokvel_contribution() -> str:
+    """
+    This is an example endpoint on how we would manage post requests from the state manager.
+    """
+    try:
+        user_number = request.json.get("user_number")
+        user_input = request.json.get("user_input")
+        stokvel_name = request.json.get("stokvel_selection")
+        send_notification_message(
+            to=user_number,
+            body="Thank you, we are currently processing your request...",
+        )
+        msg = f"You contribution amount has been succesfully updated to R{user_input} for {stokvel_name}."
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_stokvel_contribution.__name__}: {e}")
+        return msg
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/admin/change_stokvel_name", methods=["POST"])
+def change_stokvel_name() -> str:
+    """
+    This is an example endpoint on how we would manage post requests from the state manager.
+    """
+    try:
+        user_number = request.json.get("user_number")
+        user_input = request.json.get("user_input")
+        stokvel_name = request.json.get("stokvel_selection")
+        send_notification_message(
+            to=user_number,
+            body="Thank you, we are currently processing your request...",
+        )
+        msg = f"Your stokvel name has been succesfully updated to {user_input}."
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_stokvel_contribution.__name__}: {e}")
+        return msg
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/my_stokvels", methods=["POST"])
