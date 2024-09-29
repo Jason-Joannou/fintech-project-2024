@@ -242,6 +242,7 @@ def create_state_management_table() -> None:
             id INTEGER PRIMARY KEY,
             user_number TEXT,
             last_interaction DATETIME,
+            current_stokvel Text,
             stack_state TEXT
         );
         """
