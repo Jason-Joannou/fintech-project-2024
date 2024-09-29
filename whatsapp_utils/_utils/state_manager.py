@@ -3,8 +3,10 @@ from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     check_if_unregistered_state_exists,
+    get_current_stokvel_selection,
     get_state_responses,
     pop_previous_state,
+    set_current_stokvel_selection,
     update_current_state,
 )
 from database.user_queries.queries import (
@@ -157,6 +159,13 @@ class MessageStateManager:
                     self.set_previous_state()
                     return self.get_current_state_message()
 
+                if self.get_current_stokvels_in_state():
+                    stokvels = self.get_current_stokvels_in_state()
+                    stokvel_selection = stokvels[int(user_action) - 1]
+                    self.set_current_stokvels_in_state(
+                        stokvel_selection=stokvel_selection
+                    )
+
                 self.set_current_state(
                     tag=self.current_state["state_selection"][user_action]
                 )
@@ -189,7 +198,13 @@ class MessageStateManager:
                     return self.get_current_state_message()
 
                 endpoint = action_requests[user_action]
-                msg = self.execute_action_request(endpoint=endpoint)
+                msg = self.execute_action_request(
+                    endpoint=endpoint,
+                    payload={
+                        "user_number": self.user_number,
+                        "stokvel_selection": self.get_current_stokvel_selection(),
+                    },
+                )
                 return self.return_twilio_formatted_message(msg=msg)
 
         if (
@@ -202,7 +217,11 @@ class MessageStateManager:
             endpoint = action_requests[endpoint_action]
             msg = self.execute_action_request(
                 endpoint=endpoint,
-                payload={"user_input": user_input, "user_number": self.user_number},
+                payload={
+                    "user_input": user_input,
+                    "user_number": self.user_number,
+                    "stokvel_selection": self.get_current_stokvel_selection(),
+                },
             )
             return self.return_twilio_formatted_message(msg=msg)
 
@@ -221,6 +240,37 @@ class MessageStateManager:
         """
         msg = query_endpoint(endpoint_suffix=endpoint, payload=payload)
         return msg
+
+    def get_current_stokvels_in_state(self):
+        """
+        Retrieves the current stokvels in the dynamic state.
+
+        Returns:
+        list: The list of current stokvels.
+        """
+
+        return self.current_state.get("current_stokvels", [])
+
+    def get_current_stokvel_selection(self):
+        """
+        Retrieves the current stokvel selection from the DB.
+
+        Returns:
+        str: The current stokvel selection.
+        """
+
+        return get_current_stokvel_selection(from_number=self.user_number)
+
+    def set_current_stokvels_in_state(self, stokvel_selection: str):
+        """
+        Sets the current stokvels in the dynamic state.
+
+        Parameters:
+        stokvel_selection (str): The list of current stokvels.
+        """
+        set_current_stokvel_selection(
+            from_number=self.user_number, stokvel_selection=stokvel_selection
+        )
 
     def get_current_state_message(self):
         """
