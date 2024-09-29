@@ -226,3 +226,42 @@ def get_state_responses(from_number: str) -> Optional[str]:
             current_state_tag = None
 
     return current_state_tag
+
+
+def set_current_stokvel_selection(from_number: str, stokvel_selection: str) -> None:
+    """
+    Set the current stokvel selection for the user in the database.
+    """
+    from_number = extract_whatsapp_number(from_number=from_number)
+
+    query = "UPDATE STATE_MANAGEMENT SET current_stokvel = :stokvel_selection WHERE user_number = :from_number"
+    engine = db_conn.get_engine()
+
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            conn.execute(
+                text(query),
+                {"from_number": from_number, "stokvel_selection": stokvel_selection},
+            )
+            transaction.commit()
+        except SQLAlchemyError as e:
+            transaction.rollback()
+            print("There was an error setting the stokvel selection:", e)
+
+
+def get_current_stokvel_selection(from_number: str) -> Optional[str]:
+    """
+    Get the current stokvel selection for the user from the database.
+    """
+    from_number = extract_whatsapp_number(from_number=from_number)
+
+    query = (
+        "SELECT current_stokvel FROM STATE_MANAGEMENT WHERE user_number = :from_number"
+    )
+    engine = db_conn.get_engine()
+
+    with engine.connect() as conn:
+        result = conn.execute(text(query), {"from_number": from_number}).fetchone()
+
+    return result[0]
