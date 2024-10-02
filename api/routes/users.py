@@ -1,7 +1,9 @@
-from flask import Blueprint, request
+from flask import Blueprint, Response, redirect, render_template, request, url_for
+from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
-from database.user_queries.queries import get_total_number_of_users
+from database.stokvel_queries.queries import get_all_applications
+from database.user_queries.queries import find_user_by_number, get_total_number_of_users
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
@@ -51,3 +53,72 @@ def example_fund_wallet() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {example_fund_wallet.__name__}: {e}")
         return msg
+
+
+@users_bp.route(f"{BASE_ROUTE}/update_user", methods=["GET"])
+def approval_update_login() -> str:
+    """
+    docstrings
+    """
+    return render_template("update_user_login.html")
+
+
+@users_bp.route(f"{BASE_ROUTE}/update_user/update", methods=["POST"])
+def update_user_details() -> Response:
+    """
+    Handles onboarding of a new user.
+    """
+    try:
+        requesting_number = requesting_number = request.form.get(
+            "requesting_number"
+        ).lstrip("0")
+        print("req no " + requesting_number)
+        user_id = find_user_by_number(requesting_number)
+        applications = get_all_applications(user_id=user_id)
+        print(applications)
+
+        return render_template("update_user.html", requesting_number=requesting_number)
+
+    except SQLAlchemyError as sql_error:
+        print(f"SQL Error occurred during insert operations: {sql_error}")
+        return redirect(url_for("update_user_details.failed_user_update"))
+
+    except Exception as e:
+        print(f"General Error occurred during insert operations: {e}")
+        return redirect(url_for("update_user_details.failed_user_update"))
+
+
+@users_bp.route(f"{BASE_ROUTE}/update_user/success_user_update")
+def success_user_update() -> str:
+    """
+    docstrings
+    """
+    action = "Profile Update"
+    success_message = "Update to profile completed"
+    success_next_step_message = (
+        "Please navigate back to WhatsApp for further functions."
+    )
+
+    return render_template(
+        "action_success_template.html",
+        action=action,
+        success_message=success_message,
+        success_next_step_message=success_next_step_message,
+    )
+
+
+@users_bp.route(f"{BASE_ROUTE}/update_user/failed_user_update")
+def failed_user_update() -> str:
+    """
+    docstring
+    """
+    action = "User update"
+    failed_message = "We could not update your profile. Please try again."  # Define a better message here - depending on what went wrong
+    failed_next_step_message = "Please go back and try again."  # Define a better message here - depending on what needs to happen next
+
+    return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+    )

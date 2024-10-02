@@ -1,9 +1,9 @@
 from flask import Blueprint, Response, redirect, render_template, request, url_for
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from api.schemas.onboarding import OnboardUserSchema
-from database.queries import insert_user, insert_wallet
+from database.user_queries.queries import insert_user, insert_wallet
+
 # from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 onboarding_bp = Blueprint("onboarding", __name__)
@@ -29,7 +29,7 @@ def onboard_user() -> Response:
             **request.form.to_dict()
         )  # ** unpacks the dictionary
 
-        #verify_wallet() <- send request to the wallet for verification
+        # verify_wallet() <- send request to the wallet for verification
 
         insert_user(
             user_id=user_data.id_number,
@@ -41,7 +41,7 @@ def onboard_user() -> Response:
         insert_wallet(
             user_id=user_data.id_number,
             user_wallet=user_data.wallet_id,
-            user_balance=100, #how should we fund user wallets initially?
+            user_balance=100,  # how should we fund user wallets initially?
         )
         # Prepare the notification message
         notification_message = (
@@ -57,15 +57,17 @@ def onboard_user() -> Response:
         #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
         # )
         return redirect(url_for("onboarding.success_user_creation"))
-    
+
     except IntegrityError as integrity_error:
         print(f"SQL Error occurred during insert operations: {integrity_error}")
-        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=error_message)
+        )
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
         return redirect(url_for("onboarding.failed_user_creation"))
-    
+
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
         error_string = str(e)
@@ -76,21 +78,27 @@ def onboard_user() -> Response:
         else:
             error_message = "An unknown integrity error occurred."
 
-        return redirect(url_for("onboarding.failed_user_creation", error_message = error_message))
-
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=error_message)
+        )
 
 
 @onboarding_bp.route("/success_user_creation")
 def success_user_creation() -> str:
     action = "Onboarding"
-    success_message = "User onboarding successful! You are ready to start using the application."
-    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+    success_message = (
+        "User onboarding successful! You are ready to start using the application."
+    )
+    success_next_step_message = (
+        "Please navigate back to WhatsApp for further functions."
+    )
 
-
-    return render_template("action_success_template.html", 
-                           action = action,
-                           success_message = success_message,
-                           success_next_step_message = success_next_step_message)
+    return render_template(
+        "action_success_template.html",
+        action=action,
+        success_message=success_message,
+        success_next_step_message=success_next_step_message,
+    )
 
 
 @onboarding_bp.route("/failed_user_creation")
@@ -107,8 +115,9 @@ def failed_user_creation() -> str:
     failed_message = error_message
     failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
 
-
-    return render_template("action_failed_template.html", 
-                           action = action,
-                           failed_message = failed_message,
-                           failed_next_step_message = failed_next_step_message)
+    return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+    )
