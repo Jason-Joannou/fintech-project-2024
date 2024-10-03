@@ -118,17 +118,17 @@
         <h1>Application Approvals:</h1>
             <!-- <p>{{ applications }}</p> -->
             {% for app in applications %}
-            <form method="POST" action="{{ url_for('approve_stokvel.process_application') }}">
+            <form method="POST" action="{{ url_for('stokvel.process_application') }}">
             <div class="application">
                 <h3>Stokvel: {{app.stokvel_name}}</h3>
                 <strong>Application ID: {{ app.id }}</strong>
                 <br>
                 <strong>Application Status: {{ app.AppStatus }}</strong>
                 <br>
-                <strong>Applicant Name: {{ app.user_name }} {{ app.user_surname }}</strong> 
+                <strong>Applicant Name: {{ app.user_name }} {{ app.user_surname }}</strong>
                 <br>
                 <strong> Applicant Number: {{ app.user_number }}</strong>
-                
+
                 <input type="hidden" name="application_id" value="{{ app.id }}">
                 <input type="hidden" name="requesting_number" value="{{ requesting_number }}">
                 <input type="hidden" name="user_id" value="{{app.user_id }}">

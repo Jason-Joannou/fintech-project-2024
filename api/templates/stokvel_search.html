@@ -109,7 +109,7 @@
         .company-name {
             font-weight: bold;
         }
-     
+
         #joinStokvelForm {
         display: none; /* Hide the form initially */
         background-color: #d0efeb;
@@ -136,11 +136,11 @@
         <br>
 
         <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
-                
+
         <div id="stokvelList">
         </div>
 
-        <form id = "joinStokvelForm" class = "hidden" action="{{ url_for('join_stokvel.apply_to_join_stokvel') }}" method="POST">
+        <form id = "joinStokvelForm" class = "hidden" action="{{ url_for('stokvel.apply_to_join_stokvel') }}" method="POST">
             <h2>Application Form:</h2>
             <h3>Join selected stokvel: <span id="stokvel_display_name"></span></h3><br>
             <!-- <h3 id = "stokvel_display_name"></h3> -->
@@ -150,7 +150,7 @@
             <!-- Hidden field for selected stokvel -->
             <input type="hidden" id="stokvel_name" name="stokvel_name" value="">
             <input type="submit" value="Agree and Apply to Join">
-        
+
         </form>
 
 
@@ -182,7 +182,7 @@
             if (stokvelList.innerHTML === '') {
                 stokvelList.innerHTML = '<p>No stokvels found matching your search.</p>';
             }
-            
+
 
         }
 
@@ -212,11 +212,11 @@
                     <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
                     ${stokvel.available_space === 0 ? '<h4 style="color: red;">Stokvel is full</h4>' : ''}
                 </div>
-                
+
                 <div class="buttons">
                     <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}', '${stokvel.available_space}')">
                 </div>
-                
+
                 <br>
 
                 <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
@@ -228,10 +228,10 @@
                     <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
                     <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
 
-                    <br>  
-                    
+                    <br>
+
                     <p>Complete form below to apply to join.</p>
-                
+
 
 
                 </div>
@@ -248,8 +248,8 @@
         //     constitution.classList.toggle('hidden');
 
         //     const joinForm = document.getElementById("joinStokvelForm");
-        //     joinForm.classList.toggle('hidden');  // Toggle form visibility            
-            
+        //     joinForm.classList.toggle('hidden');  // Toggle form visibility
+
         //     document.getElementById('stokvel_name').value = stokvelName;
 
         // }
@@ -269,7 +269,7 @@
 
                         // // Show the join form when constitution is clicked
             if (available_space > 0 & !constitution.classList.contains('hidden')) {
-                
+
                 joinForm.style.display = "block"; // Show the join form
             }
             else{

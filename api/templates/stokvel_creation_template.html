@@ -98,9 +98,9 @@
         </div>
 
         <h2>Stokvel Registration</h2>
-        <form action="{{ url_for('create_stokvel.onboard_stokvel') }}" method="POST">
+        <form action="{{ url_for('stokvel.onboard_stokvel') }}" method="POST">
             <!-- Stokvel Name -->
-            
+
             <label for="requesting_number">Requesting Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
 
@@ -111,7 +111,7 @@
             <label for="num_admins">Number of Administrators:</label>
             <input type="number" id="num_admins" name="num_admins" required> -->
 
-            <!-- Administrator Details 
+            <!-- Administrator Details
             <label for="admin_details">Details of Administrators (Names and Contacts):</label>
             <input type="text" id="admin_details" name="admin_details" required>-->
 
@@ -130,7 +130,7 @@
             <label for="stokvel_type">Type of Stokvel:</label>
             <input type="text" id="stokvel_type" name="stokvel_type" required> -->
 
-            <!-- Frequency of Stokvel Payout -->   
+            <!-- Frequency of Stokvel Payout -->
 
             <label for="min_contributing_amount">Minimum contribution (ZAR):</label>
             <input type="number" id="min_contributing_amount" name="min_contributing_amount" required>
@@ -201,7 +201,7 @@
             <br>
             - Minimum contribution is ZAR ${minContribution}
             <br>
-            - Payouts every ${payoutFrequency} ${payoutFrequencyPeriod} 
+            - Payouts every ${payoutFrequency} ${payoutFrequencyPeriod}
             <br>
             - Starting from ${startDate} to ${endDate}.`;
             document.getElementById('constitution-text').textContent = constitutionText;

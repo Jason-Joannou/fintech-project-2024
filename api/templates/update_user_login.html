@@ -103,7 +103,7 @@
         </div>
 
         <h1>Update User Details</h1>
-        <form action="{{ url_for('update_user_details.update_user_details') }}" method="POST">
+        <form action="{{ url_for('users.update_user_details') }}" method="POST">
             <label for="requesting_number">Cellphone Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
             <br>

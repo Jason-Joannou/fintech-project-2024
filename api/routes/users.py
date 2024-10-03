@@ -81,11 +81,11 @@ def update_user_details() -> Response:
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("update_user_details.failed_user_update"))
+        return redirect(url_for("users.failed_user_update"))
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("update_user_details.failed_user_update"))
+        return redirect(url_for("users.failed_user_update"))
 
 
 @users_bp.route(f"{BASE_ROUTE}/update_user/success_user_update")

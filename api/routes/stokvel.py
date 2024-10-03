@@ -24,7 +24,12 @@ from database.stokvel_queries.queries import (
     update_application_status,
     update_stokvel_members_count,
 )
-from database.user_queries.queries import find_number_by_userid, find_user_by_number
+from database.user_queries.queries import (
+    find_number_by_userid,
+    find_user_by_number,
+    get_linked_stokvels,
+)
+from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 stokvel_bp = Blueprint("stokvel", __name__)
 
@@ -132,7 +137,8 @@ def my_stokvels_dynamic_state():
     }
 
     return jsonify(my_stokvels)
-    
+
+
 @stokvel_bp.route(f"{BASE_ROUTE}/join_stokvel", methods=["GET"])
 def join_stokvel() -> str:
     """
@@ -176,7 +182,7 @@ def apply_to_join_stokvel() -> Response:
             error_message = "You are already a member or \nyou have already applied to join this stokvel. Please apply to join another stokvel."
             return redirect(
                 url_for(
-                    "join_stokvel.failed_stokvel_join_application",
+                    "stokvel.failed_stokvel_join_application",
                     error_message=error_message,
                 )
             )
@@ -195,19 +201,20 @@ def apply_to_join_stokvel() -> Response:
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{joiner_data.requesting_number}", body=joiner_notification_message
-        # )
+        send_notification_message(
+            to=f"whatsapp:{joiner_data.requesting_number}",
+            body=joiner_notification_message,
+        )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
-        # )
-        return redirect(url_for("join_stokvel.success_stokvel_join_application"))
+        send_notification_message(
+            to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
+        )
+        return redirect(url_for("stokvel.success_stokvel_join_application"))
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("join_stokvel.failed_stokvel_join_application"))
+        return redirect(url_for("stokvel.failed_stokvel_join_application"))
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
@@ -221,7 +228,7 @@ def apply_to_join_stokvel() -> Response:
             error_message = "An unknown error occurred."
         return redirect(
             url_for(
-                "join_stokvel.failed_stokvel_join_application",
+                "stokvel.failed_stokvel_join_application",
                 error_message=error_message,
             )
         )  # tis was changed
@@ -345,14 +352,14 @@ def onboard_stokvel() -> Response:
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
-        # )
-        return redirect(url_for("create_stokvel.success_stokvel_creation"))
+        send_notification_message(
+            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
+        )
+        return redirect(url_for("stokvel.success_stokvel_creation"))
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("create_stokvel.failed_stokvel_creation"))
+        return redirect(url_for("stokvel.failed_stokvel_creation"))
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
@@ -369,9 +376,7 @@ def onboard_stokvel() -> Response:
         else:
             error_message = "An unknown error occurred."
         return redirect(
-            url_for(
-                "create_stokvel.failed_stokvel_creation", error_message=error_message
-            )
+            url_for("stokvel.failed_stokvel_creation", error_message=error_message)
         )  # tis was changed
 
 
@@ -440,7 +445,7 @@ def approve_stokvels() -> Response:
         # print(applications)
         return redirect(
             url_for(
-                "approve_stokvel.display_applications",
+                "stokvel.display_applications",
                 admin_id=admin_id,
                 requesting_number=requesting_number,
                 applications=applications,
@@ -449,11 +454,11 @@ def approve_stokvels() -> Response:
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("approve_stokvel.failed_approval_login"))
+        return redirect(url_for("stokvel.failed_approval_login"))
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("approve_stokvel.failed_approval_login"))
+        return redirect(url_for("stokvel.failed_approval_login"))
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/process_applications", methods=["POST"])
@@ -497,15 +502,14 @@ def process_application():
                 )
 
                 for number in declined_applications_list:
-                    pass
                     # Send the notification message
-                    # send_notification_message(
-                    #     to=f"whatsapp:{number}", body=app_declined_notification_message
-                    # )
+                    send_notification_message(
+                        to=f"whatsapp:{number}", body=app_declined_notification_message
+                    )
 
                 return redirect(
                     url_for(
-                        "approve_stokvel.failed_approval_sv_full",
+                        "stokvel.failed_approval_sv_full",
                         error_message=error_message,
                     )
                 )
@@ -518,9 +522,10 @@ def process_application():
                 )
 
                 # Send the notification message
-                # send_notification_message(
-                #     to=f"whatsapp:{applicant_cell_number}", body=app_accepted_notification_message
-                # )
+                send_notification_message(
+                    to=f"whatsapp:{applicant_cell_number}",
+                    body=app_accepted_notification_message,
+                )
 
         except Exception as e:
             print(f"General Error occurred during insert operations: {e}")
@@ -531,7 +536,7 @@ def process_application():
                 error_message = "An unknown integrity error occurred."
             return redirect(
                 url_for(
-                    "approve_stokvel.failed_approval_sv_full",
+                    "stokvel.failed_approval_sv_full",
                     error_message=error_message,
                 )
             )
@@ -549,14 +554,15 @@ def process_application():
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{applicant_cell_number}", body=app_declined_notification_message
-        # )
+        send_notification_message(
+            to=f"whatsapp:{applicant_cell_number}",
+            body=app_declined_notification_message,
+        )
 
     # Redirect to a route that fetches the latest applications with the requesting_number
     return redirect(
         url_for(
-            "approve_stokvel.display_applications",
+            "stokvel.display_applications",
             admin_id=admin_id,
             requesting_number=requesting_number,
         )

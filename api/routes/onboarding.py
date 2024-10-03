@@ -3,8 +3,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from api.schemas.onboarding import OnboardUserSchema
 from database.user_queries.queries import insert_user, insert_wallet
-
-# from whatsapp_utils._utils.twilio_messenger import send_notification_message
+from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
@@ -53,9 +52,9 @@ def onboard_user() -> Response:
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
-        # )
+        send_notification_message(
+            to=f"whatsapp:{user_data.cellphone_number}", body=notification_message
+        )
         return redirect(url_for("onboarding.success_user_creation"))
 
     except IntegrityError as integrity_error:
