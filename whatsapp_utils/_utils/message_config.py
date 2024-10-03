@@ -148,7 +148,7 @@ Welcome to stokvel administration! Please select one of the following options to
 5. View pending applications
 6. Back
 """,
-    "valid_actions": ["1", "2", "3", "4", "5"],
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {  # Maybe we specify the endpoint per action
         "1": "/stokvel/admin/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
         "2": "/stokvel/admin/change_member_number",
