@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS  # Import Flask-CORS
 
 from api.routes.example_template import example_template_bp
 from api.routes.onboarding import onboarding_bp
@@ -8,6 +9,10 @@ from api.routes.whatsapp_controller import whatsapp_bp
 
 app = Flask(__name__)
 
+# Enable CORS for all routes and all origins
+CORS(app)  # Add this line to enable CORS for the entire app
+
+# Registering blueprints
 app.register_blueprint(stokvel_bp)
 app.register_blueprint(onboarding_bp)
 app.register_blueprint(users_bp)
@@ -18,7 +23,7 @@ app.register_blueprint(example_template_bp)
 @app.route("/")
 def index() -> str:
     """
-    docstring
+    Root route
     """
     return "Stokvel API"
 
