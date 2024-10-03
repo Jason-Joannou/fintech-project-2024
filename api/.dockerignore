@@ -1,0 +1,72 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+*.whl
+
+# Logs
+logs/
+*.log
+
+# Test results
+.coverage
+*.cover
+*.coverage
+*.cov
+htmlcov/
+
+# Docker files
+Dockerfile*
+.dockerignore
+
+# Git and other version control files
+.git/
+.gitignore
+.gitattributes
+.hg/
+.svn/
+.cvs/
+
+# IDE and editor config files
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# Environment files
+*.env
+.env.*
+
+# Miscellaneous
+*.DS_Store
+*.bak
+*.swp
+*.tmp
+.data/
+.terraform/
+*.hcl
+main-execution-plan
+*.tf
+*.md
+*.tfstate
+*.tfstate.backup
+*.ini
+*.toml
+
+
+
