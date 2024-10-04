@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import RegisterStokvelSchema
 from database.stokvel_queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count
+from database.contribution_payout_queries import insert_member_contribution_parameters
 from database.queries import find_user_by_number2
 
 create_stokvel_bp = Blueprint("create_stokvel", __name__)
@@ -77,6 +78,22 @@ def onboard_stokvel() -> Response:
             total_contributions=0,
             total_members=1
         )
+
+        # The below generates the information we need to keep in the database to loop through and start to debit users
+        # when a stokvel is created - this is only one person
+        # these parameters will be used to create payment grants that the user will need to interact with
+        insert_member_contribution_parameters(
+            stokvel_id=inserted_stokvel_id,
+            start_date=stokvel_data.start_date,
+            end_date = stokvel_data.end_date,
+            # payout_frequency = stokvel_data.payout_frequency_int,
+            payout_period = stokvel_data.payout_frequency_period,
+            contribution=stokvel_data.min_contributing_amount
+        )
+
+        # insert_stokvel_payout_parameters(
+        #     payout_date = stokvel_data.end_date
+        #     )
 
 
 
