@@ -305,7 +305,7 @@ def insert_stokvel_member(
                         f"could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
                     )
                     raise Exception(
-                        f"General Error occurred during inserting a stokvel member already_member: {e}"
+                        "General Error occurred during inserting a stokvel member already_member"
                     )  # Stops execution by raising the error
             else:
                 print(f"Could not insert, stokvel {stokvel_id} is full")
@@ -376,7 +376,6 @@ def insert_stokvel_member(
                     print("Declined Applications IDs:", declined_applications_list)
 
                     return declined_applications_list
-                    # raise Exception(f"General error occurred during inserting a stokvel member stokvel_full")  # Stops execution by raising the error
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
@@ -545,7 +544,11 @@ def check_application_pending_approved(user_id, stokvel_id):
     """
     Check if a user already has a pending application in the database.
     """
-    query = "SELECT * FROM APPLICATIONS WHERE user_id = :user_id AND stokvel_id = :stokvel_id AND (AppStatus = 'Application Submitted' or AppStatus = 'Approved');"
+    query = """SELECT * FROM APPLICATIONS
+    WHERE user_id = :user_id
+    AND stokvel_id = :stokvel_id
+    AND (AppStatus = 'Application Submitted' or AppStatus = 'Approved');"""
+
     parameters = {"user_id": user_id, "stokvel_id": stokvel_id}
 
     members_query = "select * from STOKVEL_MEMBERS where user_id = :user_id and stokvel_id = :stokvel_id;"

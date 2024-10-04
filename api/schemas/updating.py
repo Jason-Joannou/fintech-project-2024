@@ -1,23 +1,29 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class UpdateUserSchema(BaseModel):
     """
     docstring
     """
+
     name: Optional[str] = Field(None, example="John")
     surname: Optional[str] = Field(None, example="Doe")
     cellphone_number: str = Field(None, example="1234567890")
     id_number: Optional[str] = Field(None, example="ID123456")
     wallet_id: Optional[str] = Field("TestWallet", example="WalletABC")
 
+
 class UpdateStokvelSchema(BaseModel):
     """
     docstring
     """
+
     stokvel_id: Optional[int] = Field(None, example=123)
-    stokvel_name: Optional[str] = Field(None, example="John's Soccer Stokvel")  # unique constraint here
+    stokvel_name: Optional[str] = Field(
+        None, example="John's Soccer Stokvel"
+    )  # unique constraint here
     ILP_wallet: Optional[str] = Field(None, example="/johns_stokvel")
     MOMO_wallet: Optional[str] = Field(None, example="MOMO10255")
     total_members: Optional[int] = Field(None, example=15)
@@ -31,5 +37,3 @@ class UpdateStokvelSchema(BaseModel):
     created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     requesting_number: str = Field(None, example="123456")
-
-    
