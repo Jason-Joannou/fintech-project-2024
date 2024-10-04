@@ -59,6 +59,9 @@ def get_admin_by_stokvel(stokvel_id):
 
 
 def get_all_applications(user_id):
+    """
+    docstring
+    """
     query = """
         SELECT
             a.id,
