@@ -323,9 +323,9 @@ class MessageStateManager:
         if self.current_state:
             msg = self.unrecognized_state + self._get_current_state_message_formatted()
             return send_conversational_message(msg)
-        else:
-            msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
-            return send_conversational_message(msg)
+
+        msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+        return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
         """
