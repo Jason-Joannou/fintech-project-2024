@@ -60,12 +60,14 @@ def onboard_user() -> Response:
     except IntegrityError as integrity_error:
         print(f"SQL Error occurred during insert operations: {integrity_error}")
         return redirect(
-            url_for("onboarding.failed_user_creation", error_message=error_message)
+            url_for("onboarding.failed_user_creation", error_message=integrity_error)
         )
 
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("onboarding.failed_user_creation"))
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=sql_error)
+        )
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
@@ -112,7 +114,8 @@ def failed_user_creation() -> str:
     else:
         error_message = "User onboarding failed. Please try again later."
     failed_message = error_message
-    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+    # Define a better message here - depending on what needs to happen next
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."
 
     return render_template(
         "action_failed_template.html",

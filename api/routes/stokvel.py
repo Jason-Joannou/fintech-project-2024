@@ -73,7 +73,7 @@ def change_stokvel_name() -> str:
     try:
         user_number = request.json.get("user_number")
         user_input = request.json.get("user_input")
-        stokvel_name = request.json.get("stokvel_selection")
+        # stokvel_name = request.json.get("stokvel_selection")
         send_notification_message(
             to=user_number,
             body="Thank you, we are currently processing your request...",
@@ -264,7 +264,8 @@ def failed_stokvel_join_application() -> str:
     else:
         error_message = "Application to join has failed. Please try again later."
     failed_message = error_message
-    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+    # Define a better message here - depending on what needs to happen next
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."
 
     return render_template(
         "action_failed_template.html",
@@ -297,7 +298,7 @@ def onboard_stokvel() -> Response:
         inserted_stokvel_id = insert_stokvel(
             stokvel_id=None,
             stokvel_name=stokvel_data.stokvel_name,  # unique constraint here
-            ILP_wallet="ILP_TEST",
+            ILP_wallet="ILP_TEST",  # This needs to be changed
             MOMO_wallet="MOMO_TEST",
             total_members=stokvel_data.total_members,
             min_contributing_amount=stokvel_data.min_contributing_amount,
@@ -325,7 +326,7 @@ def onboard_stokvel() -> Response:
         insert_stokvel_member(
             application_id=None,
             stokvel_id=inserted_stokvel_id,
-            user_id=find_user_by_number(stokvel_data.requesting_number),
+            user_id=user_id,
         )
 
         # update the number of contributors
@@ -335,7 +336,7 @@ def onboard_stokvel() -> Response:
         insert_admin(
             stokvel_id=inserted_stokvel_id,
             stokvel_name=stokvel_data.stokvel_name,
-            user_id=find_user_by_number(stokvel_data.requesting_number),
+            user_id=user_id,
             total_contributions=0,
             total_members=1,
         )
@@ -414,7 +415,8 @@ def failed_stokvel_creation() -> str:
     else:
         error_message = "Stokvel could not be registered. Please try again later."
     failed_message = error_message
-    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+    # Define a better message here - depending on what needs to happen next
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."
 
     return render_template(
         "action_failed_template.html",
@@ -624,7 +626,8 @@ def failed_approval_sv_full() -> str:
     else:
         error_message = "User onboarding failed. Please try again later."
     failed_message = error_message
-    failed_next_step_message = "Please navigate back to WhatsApp for further functions."  # Define a better message here - depending on what needs to happen next
+    # Define a better message here - depending on what needs to happen next
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."
 
     return render_template(
         "action_failed_template.html",

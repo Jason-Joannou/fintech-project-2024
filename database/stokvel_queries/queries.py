@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
 
@@ -156,13 +155,35 @@ def insert_stokvel(
 
     insert_query = """
         INSERT INTO STOKVELS (
-            stokvel_id, stokvel_name, ILP_wallet, MOMO_wallet, total_members,
-            min_contributing_amount, max_number_of_contributors, total_contributions, start_date, end_date, payout_frequency_int, payout_frequency_period,
-            created_at, updated_at
+            stokvel_id,
+            stokvel_name,
+            ILP_wallet,
+            MOMO_wallet,
+            total_members,
+            min_contributing_amount,
+            max_number_of_contributors,
+            total_contributions,
+            start_date,
+            end_date,
+            payout_frequency_int,
+            payout_frequency_period,
+            created_at,
+            updated_at
         ) VALUES (
-            :stokvel_id, :stokvel_name, :ILP_wallet, :MOMO_wallet, :total_members,
-            :min_contributing_amount, :max_number_of_contributors, :total_contributions, :start_date, :end_date, :payout_frequency_int, :payout_frequency_period,
-            :created_at, :updated_at
+            :stokvel_id,
+            :stokvel_name,
+            :ILP_wallet,
+            :MOMO_wallet,
+            :total_members,
+            :min_contributing_amount,
+            :max_number_of_contributors,
+            :total_contributions,
+            :start_date,
+            :end_date,
+            :payout_frequency_int,
+            :payout_frequency_period,
+            :created_at,
+            :updated_at
         )
         """
 
@@ -277,7 +298,7 @@ def insert_stokvel_member(
             if check_available_space_in_stokvel(stokvel_id):
                 if not check_if_stokvel_member(user_id, stokvel_id):
                     update_application_status(application_id, "Approved")
-                    result = conn.execute(text(insert_query), parameters)
+                    conn.execute(text(insert_query), parameters)
                     conn.commit()
                 else:
                     print(
