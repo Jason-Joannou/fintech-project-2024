@@ -210,19 +210,14 @@ def insert_user(
     except sqlite3.IntegrityError as integrity_error:
         # Catch integrity errors such as unique constraint violations
         print(f"IntegrityError during insert: {integrity_error}")
-        raise sqlite3.IntegrityError(f"IntegrityError during insert: {integrity_error}")
 
     except sqlite3.Error as e:
-        # print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a user: {e}"
-        )  # Stops execution by raising the error
+        print(f"Error occurred during insert: {e}")
+        raise e
 
     except Exception as e:
-        # print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a user: {e}"
-        )  # Stops execution by raising the error
+        print(f"Error occurred during insert: {e}")
+        raise e
 
 
 def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
@@ -260,12 +255,7 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
                 print("Insert failed.")
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a wallet: {e}"
-        )  # Stops execution by raising the error
-
+        raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a wallet: {e}"
-        )  # Stops execution by raising the error
+        raise e

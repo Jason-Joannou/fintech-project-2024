@@ -465,6 +465,9 @@ def approve_stokvels() -> Response:
 
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/process_applications", methods=["POST"])
 def process_application():
+    """
+    docstring
+    """
     application_id = request.form.get("application_id")
     application_stokvel_id = request.form.get("stokvel_id")
     application_joiner_id = request.form.get("user_id")
@@ -516,18 +519,17 @@ def process_application():
                     )
                 )
 
-            else:
-                # Prepare the notification message
-                app_accepted_notification_message = (
-                    f"Welcome to the stokvel: {stokvel_name}!\n\n"
-                    f"Your application approved - please expect contribution authorization request shortly.\n"
-                )
+            # Prepare the notification message
+            app_accepted_notification_message = (
+                f"Welcome to the stokvel: {stokvel_name}!\n\n"
+                f"Your application approved - please expect contribution authorization request shortly.\n"
+            )
 
-                # Send the notification message
-                send_notification_message(
-                    to=f"whatsapp:{applicant_cell_number}",
-                    body=app_accepted_notification_message,
-                )
+            # Send the notification message
+            send_notification_message(
+                to=f"whatsapp:{applicant_cell_number}",
+                body=app_accepted_notification_message,
+            )
 
         except Exception as e:
             print(f"General Error occurred during insert operations: {e}")
@@ -573,6 +575,9 @@ def process_application():
 
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/applications", methods=["GET"])
 def display_applications():
+    """
+    docstring
+    """
     admin_id = request.args.get("admin_id")  # Get admin_id from query parameters
     requesting_number = request.args.get(
         "requesting_number"

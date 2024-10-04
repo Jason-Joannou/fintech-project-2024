@@ -86,6 +86,9 @@ def onboard_user() -> Response:
 
 @onboarding_bp.route("/success_user_creation")
 def success_user_creation() -> str:
+    """
+    docstring
+    """
     action = "Onboarding"
     success_message = (
         "User onboarding successful! You are ready to start using the application."

@@ -58,32 +58,6 @@ def get_admin_by_stokvel(stokvel_id):
         return None
 
 
-# def get_all_applications(user_id):
-#     query = "SELECT * FROM APPLICATIONS where user_id = :user_id"
-#     applicant_data_query = "select user_number, user_name, user_surname from USERS where user_id = :user_id"
-
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchall()
-
-#         applicant_cursor = conn.execute(text(applicant_data_query), {"user_id": user_id})
-#         applicant_result = applicant_cursor.fetchone()  # Assuming one user with one ID
-
-#         applications = [
-#             {
-#                 'id':i[0],
-#                 'stokvel_id': i[1],
-#                 'user_id': i[2],
-#                 'AppStatus': i[3],
-#                 'AppDate': i[4],
-#                 'user_number': applicant_result[0],
-#                 'user_name': applicant_result[1],
-#                 'user_surname': applicant_result[2]
-#             } for i in result
-#         ]
-#         return applications
-
-
 def get_all_applications(user_id):
     query = """
         SELECT
@@ -228,15 +202,11 @@ def insert_stokvel(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def check_if_stokvel_member(user_id, stokvel_id):
@@ -304,9 +274,7 @@ def insert_stokvel_member(
                     print(
                         f"could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
                     )
-                    raise Exception(
-                        "General Error occurred during inserting a stokvel member already_member"
-                    )  # Stops execution by raising the error
+                    raise sqlite3.Error("User is already a member of this stokvel")
             else:
                 print(f"Could not insert, stokvel {stokvel_id} is full")
 
@@ -379,15 +347,10 @@ def insert_stokvel_member(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a stokvel member: {e}"
-        )  # Stops execution by raising the error
-
+        raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a stokvel member: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def get_all_stokvels():
@@ -434,15 +397,11 @@ def get_all_stokvels():
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a user: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a user: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def insert_admin(
@@ -496,15 +455,11 @@ def insert_admin(
                 print("Insert failed.")
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a admin: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a admin: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def update_stokvel_members_count(stokvel_id):
@@ -653,18 +608,15 @@ def insert_stokvel_join_application(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert application: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a application: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a application: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def update_application_status(id: int, AppStatus: str):
+    """docstring"""
     update_query = """
         UPDATE APPLICATIONS
         SET
@@ -695,12 +647,8 @@ def update_application_status(id: int, AppStatus: str):
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert application: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a application: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a application: {e}"
-        )  # Stops execution by raising the error
+        raise e
