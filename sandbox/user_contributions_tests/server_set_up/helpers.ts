@@ -1,6 +1,6 @@
 // Open Payments Helper Fucntions
 
-// import { env } from "$/src/env";
+// import env  from './env';
 import {
   type WalletAddress,
   type AuthenticatedClient,
@@ -15,6 +15,23 @@ import {
 import { randomUUID } from "crypto";
 import { type components } from "@interledger/open-payments/dist/openapi/generated/auth-server-types";
 
+
+export async function getAuthenticatedClient() {
+  let walletAddress = "https://ilp.rafiki.money/stokvel_app";
+
+  if (walletAddress.startsWith("$")) {
+    walletAddress = walletAddress.replace("$", "https://");
+  }
+
+  const client = await createAuthenticatedClient({
+    walletAddressUrl: "https://ilp.rafiki.money/stokvel_app",//env.OPEN_PAYMENTS_CLIENT_ADDRESS,
+    privateKey: "private.key",//env.OPEN_PAYMENTS_SECRET_KEY_PATH,
+    keyId: "853aa509-9d78-4354-96d1-4236cbe1236e",//env.OPEN_PAYMENTS_KEY_ID,
+    validateResponses: false, // Use this flag if you are having issues with the yaml files of the repo
+
+  });
+  return client;
+}
 //  function to set up an incoming payment (grant and actual payment place holder in the wallet)
 export async function createStandardIncomingPayment(
     client: AuthenticatedClient,
@@ -59,7 +76,7 @@ export async function createStandardIncomingPayment(
       },
     );
   
-    console.log("** Income Payment");
+    console.log("** Created Incoming Payment");
     console.log(incomingPayment);
   
     return incomingPayment;
@@ -122,72 +139,63 @@ export async function createInitialIncomingPayment(
  //  function to set up an incoming payment on stokvel creation
  //  the creation of the stokvel and the first payout may be different therefore this method is also required
  //  this one is used specifically at stokvel creation
- export async function createIncomingPayment(
-  client: AuthenticatedClient,
-  value: string,
-  walletAddressDetails: WalletAddress,
-) {
-  // Request IP grant
-  const grant = await client.grant.request(
-    {
-      url: walletAddressDetails.authServer,
-    },
-    {
-      access_token: {
-        access: [
-          {
-            type: "incoming-payment",
-            actions: ["read", "create", "complete"],
-          },
-        ],
-      },
-    },
-  );
+//  export async function createIncomingPayment(
+//   client: AuthenticatedClient,
+//   value: string,
+//   walletAddressDetails: WalletAddress,
+// ) {
+//   // Request IP grant
+//   const grant = await client.grant.request(
+//     {
+//       url: walletAddressDetails.authServer,
+//     },
+//     {
+//       access_token: {
+//         access: [
+//           {
+//             type: "incoming-payment",
+//             actions: ["read", "create", "complete"],
+//           },
+//         ],
+//       },
+//     },
+//   );
 
-  if (isPendingGrant(grant)) {
-    throw new Error("Expected non-interactive grant");
-  }
+//   if (isPendingGrant(grant)) {
+//     throw new Error("Expected non-interactive grant");
+//   }
 
-  // create incoming payment
-  const incomingPayment = await client.incomingPayment.create(
-    {
-      url: new URL(walletAddressDetails.id).origin,
-      accessToken: grant.access_token.value,
-    },
-    {
-      walletAddress: walletAddressDetails.id,
-      incomingAmount: {
-        value: value,
-        assetCode: walletAddressDetails.assetCode,
-        assetScale: walletAddressDetails.assetScale,
-      },
-      expiresAt: new Date(Date.now() + 60_000 * 10).toISOString(),
-    },
-  );
+//   // create incoming payment
+//   const incomingPayment = await client.incomingPayment.create(
+//     {
+//       url: new URL(walletAddressDetails.id).origin,
+//       accessToken: grant.access_token.value,
+//     },
+//     {
+//       walletAddress: walletAddressDetails.id,
+//       incomingAmount: {
+//         value: value,
+//         assetCode: walletAddressDetails.assetCode,
+//         assetScale: walletAddressDetails.assetScale,
+//       },
+//       expiresAt: new Date(Date.now() + 60_000 * 10).toISOString(),
+//     },
+//   );
 
-  console.log("** Income Payment");
-  console.log(incomingPayment);
+//   console.log("** Income Payment");
+//   console.log(incomingPayment);
 
-  return incomingPayment;
-}
+//   return incomingPayment;
+// }
 
 
-/**
- * The method requests a grant to create a quote on the senders resource server
- * The quote is then created on the senders resource server
- *
- * @param client
- * @param incomingPaymentUrl - identifier for the incoming payment the quote is being created for
- * @param walletAddressDetails - wallet address details for the sender
- * @returns
- */
 export async function createQuote(
   client: AuthenticatedClient,
   incomingPaymentUrl: string,
   walletAddressDetails: WalletAddress,
 ) {
   // Request quote grant
-  const grant = await client.grant.request(
+  const quote_grant = await client.grant.request(
     {
       url: walletAddressDetails.authServer,
     },
@@ -203,14 +211,14 @@ export async function createQuote(
     },
   );
 
-  if (isPendingGrant(grant)) {
+  if (isPendingGrant(quote_grant)) {
     throw new Error("Expected non-interactive grant");
   }
 
   const quote = await client.quote.create(
     {
       url: new URL(walletAddressDetails.id).origin,
-      accessToken: grant.access_token.value,
+      accessToken: quote_grant.access_token.value,
     },
     {
       method: "ilp",
@@ -221,8 +229,8 @@ export async function createQuote(
 
   console.log("** quote");
   console.log(quote);
-  console.log(quote.id) // save to the database
-  console.log(grant.access_token.value) //save to the database - to be used to retrieve quotes
+  console.log('quote id for this payment: ', quote.id) // save to the database
+  console.log('quote access token: ', quote_grant.access_token.value) //save to the database - to be used to retrieve quotes
   return quote;
 }
 
@@ -284,20 +292,20 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${stokvel_contributions_start_date}/PT30S` 
+              interval: `R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
             },
           },
         ],
       },
       interact: {
-        start: ["redirect"],
+        start: ["redirect"]
         // finish: {
         //   method: "redirect",
         //   uri: input.redirectUrl,
         //   nonce: randomUUID(),
         // },
       },
-    },
+    }
   );
 
   if (!isPendingGrant(pending_recurring_grant)) {
@@ -305,10 +313,14 @@ export async function getOutgoingPaymentAuthorization(
   }
 
   // console.log(pending_recurring_grant.continue.)
+  console.log('GRANT STUFFS - GRANT CREATIONS')
   console.log(pending_recurring_grant.continue.uri) // save this to the database
   console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
   console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
+  console.log(quote.id)
 
+  console.log('printing the grant:')
+  console.log(pending_recurring_grant)
 
   return pending_recurring_grant;
 }
@@ -317,7 +329,7 @@ export async function createInitialOutgoingPayment(
   client: AuthenticatedClient,
   // input: OPCreateSchema,
   quote_id: string,
-  quote_access_token: string,
+  // quote_access_token: string,
   continueUri: string,
   continueAccessToken: string,
   sender_wallet_address: string,
@@ -330,34 +342,37 @@ export async function createInitialOutgoingPayment(
       url: walletAddress,
     });
 
-  // Get the grant since it was still pending
-  // const grant = (await client.grant.continue(
-  //   {
-  //     accessToken: continueAccessToken,
-  //     url: continueUri,
-  //   },
-  //   {
-  //     interact_ref: input.interactRef,
-  //   },
-  // )) as Grant;
+  const finalizedOutgoingPaymentGrant = (await client.grant.continue({ //check which key/token pair should be used here
+    accessToken: continueAccessToken,
+    url: continueUri
+  }
+  // {
+  //   interact_ref: interactRef
+  // }
+  )) as Grant;
 
-  const finalizedOutgoingPaymentGrant = (await client.grant.continue((
-    {accessToken: continueAccessToken,
-    url: continueUri,}
-  ))) as Grant;
+  console.log('Grant details')
+  console.log(finalizedOutgoingPaymentGrant.continue)
+  console.log(finalizedOutgoingPaymentGrant.continue.access_token)
+  console.log('the last thing I can thinkk of: ')
+  // console.log(finalizedOutgoingPaymentGrant.access_token.value)
 
   if (!isFinalizedGrant(finalizedOutgoingPaymentGrant)) {
     throw new Error("Expected finalized grant. The grant might not be accepted or might be already used.");
   }
 
-    const quote = await client.quote.get({
-      url: quote_id,
-      accessToken: quote_access_token,
-    });
+    // const quote = await client.quote.get({
+    //   url: quote_id,
+    //   accessToken: quote_access_token
+    // });
+
+    // console.log('got the quote: quote details \n', quote)
+
+    console.log('wallet address stuffs',walletAddressDetails.id)
 
   const outgoingPayment = await client.outgoingPayment.create(
     {
-      url: new URL(walletAddress).origin,
+      url: new URL(walletAddressDetails.id).origin,
       accessToken: finalizedOutgoingPaymentGrant.access_token.value, //OUTGOING_PAYMENT_ACCESS_TOKEN,-- this is the one we need to save in the DB? does the token
     },
     {
@@ -368,6 +383,8 @@ export async function createInitialOutgoingPayment(
 
   console.log("** Outgoing Payment Grant");
   console.log(finalizedOutgoingPaymentGrant.access_token);
+
+  console.log('INITIAL PAYMENT PARAMETERS - SAVE TO DB')
 
   console.log(finalizedOutgoingPaymentGrant.access_token.value) //store in DB - use in next payment, then overrite with new
   console.log(finalizedOutgoingPaymentGrant.access_token.manage) //store in DB - use in next payment, then overrite with new
@@ -420,7 +437,7 @@ export async function processRecurringPayments(
     await getWalletAddressInfo(client, tokenAccessDetails[0]?.identifier ?? "");
 
   // create incoming payment
-  const incomingPayment = await createIncomingPayment(
+  const incomingPayment = await createStandardIncomingPayment(
     client,
     receiveAmount!,
     receiverWalletAddressDetails,
