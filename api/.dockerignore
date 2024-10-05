@@ -68,5 +68,6 @@ main-execution-plan
 *.ini
 *.toml
 
-
+# tests
+tests/
 
