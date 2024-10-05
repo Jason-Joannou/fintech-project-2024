@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, redirect, render_template, request, url_for
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from api.schemas.onboarding import OnboardUserSchema
 from database.user_queries.queries import insert_user, insert_wallet
@@ -28,6 +28,8 @@ def onboard_user() -> Response:
             **request.form.to_dict()
         )  # ** unpacks the dictionary
 
+        # verify_wallet() <- send request to the wallet for verification
+
         insert_user(
             user_id=user_data.id_number,
             user_number=user_data.cellphone_number,
@@ -38,7 +40,7 @@ def onboard_user() -> Response:
         insert_wallet(
             user_id=user_data.id_number,
             user_wallet=user_data.wallet_id,
-            user_balance=100,
+            user_balance=100,  # how should we fund user wallets initially?
         )
         # Prepare the notification message
         notification_message = (
@@ -55,23 +57,31 @@ def onboard_user() -> Response:
         )
         return redirect(url_for("onboarding.success_user_creation"))
 
+    except IntegrityError as integrity_error:
+        print(f"SQL Error occurred during insert operations: {integrity_error}")
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=integrity_error)
+        )
+
     except SQLAlchemyError as sql_error:
         print(f"SQL Error occurred during insert operations: {sql_error}")
-        return redirect(url_for("onboarding.failed_user_creation"))
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=sql_error)
+        )
 
     except Exception as e:
         print(f"General Error occurred during insert operations: {e}")
-        return redirect(url_for("onboarding.failed_user_creation"))
+        error_string = str(e)
+        if "USERS.user_id" in str(error_string):
+            error_message = "A user with this ID number already exists."
+        elif "USERS.user_number" in str(error_string):
+            error_message = "A user with this cellphone number already exists."
+        else:
+            error_message = "An unknown integrity error occurred."
 
-
-@onboarding_bp.route(f"{BASE_ROUTE}/stokvels", methods=["POST"])
-def onboard_stokvel() -> Response:
-    """
-    docstring
-    """
-    return redirect(
-        url_for(f'{BASE_ROUTE.removeprefix("/")}.success_stockvel_creation')
-    )
+        return redirect(
+            url_for("onboarding.failed_user_creation", error_message=error_message)
+        )
 
 
 @onboarding_bp.route("/success_user_creation")
@@ -79,7 +89,20 @@ def success_user_creation() -> str:
     """
     docstring
     """
-    return render_template("user_onboarding_success.html")
+    action = "Onboarding"
+    success_message = (
+        "User onboarding successful! You are ready to start using the application."
+    )
+    success_next_step_message = (
+        "Please navigate back to WhatsApp for further functions."
+    )
+
+    return render_template(
+        "action_success_template.html",
+        action=action,
+        success_message=success_message,
+        success_next_step_message=success_next_step_message,
+    )
 
 
 @onboarding_bp.route("/failed_user_creation")
@@ -87,12 +110,19 @@ def failed_user_creation() -> str:
     """
     docstring
     """
-    return render_template("user_onboarding_failed.html")
 
+    action = "Onboarding"
+    if request.args.get("error_message"):
+        error_message = request.args.get("error_message")
+    else:
+        error_message = "User onboarding failed. Please try again later."
+    failed_message = error_message
+    # Define a better message here - depending on what needs to happen next
+    failed_next_step_message = "Please navigate back to WhatsApp for further functions."
 
-@onboarding_bp.route("/success_stockvel_creation")
-def success_stockvel_creation() -> str:
-    """
-    docstring
-    """
-    return "Stockvel created successfully!"
+    return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+    )

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Onboarding</title>
+    <title>Update User Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: auto;
+            height: 100vh;
         }
 
         .form-container {
@@ -83,29 +83,13 @@
             color: red;
             font-size: 14px;
         }
-        .header {
-        text-align: center;
-        margin-bottom: 20px;
-        background-color: #f5f5f5; /* Light grey background */
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
 
-    .header img {
-        width: 40px; /* Adjust size to your liking */
-        height: 40px; /* Adjust size to your liking */
-        margin-right: 10px; /* Space between the image and the text */
-    }
-
-    .company-name {
-        font-weight: bold;
-    }
-
-    .rafiki_link{
-        text-align: center;
-    }
+        .header{
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #cfcfd0; /* Light grey background */
+            padding: 20px;
+        }
 
     </style>
 </head>
@@ -114,34 +98,15 @@
     <div class="form-container">
 
         <div class="header">
-            <img src= "{{url_for('static', filename='/wallet.png')}}" >
+            <!-- <img src="../assets/wallet.png" alt="Company Logo" class="logo"> -->
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <h2>User Onboarding</h2>
-        <form action="{{ url_for('onboarding.onboard_user') }}" method="POST">
-            <label for="name">First Name:</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="surname">Last Name:</label>
-            <input type="text" id="surname" name="surname" required>
-
-            <label for="cellphone_number">Cellphone Number:</label>
-            <input type="tel" id="cellphone_number" name="cellphone_number" required>
-
-            <label for="id_number">ID Number:</label>
-            <input type="number" maxlength="13" id="id_number" name="id_number" required>
-
-            <label for="wallet_id">ILP Wallet Address:</label>
-            <input type="url"  id="wallet_id" name="wallet_id" required>
-            
+        <h1>Update User Details</h1>
+        <form action="{{ url_for('users.update_user_details') }}" method="POST">
+            <label for="requesting_number">Cellphone Number:</label>
+            <input type="tel" id="requesting_number" name="requesting_number" required>
             <br>
-            <br>
-            <br>
-            <div class = "rafiki_link">
-                <a href = "https://rafiki.money/auth/signup">Create Rafiki Wallet</a>
-            </div>
-
             <input type="submit" value="Submit">
         </form>
     </div>

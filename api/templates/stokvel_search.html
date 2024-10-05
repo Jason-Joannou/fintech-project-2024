@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stokvel Search</title>
+    <style>
+        /* body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: auto;
+        } */
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 600px;
+        }
+
+        input[type="text"], input[type="number"], input[type="tel"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="button"], input[type="submit"] {
+            background-color: #45a095;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="button"]:hover {
+            background-color: #45a095;
+        }
+
+        .stokvel-container {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stokvel-details {
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success-message {
+            color: green;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .header {
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #f5f5f5; /* Light grey background */
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .header img {
+            width: 40px; /* Adjust size to your liking */
+            height: 40px; /* Adjust size to your liking */
+            margin-right: 10px; /* Space between the image and the text */
+        }
+
+        .company-name {
+            font-weight: bold;
+        }
+
+        #joinStokvelForm {
+        display: none; /* Hide the form initially */
+        background-color: #d0efeb;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="header">
+            <img src= "{{url_for('static', filename='/wallet.png')}}" >
+            <h1 class="company-name">Digi Stokvels</h1>
+        </div>
+
+
+        <h2>Search for a Stokvel:</h2>
+
+        <input type="text" id="stokvelSearch" placeholder="Search Stokvel by name..." />
+        <input type="button" id="searchButton" value="Search Stokvel" onclick="searchStokvel()" />
+        <!-- <input type="button" id="viewAllButton" value="View All Stokvels" onclick="viewAllStokvels()" /> -->
+
+        <br>
+        <br>
+
+        <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
+
+        <div id="stokvelList">
+        </div>
+
+        <form id = "joinStokvelForm" class = "hidden" action="{{ url_for('stokvel.apply_to_join_stokvel') }}" method="POST">
+            <h2>Application Form:</h2>
+            <h3>Join selected stokvel: <span id="stokvel_display_name"></span></h3><br>
+            <!-- <h3 id = "stokvel_display_name"></h3> -->
+            <label for="requesting_number">Cellphone Number:</label>
+            <input type="tel" id="requesting_number" name="requesting_number" required>
+
+            <!-- Hidden field for selected stokvel -->
+            <input type="hidden" id="stokvel_name" name="stokvel_name" value="">
+            <input type="submit" value="Agree and Apply to Join">
+
+        </form>
+
+
+    </div>
+
+    <script>
+
+        const stokvelsData = document.getElementById('stokvels_data').innerText;
+        const stokvels = JSON.parse(stokvelsData);
+
+
+        // Function to search and display stokvels
+        function searchStokvel() {
+            const searchQuery = document.getElementById('stokvelSearch').value.toLowerCase();
+            const stokvelList = document.getElementById('stokvelList');
+            const searchForm = document.querySelector('.form-container'); // Reference to the form container
+
+            const joinForm = document.getElementById("joinStokvelForm");
+            joinForm.style.display = "none"; // hide the foem away
+
+            stokvelList.innerHTML = ''; // Clear previous results
+
+            stokvels.forEach(stokvel => {
+                if (stokvel.stokvel_name.toLowerCase().includes(searchQuery)) {
+                    generateStokvelContainer(stokvel);
+                }
+            });
+
+            if (stokvelList.innerHTML === '') {
+                stokvelList.innerHTML = '<p>No stokvels found matching your search.</p>';
+            }
+
+
+        }
+
+        // Function to view all stokvels
+        function viewAllStokvels() {
+            const stokvelList = document.getElementById('stokvelList');
+            stokvelList.innerHTML = ''; // Clear previous results
+
+            stokvels.forEach(stokvel => {
+                generateStokvelContainer(stokvel);
+            });
+
+            if (stokvelList.innerHTML === '') {
+                stokvelList.innerHTML = '<p>No stokvels available.</p>';
+            }
+        }
+        // stokvel_id': 1, '': 'Test1', 'ILP_wallet': 'ILP_TEST', 'MOMO_wallet': 'MOMO_TEST', 'total_members': None, 'min_contributing_amount': 500, 'max_number_of_contributors': 5, 'total_contributions': 0, 'created_at': '2024-09-22 23:04:40', 'updated_at': '2024-09-22 23:04:40'},
+        function generateStokvelContainer(stokvel) {
+            const stokvelList = document.getElementById('stokvelList');
+            const container = document.createElement('div');
+            container.className = 'stokvel-container';
+
+            container.innerHTML = `
+            <br>
+                <div class="stokvel-details">
+                    <strong>Stokvel Name:</strong> ${stokvel.stokvel_name}<br>
+                    <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
+                    ${stokvel.available_space === 0 ? '<h4 style="color: red;">Stokvel is full</h4>' : ''}
+                </div>
+
+                <div class="buttons">
+                    <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}', '${stokvel.available_space}')">
+                </div>
+
+                <br>
+
+                <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
+                    <strong>Minimum Contribution: R</strong> ${stokvel.min_contributing_amount}<br>
+                    <strong>Max Members:</strong> ${stokvel.max_number_of_contributors}<br>
+                    <strong>Total Members:</strong> ${stokvel.total_members}<br>
+                    <strong>Available Spaces:</strong> ${stokvel.available_space}<br>
+                    <strong>Stokvel start date:</strong> ${stokvel.start_date}<br>
+                    <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
+                    <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
+
+                    <br>
+
+                    <p>Complete form below to apply to join.</p>
+
+
+
+                </div>
+            `;
+
+            stokvelList.appendChild(container);
+        }
+
+        // Function to show constitution
+        // function viewConstitution(stokvelName) {
+        //     console.log(stokvelName)
+
+        //     const constitution = document.getElementById(`constitution-${stokvelName}`);
+        //     constitution.classList.toggle('hidden');
+
+        //     const joinForm = document.getElementById("joinStokvelForm");
+        //     joinForm.classList.toggle('hidden');  // Toggle form visibility
+
+        //     document.getElementById('stokvel_name').value = stokvelName;
+
+        // }
+
+        function viewConstitution(stokvelName, available_space) {
+            console.log(stokvelName);
+
+            const constitution = document.getElementById(`constitution-${stokvelName}`);
+            const joinForm = document.getElementById("joinStokvelForm");
+
+            // Show the constitution
+            // constitution.style.display = "block"; // Ensure the constitution is visible
+
+
+
+            constitution.classList.toggle('hidden');
+
+                        // // Show the join form when constitution is clicked
+            if (available_space > 0 & !constitution.classList.contains('hidden')) {
+
+                joinForm.style.display = "block"; // Show the join form
+            }
+            else{
+                joinForm.style.display = "none";
+            }
+
+// // Show or hide the join form based on available space
+// if (available_space > 0) {
+//     joinForm.classList.remove('hidden'); // Show the join form
+// } else {
+//     joinForm.classList.add('hidden'); // Hide the join form
+// }
+
+            // Set the stokvel name in the join form
+            document.getElementById('stokvel_name').value = stokvelName;
+            document.getElementById('stokvel_display_name').textContent = stokvelName;
+
+        }
+
+        // Function to apply to join a stokvel
+        function applyToJoin(stokvelName) {
+            alert(`Sign Up confirmed for ${stokvelName}`);
+        }
+    </script>
+</body>
+
+</html>

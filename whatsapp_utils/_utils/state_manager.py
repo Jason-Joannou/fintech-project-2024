@@ -1,9 +1,12 @@
+import json
 from typing import Dict, List, Optional, Tuple, Union, cast
 
 from database.state_manager.queries import (
     check_if_unregistered_state_exists,
+    get_current_stokvel_selection,
     get_state_responses,
     pop_previous_state,
+    set_current_stokvel_selection,
     update_current_state,
 )
 from database.user_queries.queries import (
@@ -116,12 +119,14 @@ class MessageStateManager:
         check_if_unregistered_state_exists(from_number=self.user_number)
         self.update_local_states()
         if user_action in self.base_greetings:
-            if self.check_admin_status():
-                self.set_current_state(tag="registered_number_admin")
-            else:
-                self.set_current_state(tag="registered_number")
+            self.set_current_state(tag="registered_number")
             return self.get_current_state_message()
 
+        if (
+            self.current_state_tag is None
+            and user_action not in self.get_current_state_valid_actions()
+        ):
+            return self.get_unrecognized_state_response()
         # Check if action is valid for the current state
         if (
             self.current_state_tag is not None
@@ -150,16 +155,16 @@ class MessageStateManager:
 
             # Check if selection is a back state selection
             if user_action in self.current_state["state_selection"].keys():
-                if (
-                    self.current_state["state_selection"][user_action] == "back_state"
-                ):  # Updated to stack
-                    # TODO
-                    # Update to stack for state management
-                    # Implement payload logic
-                    # Might require message config updates
-                    # Need to be able to track what stokvel we are editing
+                if self.current_state["state_selection"][user_action] == "back_state":
                     self.set_previous_state()
                     return self.get_current_state_message()
+
+                if self.get_current_stokvels_in_state():
+                    stokvels = self.get_current_stokvels_in_state()
+                    stokvel_selection = stokvels[int(user_action) - 1]
+                    self.set_current_stokvels_in_state(
+                        stokvel_selection=stokvel_selection
+                    )
 
                 self.set_current_state(
                     tag=self.current_state["state_selection"][user_action]
@@ -186,8 +191,20 @@ class MessageStateManager:
                     msg = input_action_states["message"]
                     return self.return_twilio_formatted_message(msg=msg)
 
+                # Need to check for dynamic state
+                if action_requests[user_action] == "/stokvel/my_stokvels":
+
+                    self.set_current_state(tag="my_stokvels")
+                    return self.get_current_state_message()
+
                 endpoint = action_requests[user_action]
-                msg = self.execute_action_request(endpoint=endpoint)
+                msg = self.execute_action_request(
+                    endpoint=endpoint,
+                    payload={
+                        "user_number": self.user_number,
+                        "stokvel_selection": self.get_current_stokvel_selection(),
+                    },
+                )
                 return self.return_twilio_formatted_message(msg=msg)
 
         if (
@@ -200,13 +217,17 @@ class MessageStateManager:
             endpoint = action_requests[endpoint_action]
             msg = self.execute_action_request(
                 endpoint=endpoint,
-                payload={"user_input": user_input, "user_number": self.user_number},
+                payload={
+                    "user_input": user_input,
+                    "user_number": self.user_number,
+                    "stokvel_selection": self.get_current_stokvel_selection(),
+                },
             )
             return self.return_twilio_formatted_message(msg=msg)
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None
-    ) -> str:
+    ) -> Union[str, Dict]:
         """
         Executes an external action request to a specified endpoint and returns the response.
 
@@ -219,6 +240,37 @@ class MessageStateManager:
         """
         msg = query_endpoint(endpoint_suffix=endpoint, payload=payload)
         return msg
+
+    def get_current_stokvels_in_state(self):
+        """
+        Retrieves the current stokvels in the dynamic state.
+
+        Returns:
+        list: The list of current stokvels.
+        """
+
+        return self.current_state.get("current_stokvels", [])
+
+    def get_current_stokvel_selection(self):
+        """
+        Retrieves the current stokvel selection from the DB.
+
+        Returns:
+        str: The current stokvel selection.
+        """
+
+        return get_current_stokvel_selection(from_number=self.user_number)
+
+    def set_current_stokvels_in_state(self, stokvel_selection: str):
+        """
+        Sets the current stokvels in the dynamic state.
+
+        Parameters:
+        stokvel_selection (str): The list of current stokvels.
+        """
+        set_current_stokvel_selection(
+            from_number=self.user_number, stokvel_selection=stokvel_selection
+        )
 
     def get_current_state_message(self):
         """
@@ -271,9 +323,9 @@ class MessageStateManager:
         if self.current_state:
             msg = self.unrecognized_state + self._get_current_state_message_formatted()
             return send_conversational_message(msg)
-        else:
-            msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
-            return send_conversational_message(msg)
+
+        msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+        return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
         """
@@ -350,27 +402,35 @@ class MessageStateManager:
         """
         self.current_state_tag = self.get_state_tags()
 
-        # Initialize to an empty dictionary in case no state is found
-        retrieved_state = {}  # type: ignore
+        # Need to account for dynamic state - Dynamic state will be set within the state manager
+        if self.current_state_tag != "my_stokvels":
+            # Initialize to an empty dictionary in case no state is found
+            retrieved_state = {}  # type: ignore
 
-        if self.current_state_tag is not None and ":" in self.current_state_tag:
-            sub_state_split = self.current_state_tag.split(":")
-            inital_state = MESSAGE_STATES  # Start with the base state dictionary
+            if self.current_state_tag is not None and ":" in self.current_state_tag:
+                sub_state_split = self.current_state_tag.split(":")
+                inital_state = MESSAGE_STATES  # Start with the base state dictionary
 
-            # Traverse through each sub-state to reach the most nested one
-            for state_tag in sub_state_split:
-                retrieved_state = inital_state.get(state_tag, {})  # type: ignore
-                if not retrieved_state:
-                    break  # Exit if a sub-state doesn't exist
-                inital_state = retrieved_state  # Move deeper into the state
+                # Traverse through each sub-state to reach the most nested one
+                for state_tag in sub_state_split:
+                    retrieved_state = inital_state.get(state_tag, {})  # type: ignore
+                    if not retrieved_state:
+                        break  # Exit if a sub-state doesn't exist
+                    inital_state = retrieved_state  # Move deeper into the state
+            else:
+                # Handle the case where there are no sub-states
+                retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})  # type: ignore
+
+            # Set the current state based on whether the retrieval was successful
+            self.current_state = (
+                cast(StateSchema, retrieved_state) if retrieved_state else {}
+            )
         else:
-            # Handle the case where there are no sub-states
-            retrieved_state = MESSAGE_STATES.get(self.current_state_tag, {})  # type: ignore
-
-        # Set the current state based on whether the retrieval was successful
-        self.current_state = (
-            cast(StateSchema, retrieved_state) if retrieved_state else {}
-        )
+            retrieved_state = self.execute_action_request(  # type: ignore
+                endpoint="/stokvel/my_stokvels",
+                payload={"user_number": self.user_number},
+            )
+            self.current_state = json.loads(retrieved_state) if retrieved_state else {}  # type: ignore
 
     def handle_input_state_validation(
         self, user_input: str

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .update-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .add-button {
+            margin-top: 10px;
+            background-color: #008CBA;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: block;
+        }
+
+        .add-button:hover {
+            background-color: #007bb5;
+        }
+
+        .document-field {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .remove-button {
+            margin-left: 10px;
+            background-color: #f44336;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="update-container">
+    <h1>Update User Details</h1>
+    <form action="{{ url_for('users.update_user_details') }}" method="POST" >
+        <label for="name">Name:</label>
+        <input type="text" id="user_name" name="user_name" placeholder="Enter your name">
+
+        <label for="surname">Surname:</label>
+        <input type="text" id="user_surname" name="user_surname" placeholder="Enter your surname">
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username">
+
+        <label for="idNumber">ID Number:</label>
+        <input type="text" id="user_id" name="user_id" placeholder="Enter your ID number">
+
+        <!-- <div id="documentContainer">
+            <label for="document">Upload Document</label>
+            <div class="document-field">
+                <input type="file" id="document" name="document[]">
+            </div>
+        </div>
+
+        <button type="button" class="add-button" onclick="addDocument()">Add Document</button> -->
+        <input type="submit" value="Update Details">
+    </form>
+</div>
+
+<!-- <script>
+    function addDocument() {
+        const documentContainer = document.getElementById('documentContainer');
+
+        // Create a new div to hold the file input and remove button
+        const documentField = document.createElement('div');
+        documentField.classList.add('document-field');
+
+        // Create a new file input
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.name = 'document[]';
+
+        // Create a remove button
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.classList.add('remove-button');
+        removeButton.innerHTML = 'Remove';
+        removeButton.onclick = function() {
+            documentContainer.removeChild(documentField);
+        };
+
+        // Add the input and remove button to the div
+        documentField.appendChild(newInput);
+        documentField.appendChild(removeButton);
+
+        // Append the div to the document container
+        documentContainer.appendChild(documentField);
+    }
+</script> -->
+
+</body>
+
+</html>
