@@ -227,7 +227,7 @@ class MessageStateManager:
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None
-    ) -> str:
+    ) -> Union[str, Dict]:
         """
         Executes an external action request to a specified endpoint and returns the response.
 

@@ -20,7 +20,7 @@ def get_next_unique_id(conn, table_name, id_column):
     return (result[0] or 0) + 1
 
 
-def get_stokvel_id_by_name(stokvel_name):
+def get_stokvel_id_by_name(stokvel_name) -> Optional[str]:
     """
     docstring
     """
@@ -104,11 +104,11 @@ def get_all_applications(user_id):
 
 
 def insert_stokvel(
-    stokvel_id: int,
+    stokvel_id: Optional[int],
     stokvel_name: str,  # unique constraint here
     ilp_wallet: str,
     momo_wallet: str,
-    total_members: int,
+    total_members: Optional[int],
     min_contributing_amount: float,
     max_number_of_contributors: int,
     total_contributions: float,
@@ -229,9 +229,9 @@ def check_if_stokvel_member(user_id, stokvel_id):
 
 
 def insert_stokvel_member(
-    application_id: int,
+    application_id: Optional[int],
     stokvel_id: int,  # unique constraint here
-    user_id: int,
+    user_id: Optional[str],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> None:
@@ -410,7 +410,7 @@ def get_all_stokvels():
 def insert_admin(
     stokvel_id: int,  # unique constraint here
     stokvel_name: str,
-    user_id: int,
+    user_id: Optional[str],
     total_contributions: int,
     total_members: int,
     created_at: Optional[str] = None,
@@ -552,8 +552,8 @@ def check_available_space_in_stokvel(stokvel_id):
 
 
 def insert_stokvel_join_application(
-    stokvel_id: int,  # unique constraint here
-    user_id: int,
+    stokvel_id: str,  # unique constraint here
+    user_id: str,
     app_status: Optional[str] = None,
     app_date: Optional[str] = None,
 ):
