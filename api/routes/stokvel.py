@@ -298,12 +298,12 @@ def onboard_stokvel() -> Response:
         inserted_stokvel_id = insert_stokvel(
             stokvel_id=None,
             stokvel_name=stokvel_data.stokvel_name,  # unique constraint here
-            ILP_wallet="ILP_TEST",  # This needs to be changed
-            MOMO_wallet="MOMO_TEST",
+            ilp_wallet="ILP_TEST",  # This needs to be changed
+            momo_wallet="MOMO_TEST",
             total_members=stokvel_data.total_members,
             min_contributing_amount=stokvel_data.min_contributing_amount,
             max_number_of_contributors=stokvel_data.max_number_of_contributors,  # stokvel_data.max_number_of_contributors,
-            Total_contributions=0,
+            total_contributions=0,
             start_date=stokvel_data.start_date,
             end_date=stokvel_data.end_date,
             payout_frequency_int=stokvel_data.payout_frequency_int,

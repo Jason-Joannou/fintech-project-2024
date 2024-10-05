@@ -106,12 +106,12 @@ def get_all_applications(user_id):
 def insert_stokvel(
     stokvel_id: int,
     stokvel_name: str,  # unique constraint here
-    ILP_wallet: str,
-    MOMO_wallet: str,
+    ilp_wallet: str,
+    momo_wallet: str,
     total_members: int,
     min_contributing_amount: float,
     max_number_of_contributors: int,
-    Total_contributions: float,
+    total_contributions: float,
     start_date: str,
     end_date: str,
     payout_frequency_int: int,
@@ -168,12 +168,12 @@ def insert_stokvel(
     parameters = {
         "stokvel_id": stokvel_id,
         "stokvel_name": stokvel_name,
-        "ILP_wallet": ILP_wallet,
-        "MOMO_wallet": MOMO_wallet,
+        "ILP_wallet": ilp_wallet,
+        "MOMO_wallet": momo_wallet,
         "total_members": total_members,
         "min_contributing_amount": min_contributing_amount,
         "max_number_of_contributors": max_number_of_contributors,
-        "total_contributions": Total_contributions,
+        "total_contributions": total_contributions,
         "created_at": created_at,
         "updated_at": updated_at,
         "start_date": start_date,
@@ -224,8 +224,8 @@ def check_if_stokvel_member(user_id, stokvel_id):
 
         if len(result) > 0:
             return True
-        else:
-            return False
+
+        return False
 
 
 def insert_stokvel_member(
@@ -519,13 +519,13 @@ def check_application_pending_approved(user_id, stokvel_id):
             if result is not None:
                 print("User has an application in the database")
                 return True
-            else:
-                print("No app in db for this user")
-                members_cursor = conn.execute(text(members_query), members_parameters)
-                members_result = members_cursor.fetchone()
-                if members_result is not None:
-                    print("user is a member in the database")
-                    return True
+
+            print("No app in db for this user")
+            members_cursor = conn.execute(text(members_query), members_parameters)
+            members_result = members_cursor.fetchone()
+            if members_result is not None:
+                print("user is a member in the database")
+                return True
             return False
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -545,10 +545,8 @@ def check_available_space_in_stokvel(stokvel_id):
             contributors, max_contributors = cursor.fetchone()
             contributors = 0 if contributors is None else contributors
             # print('contribs = ', contributors, ' max contributors ' + max_contributors)
-            if contributors < max_contributors:
-                return True
-            else:
-                return False
+            return contributors < max_contributors
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -556,18 +554,18 @@ def check_available_space_in_stokvel(stokvel_id):
 def insert_stokvel_join_application(
     stokvel_id: int,  # unique constraint here
     user_id: int,
-    AppStatus: Optional[str] = None,
-    AppDate: Optional[str] = None,
+    app_status: Optional[str] = None,
+    app_date: Optional[str] = None,
 ):
     """
     docstring
     """
 
-    if AppDate is None:
-        AppDate = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if app_date is None:
+        app_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    if AppStatus is None:
-        AppStatus = "Application Submitted"
+    if app_status is None:
+        app_status = "Application Submitted"
 
     insert_query = """
         INSERT INTO APPLICATIONS (
@@ -581,8 +579,8 @@ def insert_stokvel_join_application(
         "id": None,
         "stokvel_id": stokvel_id,
         "user_id": user_id,
-        "AppStatus": AppStatus,
-        "AppDate": AppDate,
+        "AppStatus": app_status,
+        "AppDate": app_date,
     }
 
     try:
@@ -618,7 +616,7 @@ def insert_stokvel_join_application(
         raise e
 
 
-def update_application_status(id: int, AppStatus: str):
+def update_application_status(id: int, app_status: str):
     """docstring"""
     update_query = """
         UPDATE APPLICATIONS
@@ -630,7 +628,7 @@ def update_application_status(id: int, AppStatus: str):
 
     parameters = {
         "id": id,
-        "AppStatus": AppStatus,
+        "AppStatus": app_status,
     }
 
     try:
