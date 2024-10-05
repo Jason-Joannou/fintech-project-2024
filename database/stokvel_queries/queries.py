@@ -230,7 +230,7 @@ def check_if_stokvel_member(user_id, stokvel_id):
 
 def insert_stokvel_member(
     application_id: Optional[int],
-    stokvel_id: int,  # unique constraint here
+    stokvel_id: Optional[str],  # unique constraint here
     user_id: Optional[str],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
@@ -408,7 +408,7 @@ def get_all_stokvels():
 
 
 def insert_admin(
-    stokvel_id: int,  # unique constraint here
+    stokvel_id: Optional[str],  # unique constraint here
     stokvel_name: str,
     user_id: Optional[str],
     total_contributions: int,
