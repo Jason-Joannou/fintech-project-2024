@@ -426,11 +426,11 @@ class MessageStateManager:
                 cast(StateSchema, retrieved_state) if retrieved_state else {}
             )
         else:
-            retrieved_state = self.execute_action_request(
+            retrieved_state = self.execute_action_request(  # type: ignore
                 endpoint="/stokvel/my_stokvels",
                 payload={"user_number": self.user_number},
             )
-            self.current_state = json.loads(retrieved_state) if retrieved_state else {}
+            self.current_state = json.loads(retrieved_state) if retrieved_state else {}  # type: ignore
 
     def handle_input_state_validation(
         self, user_input: str

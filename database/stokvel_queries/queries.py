@@ -1,7 +1,7 @@
 # from .sql_connection import sql_connection
 import sqlite3
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import text
 
@@ -118,7 +118,7 @@ def insert_stokvel(
     payout_frequency_period: str,
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
-) -> int:
+) -> str:
     # Need to look at refactoring this
 
     """
@@ -234,7 +234,7 @@ def insert_stokvel_member(
     user_id: Optional[str],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
-) -> None:
+) -> List:
     """
     Inserts a new stokvel member into the STOKVEL_MEMBERS table.
     Raises:
@@ -264,7 +264,7 @@ def insert_stokvel_member(
         "created_at": created_at,
         "updated_at": updated_at,
     }
-
+    declined_applications_list = []
     try:
         with sqlite_conn.connect() as conn:
             print("Connected in stokvel_members insert")
@@ -346,7 +346,7 @@ def insert_stokvel_member(
                     ]
                     print("Declined Applications IDs:", declined_applications_list)
 
-                    return declined_applications_list
+        return declined_applications_list
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
@@ -552,8 +552,8 @@ def check_available_space_in_stokvel(stokvel_id):
 
 
 def insert_stokvel_join_application(
-    stokvel_id: str,  # unique constraint here
-    user_id: str,
+    stokvel_id: Optional[str],  # unique constraint here
+    user_id: Optional[str],
     app_status: Optional[str] = None,
     app_date: Optional[str] = None,
 ):
@@ -616,7 +616,7 @@ def insert_stokvel_join_application(
         raise e
 
 
-def update_application_status(id: int, app_status: str):
+def update_application_status(app_id: Optional[int], app_status: str):
     """docstring"""
     update_query = """
         UPDATE APPLICATIONS
@@ -627,7 +627,7 @@ def update_application_status(id: int, app_status: str):
     """
 
     parameters = {
-        "id": id,
+        "id": app_id,
         "AppStatus": app_status,
     }
 
