@@ -54,6 +54,8 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
     
     // Send back the incoming payment as a JSON response
     res.json(quote);
+
+    
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
 
@@ -74,7 +76,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
       payment_periods,
       payment_period_length,
       quote_id,
-      quote_access_token
+      // quote_access_token
     } = req.body;
 
     // Log or use the data
@@ -84,7 +86,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
       console.log(payment_periods);
       console.log(payment_period_length);
       console.log(quote_id);
-      console.log(quote_access_token);
+      // console.log(quote_access_token);
 
     const client = await getAuthenticatedClient()
     
@@ -95,8 +97,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
     
     const pending_recurring_grant = await getOutgoingPaymentAuthorization(
       client, walletFullDetails, stokvel_contributions_start_date, payment_periods,
-       payment_period_length, quote_id, quote_access_token
-    )
+       payment_period_length, quote_id )
     
     // Send back the incoming payment as a JSON response
     console.log("CONTINUE INFORMATION")

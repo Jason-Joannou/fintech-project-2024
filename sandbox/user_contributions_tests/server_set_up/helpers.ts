@@ -230,8 +230,8 @@ export async function createQuote(
   console.log("** quote");
   console.log(quote);
   console.log('quote id for this payment: ', quote.id) // save to the database
-  console.log('quote access token: ', quote_grant.access_token.value) //save to the database - to be used to retrieve quotes
-  return quote;
+  console.log('quote grant access token: ', quote_grant.access_token.value) //save to the database - to be used to retrieve quotes
+  return quote;//what can we do now that we have the quote grant instead?
 }
 
 export async function getWalletAddressInfo(
@@ -257,23 +257,32 @@ export async function getOutgoingPaymentAuthorization(
   payment_periods: number,
   payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
   quote_id: string,
-  quote_access_token: string
+  // quote_access_token: string
 
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
 
   // retrieve the quote we need to work with: 
 
-  const quote = await client.quote.get({
-    url: quote_id,
-    accessToken: quote_access_token,
-  });
+  // const quote = await client.quote.get({
+  //   url: quote_id,
+  //   accessToken: quote_access_token,
+  // });
 
-  const debitAmount = quote.debitAmount; // this needs to be a number in relation to the stokvel
-  const receiveAmount = quote.receiveAmount; // make this infinitely large?
+  // console.log(quote.id)
+  // console.log quote.accessToken
+
+
+  // const debitAmount = quote.debitAmount; // this needs to be a number in relation to the stokvel
+  // const receiveAmount = quote.receiveAmount; // make this infinitely large?
+
+  const receiveAmount =  { value: '100', assetCode: 'ZAR', assetScale: 2 };
+  const debitAmount =  { value: '102', assetCode: 'ZAR', assetScale: 2 };
 
   debitAmount.value = (parseFloat(debitAmount.value)*payment_periods).toString(); // expect to payout all of the periods at some point
   receiveAmount.value = (parseFloat(receiveAmount.value)*payment_periods).toString();
+
+  console.log(debitAmount, '\n', receiveAmount)
 
 
 
@@ -292,7 +301,7 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
+              interval: "R12/2024-10-05T21:54:22Z/P1M"//`R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
             },
           },
         ],
@@ -317,7 +326,6 @@ export async function getOutgoingPaymentAuthorization(
   console.log(pending_recurring_grant.continue.uri) // save this to the database
   console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
   console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
-  console.log(quote.id)
 
   console.log('printing the grant:')
   console.log(pending_recurring_grant)
