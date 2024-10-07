@@ -23,6 +23,10 @@ def create_stokvel_members_table_sqlite() -> None:
                 user_id INTEGER,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
+                user_payment_token TEXT,
+                user_payment_URI TEXT,
+                stokvel_payment_token TEXT,
+                stokvel_payment_URI TEXT,
                 UNIQUE (stokvel_id, user_id)  -- Ensure stokvel_id and user_id combination is unique
             )
         """
