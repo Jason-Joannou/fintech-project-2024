@@ -14,6 +14,7 @@ import {
 
 import { randomUUID } from "crypto";
 import { type components } from "@interledger/open-payments/dist/openapi/generated/auth-server-types";
+import { access } from "fs";
 
 
 export async function getAuthenticatedClient() {
@@ -92,6 +93,10 @@ export async function createInitialIncomingPayment(
   stokvel_contributions_start_date: string
 ) {
   // Request IP grant
+  // const dateNow = new Date().toISOString();
+  // console.log(dateNow)
+  const stokvel_contributions_start_date_converted = Date.parse(stokvel_contributions_start_date);  // Example date
+
   const grant = await client.grant.request(
     {
       url: walletAddressDetails.authServer,
@@ -125,7 +130,7 @@ export async function createInitialIncomingPayment(
         assetCode: walletAddressDetails.assetCode,
         assetScale: walletAddressDetails.assetScale,
       },
-      expiresAt: new Date(stokvel_contributions_start_date + 48 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(stokvel_contributions_start_date_converted + 48 * 60 * 60 * 1000).toISOString(),
     },
   );
 
@@ -196,6 +201,13 @@ export async function getWalletAddressInfo(
   return [walletAddress, walletAddressDetails];
 }
 
+interface Amount {
+  value: string;       // The value of the amount (in string to avoid floating point errors)
+  assetCode: string;   // Currency code (e.g., USD, ZAR)
+  assetScale: number;  // Scale of the currency (e.g., 2 for cents)
+}
+
+
 // create the recurring grant
 // will need to be done when actually joining a stokvel
 export async function getOutgoingPaymentAuthorization(
@@ -205,37 +217,18 @@ export async function getOutgoingPaymentAuthorization(
   payment_periods: number,
   payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
   quote_id: string,
-  // quote_access_token: string
-
+  debitAmount:Amount,
+  receiveAmount:Amount
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
+  console.log(dateNow)
+  const stokvel_contributions_start_date_converted = new Date(stokvel_contributions_start_date).toISOString();  // Example date
 
-  // retrieve the quote we need to work with: 
-
-  // const quote = await client.quote.get({
-  //   url: quote_id,
-  //   accessToken: quote_access_token,
-  // });
-
-  // console.log(quote.id)
-  // console.log quote.accessToken
-
-
-  // const debitAmount = quote.debitAmount; // this needs to be a number in relation to the stokvel
-  // const receiveAmount = quote.receiveAmount; // make this infinitely large?
-
-  // hard coded for now - take this in a s input rather
-  const receiveAmount =  { value: '100', assetCode: 'ZAR', assetScale: 2 };
-  const debitAmount =  { value: '102', assetCode: 'ZAR', assetScale: 2 };
-
-  // debitAmount.value = (parseFloat(debitAmount.value)*payment_periods).toString(); // expect to payout all of the periods at some point
-  // receiveAmount.value = (parseFloat(receiveAmount.value)*payment_periods).toString();
-
+  console.log(stokvel_contributions_start_date)
+ 
   console.log(debitAmount, '\n', receiveAmount)
 
 
-
-  // Request OP grant
   const pending_recurring_grant = await client.grant.request(
     {
       url: walletAddressDetails.authServer,
@@ -250,7 +243,7 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT1${payment_period_length}` //will need to change this to start date of the stokvel
             },
           },
         ],
@@ -284,9 +277,7 @@ export async function getOutgoingPaymentAuthorization(
 
 export async function createInitialOutgoingPayment(
   client: AuthenticatedClient,
-  // input: OPCreateSchema,
   quote_id: string,
-  // quote_access_token: string,
   continueUri: string,
   continueAccessToken: string,
   sender_wallet_address: string,
@@ -303,27 +294,16 @@ export async function createInitialOutgoingPayment(
     accessToken: continueAccessToken,
     url: continueUri
   }
-  // {
-  //   interact_ref: interactRef
-  // }
   )) as Grant;
 
   console.log('Grant details')
   console.log(finalizedOutgoingPaymentGrant.continue)
   console.log(finalizedOutgoingPaymentGrant.continue.access_token)
   console.log('the last thing I can thinkk of: ')
-  // console.log(finalizedOutgoingPaymentGrant.access_token.value)
 
   if (!isFinalizedGrant(finalizedOutgoingPaymentGrant)) {
     throw new Error("Expected finalized grant. The grant might not be accepted or might be already used.");
   }
-
-    // const quote = await client.quote.get({
-    //   url: quote_id,
-    //   accessToken: quote_access_token
-    // });
-
-    // console.log('got the quote: quote details \n', quote)
 
     console.log('wallet address stuffs',walletAddressDetails.id)
 
@@ -346,7 +326,7 @@ export async function createInitialOutgoingPayment(
   console.log(finalizedOutgoingPaymentGrant.access_token.manage) //store in DB - use in next payment, then overrite with new
 
 
-  return outgoingPayment;
+  return {payment: outgoingPayment, token: finalizedOutgoingPaymentGrant.access_token.value, manageurl: finalizedOutgoingPaymentGrant.access_token.manage};
 
 
 }

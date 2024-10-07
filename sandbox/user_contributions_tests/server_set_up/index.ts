@@ -36,7 +36,7 @@ app.get('/', (req: Request, res: Response) => {
 //create incoming payment
 app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   try {
-    const { value, walletAddressURL, sender_walletAddressURL } = req.body; // Get data from request body
+    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods, payment_period_length } = req.body; // Get data from request body
 
     console.log(value)
     console.log(walletAddressURL)
@@ -48,17 +48,18 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
     });
 
     
-    const sender_walletFullDetails = await client.walletAddress.get({ //receiver
+    const sender_walletFullDetails = await client.walletAddress.get({ //sender
       url: sender_walletAddressURL,
     });
     
     // Call the createStandardIncomingPayment function
-    const incomingPayment = await createStandardIncomingPayment(client, value, walletFullDetails);
+    const incomingPayment = await createInitialIncomingPayment(client, value ,walletFullDetails, stokvel_contributions_start_date);
     const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
-    
-    // Send back the incoming payment as a JSON response
-    return res.json(quote); //{all information stored here should be returned}
+    const recurring_grant = await getOutgoingPaymentAuthorization(client, sender_walletFullDetails, stokvel_contributions_start_date, payment_periods,
+       payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount)
 
+    // Send back the information about the grant as a JSON response
+    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token}); //{all information stored here should be returned}
     
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
@@ -71,6 +72,7 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   }}
 });
 
+/*COMMENTED OUT, BECAUSE...YOU'D ONLY NEED TO USE THE RECURRING GRANT INITIALLY????
 //create recurring grant thing
 app.post('/create-recurring-grant-request', async (req: Request, res: Response) => {
   try {
@@ -109,6 +111,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
     console.log(pending_recurring_grant.continue.access_token)
 
     res.json(pending_recurring_grant);
+    return {continue_uri: pending_recurring_grant.continue.uri, continue_token: pending_recurring_grant.continue.access_token}//we need to store this to create the inital payment
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
 
@@ -118,12 +121,12 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
   } else {
       res.status(500).json({ error: "An unknown error occurred" });
   }}
-});
+});*/
 
 //create initial outgoing payment
 app.post('/create-initial-outgoing-payment', async (req: Request, res: Response) => {
   try {
-    const { quote_id, quote_access_token, continueUri, continueAccessToken, walletAddressURL, incomingpaymentID } = req.body; // Get data from request body
+    const { quote_id, continueUri, continueAccessToken, walletAddressURL } = req.body; // Get data from request body
     
     console.log(walletAddressURL)
     console.log(continueUri)
@@ -136,16 +139,13 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
       url: walletAddressURL,
     });
 
-    const outgoingPayment_inital = await createInitialOutgoingPayment(client, quote_id, 
+    const { payment, token, manageurl } = await createInitialOutgoingPayment(client, quote_id, 
       continueUri, continueAccessToken, walletAddressURL)
+    
+    // Send back the outgoing payment as a JSON response
+    res.json({payment, token: token, manageurl: manageurl});
+    return {token, manageurl};
 
-    
-    // Call the createStandardIncomingPayment function
-    // const incomingPayment = await createIncomingPayment(client, value, walletFullDetails);
-    // const quote = await createQuote(client, incomingPayment.id, walletFullDetails)
-    
-    // Send back the incoming payment as a JSON response
-    res.json(outgoingPayment_inital);
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
 
