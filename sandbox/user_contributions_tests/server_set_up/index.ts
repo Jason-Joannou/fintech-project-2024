@@ -57,7 +57,7 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
     const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
     
     // Send back the incoming payment as a JSON response
-    res.json(quote);
+    return res.json(quote); //{all information stored here should be returned}
 
     
 } catch (error: unknown) {  // Specify that error can be of type unknown
@@ -107,6 +107,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
     console.log("CONTINUE INFORMATION")
     console.log(pending_recurring_grant.continue.uri)
     console.log(pending_recurring_grant.continue.access_token)
+
     res.json(pending_recurring_grant);
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
