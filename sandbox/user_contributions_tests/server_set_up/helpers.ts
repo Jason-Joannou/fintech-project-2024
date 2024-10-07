@@ -136,63 +136,11 @@ export async function createInitialIncomingPayment(
 }
 
 
- //  function to set up an incoming payment on stokvel creation
- //  the creation of the stokvel and the first payout may be different therefore this method is also required
- //  this one is used specifically at stokvel creation
-//  export async function createIncomingPayment(
-//   client: AuthenticatedClient,
-//   value: string,
-//   walletAddressDetails: WalletAddress,
-// ) {
-//   // Request IP grant
-//   const grant = await client.grant.request(
-//     {
-//       url: walletAddressDetails.authServer,
-//     },
-//     {
-//       access_token: {
-//         access: [
-//           {
-//             type: "incoming-payment",
-//             actions: ["read", "create", "complete"],
-//           },
-//         ],
-//       },
-//     },
-//   );
-
-//   if (isPendingGrant(grant)) {
-//     throw new Error("Expected non-interactive grant");
-//   }
-
-//   // create incoming payment
-//   const incomingPayment = await client.incomingPayment.create(
-//     {
-//       url: new URL(walletAddressDetails.id).origin,
-//       accessToken: grant.access_token.value,
-//     },
-//     {
-//       walletAddress: walletAddressDetails.id,
-//       incomingAmount: {
-//         value: value,
-//         assetCode: walletAddressDetails.assetCode,
-//         assetScale: walletAddressDetails.assetScale,
-//       },
-//       expiresAt: new Date(Date.now() + 60_000 * 10).toISOString(),
-//     },
-//   );
-
-//   console.log("** Income Payment");
-//   console.log(incomingPayment);
-
-//   return incomingPayment;
-// }
-
 
 export async function createQuote(
   client: AuthenticatedClient,
   incomingPaymentUrl: string,
-  walletAddressDetails: WalletAddress,
+  walletAddressDetails: WalletAddress, //senders wallet address
 ) {
   // Request quote grant
   const quote_grant = await client.grant.request(
@@ -276,11 +224,12 @@ export async function getOutgoingPaymentAuthorization(
   // const debitAmount = quote.debitAmount; // this needs to be a number in relation to the stokvel
   // const receiveAmount = quote.receiveAmount; // make this infinitely large?
 
+  // hard coded for now - take this in a s input rather
   const receiveAmount =  { value: '100', assetCode: 'ZAR', assetScale: 2 };
   const debitAmount =  { value: '102', assetCode: 'ZAR', assetScale: 2 };
 
-  debitAmount.value = (parseFloat(debitAmount.value)*payment_periods).toString(); // expect to payout all of the periods at some point
-  receiveAmount.value = (parseFloat(receiveAmount.value)*payment_periods).toString();
+  // debitAmount.value = (parseFloat(debitAmount.value)*payment_periods).toString(); // expect to payout all of the periods at some point
+  // receiveAmount.value = (parseFloat(receiveAmount.value)*payment_periods).toString();
 
   console.log(debitAmount, '\n', receiveAmount)
 
@@ -301,7 +250,7 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: "R12/2024-10-05T21:54:22Z/P1M"//`R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${dateNow}/PT30S` //will need to change this to start date of the stokvel
             },
           },
         ],
@@ -392,8 +341,7 @@ export async function createInitialOutgoingPayment(
   console.log("** Outgoing Payment Grant");
   console.log(finalizedOutgoingPaymentGrant.access_token);
 
-  console.log('INITIAL PAYMENT PARAMETERS - SAVE TO DB')
-
+  console.log('INITIAL PAYMENT PARAMETERS - SAVE TO DB - USE IN THE RECURRING PAYMENTS!!!!!')
   console.log(finalizedOutgoingPaymentGrant.access_token.value) //store in DB - use in next payment, then overrite with new
   console.log(finalizedOutgoingPaymentGrant.access_token.manage) //store in DB - use in next payment, then overrite with new
 
@@ -408,8 +356,8 @@ export async function processRecurringPayments(
   client: AuthenticatedClient,
   sender_wallet_address: string,
   receiving_wallet_address: string,
-  quoteId: string,
-  manageUrl: string,
+  // quoteId: string, // the previous quote
+  manageUrl: string, //manage url from the 
   previousToken: string,
 
 ) {
@@ -419,8 +367,10 @@ export async function processRecurringPayments(
     accessToken: previousToken,
   });
 
-  console.log(token.access_token.manage) // update this in the DB
-  console.log(token.access_token.value) //update this in the DB
+  console.log('ROTATED THE TOKEN')
+
+  console.log(token.access_token.manage) // update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
+  console.log(token.access_token.value) //update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
 
   if (!token.access_token) {
     console.error("** Failed to rotate token.");

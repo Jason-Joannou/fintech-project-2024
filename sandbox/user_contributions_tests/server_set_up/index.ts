@@ -36,21 +36,25 @@ app.get('/', (req: Request, res: Response) => {
 //create incoming payment
 app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   try {
-    const { value, walletAddressURL } = req.body; // Get data from request body
+    const { value, walletAddressURL, sender_walletAddressURL } = req.body; // Get data from request body
 
     console.log(value)
     console.log(walletAddressURL)
 
     const client = await getAuthenticatedClient()
     
-    const walletFullDetails = await client.walletAddress.get({
+    const walletFullDetails = await client.walletAddress.get({ //receiver
       url: walletAddressURL,
     });
 
     
+    const sender_walletFullDetails = await client.walletAddress.get({ //receiver
+      url: sender_walletAddressURL,
+    });
+    
     // Call the createStandardIncomingPayment function
     const incomingPayment = await createStandardIncomingPayment(client, value, walletFullDetails);
-    const quote = await createQuote(client, incomingPayment.id, walletFullDetails)
+    const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
     
     // Send back the incoming payment as a JSON response
     res.json(quote);
@@ -123,6 +127,7 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
     console.log(walletAddressURL)
     console.log(continueUri)
     console.log(continueAccessToken)
+    console.log(quote_id)
 
     const client = await getAuthenticatedClient()
     
@@ -154,24 +159,19 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
 // completes a payment using an established grant
 app.post('/process-recurring-payment', async (req: Request, res: Response) => {
   try {
-    const { value, walletAddressURL } = req.body; // Get data from request body
-
-    console.log(value)
-    console.log(walletAddressURL)
+      const { sender_wallet_address, receiving_wallet_address, manageUrl, previousToken } = req.body; // Get data from request body
 
     const client = await getAuthenticatedClient()
     
-    const walletFullDetails = await client.walletAddress.get({
-      url: walletAddressURL,
-    });
+    // const walletFullDetails = await client.walletAddress.get({
+    //   url: walletAddressURL,
+    // });
 
-    
-    // Call the createStandardIncomingPayment function
-    const incomingPayment = await createStandardIncomingPayment(client, value, walletFullDetails);
-    const quote = await createQuote(client, incomingPayment.id, walletFullDetails)
+
+    const recurring_payment = await processRecurringPayments(client, sender_wallet_address, receiving_wallet_address, manageUrl, previousToken);
     
     // Send back the incoming payment as a JSON response
-    res.json(quote);
+    res.json(recurring_payment);
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
 
