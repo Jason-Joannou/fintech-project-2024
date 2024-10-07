@@ -39,10 +39,14 @@ class SQLiteConnection:
             Exception: An error occurred creating the engine.
         """
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
         
 >>>>>>> fa44206 (Created test data. in the test_data.py script.)
+=======
+        
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
         if not os.path.exists(self.database):
             raise FileNotFoundError(f"SQLite database file '{self.database}' not found")
 

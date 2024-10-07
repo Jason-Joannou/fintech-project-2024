@@ -212,8 +212,13 @@ def check_if_number_exists_sqlite(from_number):
 if __name__ == "__main__":
     #create_user('+1234567', 'John', 'Doe')
 <<<<<<< HEAD
+<<<<<<< HEAD
     create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
 =======
     #create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
     print(create_stokvel_state('+1234567'))
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+    #create_stokvel('My Stokvel', 10, 100.0, 15, 1000.0)
+    print(create_stokvel_state('+1234567'))
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from flask import (
     Blueprint,
     Response,
@@ -12,6 +13,12 @@ from flask import (
 from sqlalchemy.exc import SQLAlchemyError
 =======
 from flask import Blueprint, request
+=======
+from flask import Blueprint, request
+
+from database.sqlite_connection import SQLiteConnection
+from database.user_queries.queries import get_linked_stokvels
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
 
 from database.sqlite_connection import SQLiteConnection
 from database.user_queries.queries import get_linked_stokvels
@@ -51,6 +58,7 @@ def stokvel() -> str:
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 @stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])
 def update_stokvel_contribution() -> str:
@@ -96,11 +104,14 @@ def change_stokvel_name() -> str:
 
 =======
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
 @stokvel_bp.route(f"{BASE_ROUTE}/my_stokvels", methods=["POST"])
 def my_stokvels_dynamic_state():
     """
     Create a dynamic state based on the user's linked stokvels for the MY_STOKVELS state.
     """
+<<<<<<< HEAD
 <<<<<<< HEAD
     user_number = request.json.get("user_number")
 
@@ -112,6 +123,8 @@ def my_stokvels_dynamic_state():
     state_selection = {}
     current_stokvels = []
 =======
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     user_number = request.json.get('user_number')
     
     # Retrieve the linked stokvels and admin status
@@ -120,31 +133,43 @@ def my_stokvels_dynamic_state():
     # Initialize variables for the dynamic state
     valid_actions = []
     state_selection = {}
+<<<<<<< HEAD
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
 
     # Loop through linked accounts and dynamically build the state
     for i, (stokvel_name, admin_ind) in enumerate(linked_accounts, 1):
         valid_actions.append(str(i))  # Action is the index as a string
+<<<<<<< HEAD
 <<<<<<< HEAD
         current_stokvels.append(stokvel_name)
 
 =======
         
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+        
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
         # Depending on admin status, select the appropriate next state
         if admin_ind == 1:
             state_selection[str(i)] = "stokvel_actions_admin"
         else:
             state_selection[str(i)] = "stokvel_actions_user"
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+    
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     # Add the "back_state" as the last action
     last_action = len(linked_accounts) + 1
     valid_actions.append(str(last_action))
     state_selection[str(last_action)] = "back_state"
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     # Create the message to display the available stokvels
@@ -671,6 +696,8 @@ def failed_approval_sv_full() -> str:
         failed_next_step_message=failed_next_step_message,
     )
 =======
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     
     # Create the message to display the available stokvels
     stokvel_names = [f"{i}. {stokvel_name}" for i, (stokvel_name, _) in enumerate(linked_accounts, 1)]
@@ -684,5 +711,9 @@ def failed_approval_sv_full() -> str:
         "state_selection": state_selection
     }
     
+<<<<<<< HEAD
     return MY_STOKVELS
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+    return MY_STOKVELS
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd

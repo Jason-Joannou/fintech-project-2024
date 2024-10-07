@@ -94,11 +94,14 @@ def create_user_table_sqlite() -> None:
 <<<<<<< HEAD
                 created_at TIMESTAMP,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 created_at TIMESTAMP, 
 >>>>>>> fa44206 (Created test data. in the test_data.py script.)
 =======
 >>>>>>> 9b015a5 (Changes to message config and data queries)
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
                 updated_at TIMESTAMP,
                 UNIQUE (user_id)  -- Ensure user_id is unique
             );

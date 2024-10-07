@@ -26,7 +26,10 @@ REGISTERED_NUMBER = {
         "1": "stokvel_services",
         "2": "my_profile",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     },
     "state": 0,
 }
@@ -56,10 +59,13 @@ STOKVEL_SERVICES = {
     "message": """
     Please select one of the following options to proceed:
 <<<<<<< HEAD
+<<<<<<< HEAD
     1. Join a stokvel
     2. Create a stokvel
     3. My stokvels
 =======
+=======
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     1. Join a stokvel 
     2. Create a stokvel 
     3. My stokvels
@@ -67,8 +73,13 @@ STOKVEL_SERVICES = {
     """,
     "valid_actions": ["1", "2", "3", "4"],
     "action_responses": {
+<<<<<<< HEAD
         "1": "Please register through our online portal: https://stokvels.com/register",
         "2": "Please register through our online portal: https://stokvels.com/register"},
+=======
+        "1": "Please join a stokvel through our online portal: https://stokvels.com/register",
+        "2": "Please create a new stokvel through our online portal: https://stokvels.com/register"},
+>>>>>>> aecafca47632b8da65b9fd5c221fb7642ba3a6bd
     "action_requests": {
         "3": "stokvels/my_stokvels"},
     "state_selection": {
@@ -564,6 +575,241 @@ UPDATE_PROFILE = {
             "invalid_message": "Please make sure your new cell phone number is at least one character long. Returning you to the previous menu.",
             "action": "4",
         }
+    },
+    "state": 1,
+}
+
+# Will be removed once the dynamic state is created
+MY_STOKVELS = {
+    "tag": "my_stokvels",
+    "message": """ <insert message here> """,
+    "valid_actions": ["1", "2", "3", "4"],
+    "state_selection": {
+        "1": "stokvel_actions_user",
+        "2": "stokvel_actions_user",
+        "3": "stokvel_actions_admin",
+        "5": "back_state"},
+}
+
+STOKVEL_ACTIONS_USER = {
+    "tag": "stokvel_actions_user",
+    "message": """
+    Welcome to stokvel actions page! Please select one of the following options to proceed:
+    1. View stokvel summary
+    2. Change my contribution amount
+    3. View stokvel constitution
+    4. Make a contribution
+    5. Leave stokvel
+    6. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    "action_requests": {
+        "1": "admin/stokvel_summary",
+        "2": "admin/change_contribution",
+        "3": "admin/view_constitution",
+        "4": "admin/make_contribution",
+    },
+    "state_selection": {
+        "5": "leave_stokvel",
+        "6": "back_state"},
+    "input_request_states": {
+        "2": {
+            "tag": "stokvel_actions_user:input_request_states:2",
+            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "2",
+        },
+        "4": {
+            "tag": "stokvel_actions_user:input_request_states:4",
+            "message": "Please enter the contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "4",
+        },
+    },
+    "state": 1,
+}
+
+
+STOKVEL_ACTIONS_ADMIN = {
+    "tag": "stokvel_actions_admin",
+    "message": """
+    Welcome to stokvel actions page! Please select one of the following options to proceed:
+    1. View stokvel summary
+    2. Change my contribution amount
+    3. View stokvel constitution
+    4. Make a contribution
+    5. Leave stokvel
+    6. Administrative actions
+    7. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", "6","7"],
+    "action_requests": {
+        "1": "admin/stokvel_summary",
+        "2": "admin/change_contribution",
+        "3": "admin/view_constitution",
+        "4": "admin/make_contribution",
+    },
+    "state_selection": {
+        "5": "leave_stokvel",
+        "6": "admin_services",
+        "7": "back_state"},
+    "input_request_states": {
+        "2": {
+            "tag": "stokvel_actions_admin:input_request_states:2",
+            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "2",
+        },
+        "4": {
+            "tag": "stokvel_actions_admin:input_request_states:4",
+            "message": "Please enter the contribution amount for your stokvel in Rands.",
+            "valid_type": float, 
+            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
+            "action": "4",
+        },
+    },
+    "state": 1,
+}
+
+LEAVE_STOKVEL = {
+    "tag": "leave_stokvel",
+    "message": """
+    Are you are sure you want to leave this stokvel? You will lose your interest earned on your contributions:
+    1. Leave stokvel 
+    2. Back 
+    """,
+    "valid_actions": ["1", "2"],
+    "action_requests": {
+        "1": "admin/leave_stokvel"},    
+    "state_selection": {
+        "2": "back_state"},
+    "state": 1,
+}
+
+STOKVEL_ADMIN_SERVICES = {
+    "tag": "admin_services",
+    "message": """
+    Welcome to stokvel administration! Please select one of the following options to proceed:
+    1. Change stokvel name
+    2. Change maximum member number 
+    3. Change minimum contributing amount
+    4. Change payout date 
+    5. View pending applications
+    6. Back
+    """,
+    "valid_actions": ["1", "2", "3", "4", "5"],
+    "action_requests": {  # Maybe we specify the endpoint per action
+        "1": "/stokvels/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
+        "2": "/users/change_member_number",
+        "3": "/accounting/change_contributing_amt",
+        "4": "/users/change_payout_date",
+    },
+    "state_selection": {"6": "back_state"},
+    "action_responses": {
+        "5": "View pending applications here: https://stokvels.com/register",
+    },
+    "input_request_states": {
+        "1": {
+            "tag": "admin_services:input_request_states:1",
+            "message": "Please provide the new name of your stokvel. A minimum of one character is required.",
+            "valid_type": str,
+            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "action": "1",
+        },
+        "2": {
+            "tag": "admin_services:input_request_states:2",
+            "message": "Please specify new maximum amount of members in your stokvel.",
+            "valid_type": float,
+            "invalid_message": "Please make sure the number of members is numeric and greater than 0. Returning you to the previous menu.",
+            "action": "2",
+        },
+        "3": {
+            "tag": "admin_services:input_request_states:3",
+            "message": "Please specify the minimum contributing for your stokvel.",
+            "valid_type": float,
+            "invalid_message": "Please make sure the amount is numeric and greater than 0. Returning you to the previous menu.",
+            "action": "3",
+        },
+        "4": {
+            "tag": "admin_services:input_request_states:4",
+            "message": "Please specify the new payout date for your stokvel in the format dd/mm/yyy.",
+            "valid_type": str,
+            "invalid_message": "Please make sure you provide the new payout date in the format dd/mm/yyyy. Returning you to the previous menu.",
+            "action": "4",
+        }
+    },
+    "state": 1,
+}
+
+MY_PROFILE = {
+    "tag": "my_profile",
+    "message": """
+    Please select one of the following actions to proceed:
+    1. View my profile
+    2. Update my profile
+    3. Back""",
+    "valid_actions": ["1", "2", "3"],
+    "state_selection": {
+        "1": "view_profile",
+        "2": "update_profile",
+        "3": "back_state"},
+    "state": 1,
+}
+
+VIEW_PROFILE = {
+    "tag": "view_profile",
+    "message": """
+    Please select what you would view to see on your profile:
+    1. View user name
+    2. View user surname
+    3. View wallet my address
+    4. View my wallet balance
+    5. My transactions
+    6. Back""",
+    "valid_actions": ["1", "2", "3","4","5","6"],
+    "action_requests": {
+        "1": "stokvel/view_username",
+        "2": "stokvel/view_usersurname",
+        "3": "stokvel/view_wallet_address",
+        "4": "stokvel/view_wallet_balances",
+        "5": "stokvel/view_transactions",
+    },
+    "state_selection": {
+        "6": "back_state"},
+    "state": 2,
+}
+
+
+UPDATE_PROFILE = {
+    "tag": "update_profile",
+    "message": """
+    Please select what you would like to update:
+    1. Update user name
+    2. Update user surname
+    3. Back""",
+    "valid_actions": ["1", "2", "3"],
+    "action_requests": {
+        "1": "admin/update_username",
+        "2": "admin/update_usersurname",
+    },
+    "state_selection": {
+        "3": "back_state"},
+    "input_request_states": {
+        "1": {
+            "tag": "update_profile:input_request_states:1",
+            "message": "Please update your updated name. A minimum of one character is required.",
+            "valid_type": str,
+            "invalid_message": "Please make ensure your new name is at least one character long. Returning to previous menu.",
+            "action": "1",
+        },
+        "2": {
+            "tag": "update_profile:input_request_states:2",
+            "message": "Please update your updated surname. A minimum of one character is required.",
+            "valid_type": str,
+            "invalid_message": "Please make ensure your new surnamename is at least one character long. Returning to previous menu.",
+            "action": "1",
+        },
     },
     "state": 1,
 }
