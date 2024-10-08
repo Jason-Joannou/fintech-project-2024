@@ -170,11 +170,33 @@ def create_contributions_table_sqlite() -> None:
             CREATE TABLE IF NOT EXISTS CONTRIBUTIONS (
                 id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
-                user_id INTEGER,
                 frequency_days INTEGER,
                 StartDate DATETIME,
+                NextDate DATIME,
+                PreviousDate DATIME,
                 EndDate DATETIME,
-                contribution NUMBER,
+                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
+            );
+        """
+            )
+        )
+
+def create_payouts_table_sqlite() -> None:
+    """
+    Create PAYOUTS table.
+    """
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+            CREATE TABLE IF NOT EXISTS PAYOUTS (
+                id INTEGER PRIMARY KEY,
+                stokvel_id INTEGER,
+                frequency_days INTEGER,
+                StartDate DATETIME,
+                NextDate DATIME,
+                PreviousDate DATIME,
+                EndDate DATETIME,
                 UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
             );
         """
@@ -294,4 +316,5 @@ if __name__ == "__main__":
     create_stokvel_wallet_table_sqlite()
     create_applications_table_sqlite()
     create_state_management_table()
+    create_payouts_table_sqlite()
     create_interest_table()

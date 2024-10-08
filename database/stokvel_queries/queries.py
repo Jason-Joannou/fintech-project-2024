@@ -863,6 +863,134 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
     except Exception as e:
         print(f"Failed to insert transaction. Error: {str(e)}")
 
+# Contributions function
+
+def contribution_trigger(conn):
+    """
+    Check if the contribution process should be kicked off based on the NextDate in the database.
+    
+    """
+
+    input_date = datetime.now()
+
+    try:
+        # Query to check if the NextDate matches the input date
+        contribution_triggers = conn.execute(
+            text(
+                """
+                SELECT stokvel_id 
+                FROM CONTRIBUTIONS 
+                WHERE NextDate = :input_date
+                """
+            ),
+            {'input_date': input_date}
+        ).fetchone()
+
+        # If result is found, contribution process should be kicked off
+        if contribution_triggers:
+
+            # Create loop in here to loop to loop through all stokvel_ids in the contribution_triggers object
+            # For each stokvel ID we need to retrieve all users 
+
+            for row in contribution_triggers:
+                stokvel_id = row[0]
+
+                all_members = conn.execute(
+                    text(
+                        """
+                        SELECT * 
+                        FROM STOKVEL_MEMBERS 
+                        WHERE stokvel_id = :stokvel_id
+                        """
+                    ),
+                    {'stokvel_id': stokvel_id}
+                ).fetchone()
+
+                # Now, loop through all the members in the stokvel members object and execute the create payment function
+                for row2 in all_members:
+
+                    try:
+
+                        user_id = row2[2]
+                        amount = row2[5]
+                        user_quote_id = row2[9]
+                        tx_type = "DEPOSIT"
+                        tx_date = input_date    
+                        manageUrl = row2[7]
+                        previousToken = row2[8]
+
+                        sender_wallet_address = conn.execute(
+                            text(
+                                """
+                                SELECT  ILP_wallet
+                                FROM USERS 
+                                WHERE user_id = :user_id
+                                """
+                            ),
+                            {'user_id': user_id}
+                        ).fetchone()
+
+                        receiving_wallet_address = conn.execute(
+                            text(
+                                """
+                                SELECT  ILP_wallet
+                                FROM STOKVELS 
+                                WHERE stokvel_id = :stokvel_id
+                                """
+                            ),
+                            {'stokvel_id': stokvel_id}
+                        ).fetchone()
+
+
+
+                        # Maryam's payment function 
+                         
+                        if user_quote_id is not None:
+
+                            create_inital_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, user_quote_id)
+
+                            conn.execute(
+                                text(
+                                    """
+                                        UPDATE STOKVEL_MEMBERS
+                                        SET
+                                            user_quote_id = NULL
+                                        WHERE
+                                            user_id = :user_id
+                                    """
+                                ),
+                                {
+                                    'user_id': user_id,
+                                }
+                            )
+
+                            insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date)                      
+
+                        else: 
+
+                            create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
+
+                            insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date)                      
+
+
+                    except Exception as e:
+
+                        print(f"Error checking attempting to make contribution: {str(e)}")
+                        return False
+                        # 
+                        # Trigger the insertransaction function   
+                    
+                    
+
+        else:
+            print("No contributions scheduled for today.")
+            return False
+    except Exception as e:
+        print(f"Error checking contribution trigger: {str(e)}")
+        return False
+
+    
+
 
 def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
     """
