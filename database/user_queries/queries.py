@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict
+from decimal import Decimal
 
 from sqlalchemy import text
 
@@ -257,7 +258,51 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise e    
+        raise e
+
+def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
+    """
+    Get the accumulated interest for a stokvel in the current savings period.
+    
+    :param stokvel_id: The ID of the stokvel to check interest for.
+    :return: A dictionary of montlhy interest values keyed by the date.
+    """
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            # Get most recent payout date from STOKVELS table
+            query = text("SELECT prev_payout FROM STOKVELS WHERE stokvel_id = :stokvel_id")
+            result = conn.execute(query, {'stokvel_id': stokvel_id})
+            prev_payout = result.scalar()
+
+            if not prev_payout:
+                query = text("SELECT created_at FROM STOKVELS WHERE stokvel_id = :stokvel_id")
+                result = conn.execute(query, {'stokvel_id': stokvel_id})
+                prev_payout = result.scalar()
+
+            # Get all interest values from the INTEREST table where the stokvel_id matches
+            # and date is after the previous payout
+            interest_query = text("""
+                SELECT interest_value, date 
+                FROM INTEREST 
+                WHERE stokvel_id = :stokvel_id 
+                AND date > :prev_payout
+            """)
+
+            interest_result = conn.execute(interest_query, {'stokvel_id': stokvel_id, 'prev_payout': prev_payout})
+            
+            # Store the interest values in a dictionary (keyed by date)
+            interest = {row[1]: row[0] for row in interest_result}
+
+            transaction.commit()
+
+            return interest
+
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retrieving the SQL data: {e}")
+            return {}    
 
 def find_wallet_by_userid(user_id: str) -> Optional[str]:
     """
