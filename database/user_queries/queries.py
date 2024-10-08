@@ -259,6 +259,22 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise e
+    
+def find_wallet_by_userid(user_id: str) -> Optional[str]:
+    """
+    docstring
+    """
+    # from_number = "0"+str(from_number)
+    # print(from_number)
+    print(user_id)
+    query = "SELECT ILP_wallet FROM USERS WHERE user_id = :user_id"
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"user_id": user_id})
+        result = cursor.fetchone()[0]
+        print(result)
+        if result:
+            return result
+
 
 
 ############### FIND NEEDED METHODS BELOW:

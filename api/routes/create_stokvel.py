@@ -3,7 +3,7 @@ import requests
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import RegisterStokvelSchema
-from database.stokvel_queries.queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count, get_iso_with_default_time, format_contribution_period_string, add_url_token
+from database.stokvel_queries.queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count, get_iso_with_default_time, format_contribution_period_string, add_url_token, calculate_number_periods
 from database.contribution_payout_queries import insert_member_contribution_parameters
 from database.user_queries.queries import find_user_by_number, find_wallet_by_userid
 
@@ -45,8 +45,8 @@ def onboard_stokvel() -> Response:
             Total_contributions = 0,
             start_date=stokvel_data.start_date,
             end_date= stokvel_data.end_date,
-            payout_frequency_int=stokvel_data.payout_frequency_int,
-            payout_frequency_period=stokvel_data.payout_frequency_period,
+            payout_frequency_duration=stokvel_data.payout_frequency_duration,
+            contribution_period=stokvel_data.contribution_period,
             created_at = None,
             updated_at = None,
         )
@@ -88,13 +88,16 @@ def onboard_stokvel() -> Response:
 
         # USER CONTRIBUTION GRANT THINGS
 
+        number_periods_between_start_end_date = calculate_number_periods(stokvel_data.payout_frequency_duration, 
+                                                                         start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
+
 
         payload = {
             "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
             "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
             "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
             "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
-            "payment_periods": stokvel_data.payout_frequency_int, #how many contributions are going to be made
+            "payment_periods": number_periods_between_start_end_date, #how many contributions are going to be made
             "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period)
         }
 

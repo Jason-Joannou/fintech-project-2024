@@ -10,6 +10,8 @@ from flask import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 
+import requests
+
 from api.schemas.onboarding import JoinStokvelSchema, RegisterStokvelSchema
 from database.stokvel_queries.queries import (
     check_application_pending_approved,
@@ -23,17 +25,26 @@ from database.stokvel_queries.queries import (
     insert_stokvel_member,
     update_application_status,
     update_stokvel_members_count,
+    get_iso_with_default_time,
+    format_contribution_period_string,
+    add_url_token,
+    calculate_number_periods,
+    double_number_periods_for_same_daterange
 )
+
 from database.user_queries.queries import (
     find_number_by_userid,
     find_user_by_number,
     get_linked_stokvels,
+    find_wallet_by_userid
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 stokvel_bp = Blueprint("stokvel", __name__)
 
 BASE_ROUTE = "/stokvel"
+
+node_server_initiate_grant = "http://localhost:3000/incoming-payment-setup"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -296,50 +307,130 @@ def onboard_stokvel() -> Response:
         # Create a stokvel object
 
         inserted_stokvel_id = insert_stokvel(
-            stokvel_id=None,
-            stokvel_name=stokvel_data.stokvel_name,  # unique constraint here
-            ilp_wallet="ILP_TEST",  # This needs to be changed
-            momo_wallet="MOMO_TEST",
-            total_members=stokvel_data.total_members,
-            min_contributing_amount=stokvel_data.min_contributing_amount,
-            max_number_of_contributors=stokvel_data.max_number_of_contributors,  # stokvel_data.max_number_of_contributors,
-            total_contributions=0,
+            stokvel_id = None,
+            stokvel_name = stokvel_data.stokvel_name, #unique constraint here
+            ILP_wallet = "ILP_TEST",
+            MOMO_wallet = "MOMO_TEST",
+            total_members = stokvel_data.total_members,
+            min_contributing_amount = stokvel_data.min_contributing_amount,
+            max_number_of_contributors = stokvel_data.max_number_of_contributors,#stokvel_data.max_number_of_contributors,
+            total_contributions = 0,
             start_date=stokvel_data.start_date,
-            end_date=stokvel_data.end_date,
-            payout_frequency_int=stokvel_data.payout_frequency_int,
-            payout_frequency_period=stokvel_data.payout_frequency_period,
-            created_at=None,
-            updated_at=None,
+            end_date= stokvel_data.end_date,
+            payout_frequency_duration=stokvel_data.payout_frequency_duration,
+            contribution_period=stokvel_data.contribution_period,
+            created_at = None,
+            updated_at = None,
         )
 
         stokvel_data.stokvel_id = inserted_stokvel_id
 
-        print("stokvel created id = ")
+        print('stokvel created id = ')
         print(stokvel_data.stokvel_id)
 
-        print("Printing requseting number id = ")
+        print('Printing requseting number id = ')
         print(stokvel_data.requesting_number)
 
         user_id = find_user_by_number(stokvel_data.requesting_number)
+
+
 
         # add member - get whatsapp number
         insert_stokvel_member(
             application_id=None,
             stokvel_id=inserted_stokvel_id,
-            user_id=user_id,
+            user_id = find_user_by_number(stokvel_data.requesting_number)
         )
 
-        # update the number of contributors
+        #update the number of contributors
         update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
+
 
         # add admin - get whatsapp number
         insert_admin(
             stokvel_id=inserted_stokvel_id,
-            stokvel_name=stokvel_data.stokvel_name,
-            user_id=user_id,
+            stokvel_name= stokvel_data.stokvel_name,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
             total_contributions=0,
-            total_members=1,
+            total_members=1
         )
+
+
+        # USER CONTRIBUTION GRANT THINGS
+
+        print(get_iso_with_default_time(stokvel_data.start_date), ' ', get_iso_with_default_time(stokvel_data.end_date))
+
+        number_payout_periods_between_start_end_date = calculate_number_periods(stokvel_data.payout_frequency_duration, 
+                                                                         start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
+        
+        number_contribution_periods_between_start_end_date = calculate_number_periods(stokvel_data.contribution_period, 
+                                                                         start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
+
+        print(number_payout_periods_between_start_end_date)
+        print(number_contribution_periods_between_start_end_date)
+
+        print("USER CONTRIBUTION GRANT FUNCTIONALITY")
+
+        payload = {
+            "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
+            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+            "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
+            "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period),
+            "number_of_periods":str(1)
+        }
+
+        print("REQUEST: ")
+        print(payload)
+
+        response = requests.post(node_server_initiate_grant, json=payload)
+
+        print(response)
+
+        print("RESPONSE: \n", response.json())
+        print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
+
+        initial_continue_uri_contribution = response.json()['continue_uri']
+        initial_continue_token_contribution = response.json()['continue_token']['value']
+        initial_payment_quote_contribution = response.json()['quote_id']
+
+
+        # WALLET PAYOUT GRANT THINGS
+
+
+        payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
+
+        payload_payout = {
+            "value": str(int(1)), #create an initial payment of 1c
+            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+            "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
+            "payment_period_length": payment_period_duration_converted,
+            "number_of_periods": str(number_periods)
+        }
+
+        print("REQUEST: ")
+        print(payload_payout)
+
+        response_payout_grant = requests.post(node_server_initiate_grant, json=payload_payout)
+        print(response_payout_grant)
+
+
+        quote_json = ""
+
+        response_initial_payment = requests.post(node_server_create_mini_payment, json=quote_json)
+        print(response_initial_payment)
+        
+        initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
+        initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
+
+        # update_token_things()
+
+
+        print("RESPONSE: \n", response.json())
+        print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
 
         # Prepare the notification message
         notification_message = (
@@ -352,10 +443,10 @@ def onboard_stokvel() -> Response:
             f"Thank you for creating a Stokvel with us!"
         )
 
-        # Send the notification message
-        send_notification_message(
-            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
-        )
+        # Send the notification message UNCOMMENT LATER!!
+        # send_notification_message(
+        #     to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
+        # )
         return redirect(url_for("stokvel.success_stokvel_creation"))
 
     except SQLAlchemyError as sql_error:

@@ -3,6 +3,9 @@ import sqlite3
 from datetime import datetime
 from typing import List, Optional
 
+from datetime import datetime, date, timedelta
+from dateutil.relativedelta import relativedelta
+
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
@@ -129,16 +132,16 @@ def get_all_applications(user_id):
 def insert_stokvel(
     stokvel_id: Optional[int],
     stokvel_name: str,  # unique constraint here
-    ilp_wallet: str,
-    momo_wallet: str,
+    ILP_wallet: str,
+    MOMO_wallet: str,
     total_members: Optional[int],
     min_contributing_amount: float,
     max_number_of_contributors: int,
     total_contributions: float,
     start_date: str,
     end_date: str,
-    payout_frequency_int: int,
-    payout_frequency_period: str,
+    payout_frequency_duration: str,
+    contribution_period: str,
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> str:
@@ -165,8 +168,8 @@ def insert_stokvel(
             total_contributions,
             start_date,
             end_date,
-            payout_frequency_int,
-            payout_frequency_period,
+            payout_frequency_duration,
+            contribution_period,
             created_at,
             updated_at
         ) VALUES (
@@ -180,8 +183,8 @@ def insert_stokvel(
             :total_contributions,
             :start_date,
             :end_date,
-            :payout_frequency_int,
-            :payout_frequency_period,
+            :payout_frequency_duration,
+            :contribution_period,
             :created_at,
             :updated_at
         )
@@ -191,8 +194,8 @@ def insert_stokvel(
     parameters = {
         "stokvel_id": stokvel_id,
         "stokvel_name": stokvel_name,
-        "ILP_wallet": ilp_wallet,
-        "MOMO_wallet": momo_wallet,
+        "ILP_wallet": ILP_wallet,
+        "MOMO_wallet": MOMO_wallet,
         "total_members": total_members,
         "min_contributing_amount": min_contributing_amount,
         "max_number_of_contributors": max_number_of_contributors,
@@ -201,8 +204,8 @@ def insert_stokvel(
         "updated_at": updated_at,
         "start_date": start_date,
         "end_date": end_date,
-        "payout_frequency_int": payout_frequency_int,
-        "payout_frequency_period": payout_frequency_period,
+        "payout_frequency_duration": payout_frequency_duration,
+        "contribution_period": contribution_period,
     }
 
     stokvel_current_id = ""
@@ -698,4 +701,51 @@ def add_url_token(userid, stokvel_id, url, token):
     except Exception as e:
         print(f"An error occurred: {e}")
     
+def calculate_number_periods(payout_period, start_date, end_date):
+        # Parse the start and end dates as datetime objects using the correct format
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")  # Include seconds in the format
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")      # Include seconds in the format
 
+    # Calculate the difference based on the payout period
+    date_difference = (end_date - start_date).days  # Get the total days difference
+    no_periods = 0
+
+    if payout_period == 'Days':
+        no_periods = date_difference  # Total days
+        period_delta = timedelta(days=1)  # Increment by 1 day
+    elif payout_period == 'Weeks':
+        no_periods = date_difference // 7  # Total weeks
+        period_delta = timedelta(weeks=1)  # Increment by 1 week
+    elif payout_period == 'Months':
+        diff = relativedelta(end_date, start_date)
+        no_periods = diff.years * 12 + diff.months  # Total months
+        period_delta = relativedelta(months=1)  # Increment by 1 month
+    elif payout_period == 'Years':
+        diff = relativedelta(end_date, start_date)
+        no_periods = diff.years  # Total years
+        period_delta = relativedelta(years=1)  # Increment by 1 year
+    elif payout_period == '30 Seconds':
+        # Calculate the total number of seconds in the period
+        total_seconds = (end_date - start_date).total_seconds()
+        no_periods = int(total_seconds // 30)  # Total number of 30-second periods
+        period_delta = timedelta(seconds=30)  # Increment by 30 seconds
+    else:
+        raise ValueError("Invalid payout period specified.")
+    
+    return no_periods
+
+def double_number_periods_for_same_daterange(period):
+    period_duration, number_of_periods_coverted, = ""
+    if period == 'Years':
+        period_duration = "M"
+        number_of_periods_coverted = 6
+    elif period == "Months":
+        period_duration == "w"
+        number_of_periods_coverted = 2
+    elif period == "Weeks":
+        period_duration = "D"
+        number_of_periods_coverted = 3
+    elif period == "Days":
+        period_duration = "H"
+        number_of_periods_coverted = "T12"
+    return period_duration, number_of_periods_coverted
