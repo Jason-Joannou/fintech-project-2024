@@ -48,14 +48,14 @@ def stokvel() -> str:
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
-@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["GET"])
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["POST"])
 def get_user_total_deposit():
     """
     This endpoint returns the total deposits of a user for a given stokvel.
     The user's phone number and stokvel name should be provided as query parameters.
     """
-    phone_number = request.json.get("phone_number")  # Get the phone number from query parameters
-    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from query parameters
+    phone_number = request.json.get("user_number")  # Get the phone number from query parameters
+    stokvel_name = request.json.get("stokvel_selection")  # Get the stokvel name from query parameters
 
     # Validate inputs
     if not phone_number:
@@ -89,9 +89,9 @@ def get_user_total_deposit():
         print("Notification Message: ", notification_message)
 
         # Send the notification message to the user via WhatsApp
-        #send_notification_message(
-        #    to=f"whatsapp:{phone_number}", body=notification_message
-        #)
+        send_notification_message(
+            to=f"whatsapp:{phone_number}", body=notification_message
+        )
 
         # Return the deposit details along with the sent notification status
         return jsonify({
@@ -109,13 +109,13 @@ def get_user_total_deposit():
         print(f"Error in {get_deposits_per_stokvel.__name__}: {e}")
         return jsonify({"error": msg}), 500  # Return internal server error
     
-@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["GET"])
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["POST"])
 def get_stokvels_constitution_handler():
     """
     This endpoint returns the stokvels constitution
     """
-    phone_number = request.json.get("phone_number")  # Get the phone number from query parameters
-    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from query parameters
+    phone_number = request.json.get("user_number")  # Get the phone number from query parameters
+    stokvel_name = request.json.get("stokvel_selection")  # Get the stokvel name from query parameters
 
     # Validate inputs
     if not phone_number:
@@ -143,9 +143,9 @@ def get_stokvels_constitution_handler():
         print("Notification Message: ", notification_message)
 
         # Send the notification message to the user via WhatsApp
-        #send_notification_message(
-        #    to=f"whatsapp:{phone_number}", body=notification_message
-        #)
+        send_notification_message(
+            to=f"whatsapp:{phone_number}", body=notification_message
+        )
 
         # Return the deposit details along with the sent notification status
         return jsonify({

@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
 from database.stokvel_queries.queries import get_all_applications
-from database.user_queries.queries import find_user_by_number, get_total_number_of_users, get_account_details
+from database.user_queries.queries import find_user_by_number, get_total_number_of_users, get_account_details, update_user_name, update_user_surname
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 
@@ -37,13 +37,13 @@ def get_all_users() -> str:
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
     
-@users_bp.route(f"{BASE_ROUTE}/stokvel/view_username", methods=["GET"])
+@users_bp.route(f"{BASE_ROUTE}/stokvel/view_username", methods=["POST"])
 def get_account_details_endpoint() -> str:
     """
     This endpoint returns account details of a user based on their phone number.
     The phone number should be provided as a query parameter.
     """
-    phone_number = request.args.get("phone_number")  # Get the phone number from the query parameters
+    phone_number = request.json.get("user_number")  # Get the phone number from the query parameters
 
     if not phone_number:
         return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
@@ -79,6 +79,54 @@ def get_account_details_endpoint() -> str:
         print(f"Error in {get_account_details_endpoint.__name__}: {e}")
         return jsonify({"error": msg}), 500  # Return internal server error
     
+@users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=['POST'])
+def update_user_name_endpoint():
+
+    phone_number = request.json.get('user_number')
+    new_name = request.args.get('user_input')
+
+    # Call the function to update the user's name
+    result = update_user_name(phone_number, new_name)
+
+    if "No user found" in result:
+        return jsonify({"message": result}), 404  # Return a 404 error if no user is found
+
+    # Prepare the notification message
+    notification_message = (
+        f"Your name has been updated successfully to: {new_name}!\n"
+        f"If you have any questions, feel free to reach out."
+    )
+
+    # Send the notification message to the user via WhatsApp
+    send_notification_message(
+        to=f"whatsapp:{phone_number}", body=notification_message
+    )
+
+    return jsonify({"message": result, "notification": notification_message}), 200
+
+@users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=['POST'])
+def update_user_surname_endpoint():
+    phone_number = request.json.get('user_number')
+    new_surname = request.json.get('user_input')
+
+    # Call the function to update the user's surname
+    result = update_user_surname(phone_number, new_surname)
+
+    if "No user found" in result:
+        return jsonify({"message": result}), 404  # Return a 404 error if no user is found
+
+    # Prepare the notification message
+    notification_message = (
+        f"Your surname has been updated successfully to: {new_surname}!\n"
+        f"If you have any questions, feel free to reach out."
+    )
+
+    # Send the notification message to the user via WhatsApp
+    send_notification_message(
+        to=f"whatsapp:{phone_number}", body=notification_message
+    )
+
+    return jsonify({"message": result, "notification": notification_message}), 200
 
 
 

@@ -35,7 +35,7 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
     WHERE 
         u.user_number = :user_number
         AND t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
-        AND t.tx_type = 'deposit'
+        AND t.tx_type = 'DEPOSIT'
     GROUP BY 
         u.user_id;
     """

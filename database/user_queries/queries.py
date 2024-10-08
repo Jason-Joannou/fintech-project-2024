@@ -331,6 +331,7 @@ def update_user_name(phone_number: str, new_name: str):
 
     with sqlite_conn.connect() as conn:
         result = conn.execute(text(update_query), {"new_name": new_name, "user_number": formatted_number})
+        conn.commit()
 
         if result.rowcount == 0:
             return f"No user found with phone number: {phone_number}"
@@ -338,29 +339,25 @@ def update_user_name(phone_number: str, new_name: str):
         return f"User name updated successfully for phone number: {phone_number}"
 
 def update_user_surname(phone_number: str, new_surname: str):
-    """
-    Update the user's surname based on their phone number.
-
-    Args:
-        phone_number (str): The user's phone number.
-        new_surname (str): The new surname to update.
-
-    Returns:
-        str: Success or failure message.
-    """
     formatted_number = extract_whatsapp_number(from_number=phone_number)
 
-    # SQL query to update user surname
     update_query = """
     UPDATE USERS
     SET user_surname = :new_surname
     WHERE user_number = :user_number;
     """
 
-    with sqlite_conn.connect() as conn:
-        result = conn.execute(text(update_query), {"new_surname": new_surname, "user_number": formatted_number})
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(update_query), {"new_surname": new_surname, "user_number": formatted_number})
+            conn.commit()
+            
+            if result.rowcount == 0:
+                return f"No user found with phone number: {phone_number}"
 
-        if result.rowcount == 0:
-            return f"No user found with phone number: {phone_number}"
+            return f"User surname updated successfully for phone number: {phone_number}"
 
-        return f"User surname updated successfully for phone number: {phone_number}"
+    except Exception as e:
+        print(f"Error updating surname: {e}")
+        return None  # Ensure that None is returned on error
+
