@@ -304,45 +304,197 @@ def check_if_stokvel_member(user_id, stokvel_id):
         return False
 
 
+# def insert_stokvel_member(
+#     application_id: Optional[int],
+#     stokvel_id: Optional[str],  # unique constraint here
+#     user_id: Optional[str],
+#     user_contribution: Optional[float],
+#     user_token: Optional[str],
+#     user_url:  Optional[str],
+#     user_quote_id: Optional[str],
+#     stokvel_token:Optional[str],
+#     stokvel_url:Optional[str],
+#     strokvel_quote_id:Optional[str],
+#     created_at: Optional[str] = None,
+#     updated_at: Optional[str] = None,
+# ) -> List:
+#     """
+#     Inserts a new stokvel member into the STOKVEL_MEMBERS table.
+#     Raises:
+#         Exception: If an error occurs during insert.
+#     """
+#     # Need to look at refactoring this
+
+#     print("user id from inserting member: ", user_id)
+
+#     if created_at is None:
+#         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     if updated_at is None:
+#         updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+#     insert_query = """
+#         INSERT INTO STOKVEL_MEMBERS (
+#             stokvel_id, user_id, user_contribution, created_at, updated_at
+#         ) VALUES (
+#             :stokvel_id, :user_id, : user_contribution, :created_at, :updated_at
+#         )
+#         """
+
+#     # Parameter dictionary for executing the query
+#     parameters = {
+#         "stokvel_id": stokvel_id,
+#         "user_id": user_id,
+#         "user_contribution":user_contribution,
+#         "created_at": created_at,
+#         "updated_at": updated_at,
+#     }
+#     declined_applications_list = []
+#     try:
+#         with sqlite_conn.connect() as conn:
+#             print("Connected in stokvel_members insert")
+#             if check_available_space_in_stokvel(stokvel_id):
+#                 if not check_if_stokvel_member(user_id, stokvel_id):
+#                     update_application_status(application_id, "Approved")
+#                     conn.execute(text(insert_query), parameters)
+#                     conn.commit()
+#                 else:
+#                     print(
+#                         f"could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
+#                     )
+#                     raise sqlite3.Error("User is already a member of this stokvel")
+#             else:
+#                 print(f"Could not insert, stokvel {stokvel_id} is full")
+
+#                 # Find the most recently accepted application for the stokvel
+#                 latest_application_query = """
+#                     SELECT * FROM APPLICATIONS
+#                     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Approved'
+#                     ORDER BY AppDate DESC
+#                     LIMIT 1
+#                 """
+#                 latest_application = conn.execute(
+#                     text(latest_application_query), {"stokvel_id": stokvel_id}
+#                 ).fetchone()
+
+#                 print("latest app = ", latest_application)
+
+#                 if latest_application:
+#                     print("AGAIN latest app = ", latest_application)
+
+#                     latest_created_at = latest_application[4]
+#                     print(
+#                         f"Latest accepted application created at: {latest_created_at}"
+#                     )
+
+#                     # Decline all applications after the latest accepted application
+#                     decline_applications_query = """
+#                         UPDATE APPLICATIONS
+#                         SET AppStatus = 'Declined'
+#                         WHERE stokvel_id = :stokvel_id AND AppDate > :latest_created_at
+#                     """
+#                     conn.execute(
+#                         text(decline_applications_query),
+#                         {
+#                             "stokvel_id": stokvel_id,
+#                             "latest_created_at": latest_created_at,
+#                         },
+#                     )
+
+#                     conn.commit()
+
+#                     # Fetch IDs of the declined applications after the update
+#                     # declined_apps_query = """
+#                     #     SELECT id, AppStatus, user_id FROM APPLICATIONS
+#                     #     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
+#                     # """
+
+#                     declined_users_query = """
+#                         SELECT u.user_number FROM APPLICATIONS a
+#                         JOIN USERS u ON a.user_id = u.user_id
+#                         WHERE a.stokvel_id = :stokvel_id AND a.AppStatus = 'Declined' AND a.AppDate > :latest_created_at
+#                     """
+
+#                     declined_apps_numbers = conn.execute(
+#                         text(declined_users_query),
+#                         {
+#                             "stokvel_id": stokvel_id,
+#                             "latest_created_at": latest_created_at,
+#                         },
+#                     ).fetchall()
+
+#                     # print(declined_apps_numbers)
+
+#                     # Store the IDs of the declined applications
+#                     declined_applications_list = [
+#                         app[0] for app in declined_apps_numbers
+#                     ]
+#                     print("Declined Applications IDs:", declined_applications_list)
+
+#         return declined_applications_list
+
+#     except sqlite3.Error as e:
+#         print(f"Error occurred during insert: {e}")
+#         raise e
+#     except Exception as e:
+#         print(f"Error occurred during insert: {e}")
+#         raise e
+
+
 def insert_stokvel_member(
     application_id: Optional[int],
-    stokvel_id: Optional[str],  # unique constraint here
+    stokvel_id: Optional[str],
     user_id: Optional[str],
     user_contribution: Optional[float],
+    user_token: Optional[str],
+    user_url: Optional[str],
+    user_quote_id: Optional[str],
+    stokvel_token: Optional[str],
+    stokvel_url: Optional[str],
+    stokvel_quote_id: Optional[str],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> List:
     """
-    Inserts a new stokvel member into the STOKVEL_MEMBERS table.
+    Inserts a new stokvel member into the STOKVEL_MEMBERS table, accounting for token, URL, and quote fields.
     Raises:
         Exception: If an error occurs during insert.
     """
-    # Need to look at refactoring this
 
-    print("user id from inserting member: ", user_id)
+    print("User ID from inserting member: ", user_id)
 
     if created_at is None:
         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if updated_at is None:
         updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Updated insert query with actual database column names
     insert_query = """
         INSERT INTO STOKVEL_MEMBERS (
-            stokvel_id, user_id, user_contribution, created_at, updated_at
+            stokvel_id, user_id, contribution_amount, user_payment_token, user_payment_URI, user_quote_id, 
+            stokvel_payment_token, stokvel_payment_URI, stokvel_quote_id, created_at, updated_at
         ) VALUES (
-            :stokvel_id, :user_id, : user_contribution, :created_at, :updated_at
+            :stokvel_id, :user_id, :contribution_amount, :user_payment_token, :user_payment_URI, :user_quote_id, 
+            :stokvel_payment_token, :stokvel_payment_URI, :stokvel_quote_id, :created_at, :updated_at
         )
-        """
+    """
 
-    # Parameter dictionary for executing the query
+    # Parameter dictionary for executing the query, with the correct column names
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id,
-        "user_contribution":user_contribution,
+        "contribution_amount": user_contribution,
+        "user_payment_token": user_token,
+        "user_payment_URI": user_url,
+        "user_quote_id": user_quote_id,
+        "stokvel_payment_token": stokvel_token,
+        "stokvel_payment_URI": stokvel_url,
+        "stokvel_quote_id": stokvel_quote_id,
         "created_at": created_at,
         "updated_at": updated_at,
     }
+
     declined_applications_list = []
+
     try:
         with sqlite_conn.connect() as conn:
             print("Connected in stokvel_members insert")
@@ -353,76 +505,13 @@ def insert_stokvel_member(
                     conn.commit()
                 else:
                     print(
-                        f"could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
+                        f"Could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
                     )
                     raise sqlite3.Error("User is already a member of this stokvel")
             else:
                 print(f"Could not insert, stokvel {stokvel_id} is full")
 
-                # Find the most recently accepted application for the stokvel
-                latest_application_query = """
-                    SELECT * FROM APPLICATIONS
-                    WHERE stokvel_id = :stokvel_id AND AppStatus = 'Approved'
-                    ORDER BY AppDate DESC
-                    LIMIT 1
-                """
-                latest_application = conn.execute(
-                    text(latest_application_query), {"stokvel_id": stokvel_id}
-                ).fetchone()
-
-                print("latest app = ", latest_application)
-
-                if latest_application:
-                    print("AGAIN latest app = ", latest_application)
-
-                    latest_created_at = latest_application[4]
-                    print(
-                        f"Latest accepted application created at: {latest_created_at}"
-                    )
-
-                    # Decline all applications after the latest accepted application
-                    decline_applications_query = """
-                        UPDATE APPLICATIONS
-                        SET AppStatus = 'Declined'
-                        WHERE stokvel_id = :stokvel_id AND AppDate > :latest_created_at
-                    """
-                    conn.execute(
-                        text(decline_applications_query),
-                        {
-                            "stokvel_id": stokvel_id,
-                            "latest_created_at": latest_created_at,
-                        },
-                    )
-
-                    conn.commit()
-
-                    # Fetch IDs of the declined applications after the update
-                    # declined_apps_query = """
-                    #     SELECT id, AppStatus, user_id FROM APPLICATIONS
-                    #     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
-                    # """
-
-                    declined_users_query = """
-                        SELECT u.user_number FROM APPLICATIONS a
-                        JOIN USERS u ON a.user_id = u.user_id
-                        WHERE a.stokvel_id = :stokvel_id AND a.AppStatus = 'Declined' AND a.AppDate > :latest_created_at
-                    """
-
-                    declined_apps_numbers = conn.execute(
-                        text(declined_users_query),
-                        {
-                            "stokvel_id": stokvel_id,
-                            "latest_created_at": latest_created_at,
-                        },
-                    ).fetchall()
-
-                    # print(declined_apps_numbers)
-
-                    # Store the IDs of the declined applications
-                    declined_applications_list = [
-                        app[0] for app in declined_apps_numbers
-                    ]
-                    print("Declined Applications IDs:", declined_applications_list)
+                # Handle declined applications logic here
 
         return declined_applications_list
 
@@ -803,3 +892,45 @@ def double_number_periods_for_same_daterange(period):
         period_duration = "H"
         number_of_periods_coverted = "T12"
     return period_duration, number_of_periods_coverted
+
+def update_user_active_status(userid, stokvelid, grantaccepted):
+    """
+    Updates the active status of a user in a stokvel based on whether their grant is accepted or not.
+    """
+    if grantaccepted:
+        # If grant is accepted, set status to 'active'
+        query = """
+            UPDATE STOKVEL_MEMBERS
+            SET active_status = :status
+            WHERE user_id = :userid AND stokvel_id = :stokvelid
+        """
+        params = {
+            "status": "active",
+            "userid": userid,
+            "stokvelid": stokvelid,
+        }
+    else:
+        # If grant is not accepted, set status to 'inactive'
+        query = """
+            UPDATE STOKVEL_MEMBERS
+            SET active_status = :status
+            WHERE user_id = :userid AND stokvel_id = :stokvelid
+        """
+        params = {
+            "status": "inactive",
+            "userid": userid,
+            "stokvelid": stokvelid,
+        }
+
+    # Execute the query
+    try:
+        with sqlite_conn.connect() as conn:
+            conn.execute(text(query), params)
+            conn.commit()
+            print(f"Updated user {userid} status to {params['status']} for stokvel {stokvelid}.")
+    except sqlite3.Error as e:
+        print(f"Error updating user status: {e}")
+        raise e
+
+
+
