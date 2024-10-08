@@ -17,7 +17,7 @@ export interface InvalidWalletResponse extends OpenPaymentsClientError {
 
 const validateWalletAddress = async (
   walletAddress: string
-): Promise<IWalletAddressResponse | InvalidWalletResponse | null> => {
+): Promise<IWalletAddressResponse> => {
   try {
     const response = await client.walletAddress.get({
       url: walletAddress,
@@ -26,21 +26,18 @@ const validateWalletAddress = async (
     return response as IWalletAddressResponse; // This should be the wallet address information
   } catch (error: unknown) {
     if (error instanceof OpenPaymentsClientError) {
-      return {
+      const invalidWalletError: InvalidWalletResponse = {
         ...error,
         status: error.status || 500,
         description: error.description || "Unknown error occurred",
-      } as InvalidWalletResponse;
+      };
+      // Throw the error so it can be caught by the calling function
+      throw invalidWalletError;
     }
 
     console.error("Unexpected error type:", error);
-    return null;
+    throw new Error("An unexpected error occurred during wallet validation.");
   }
 };
 
 export { validateWalletAddress };
-
-const result = await validateWalletAddress(
-  "https://ilp.rafiki.money/test_account"
-);
-console.log(result);
