@@ -10,6 +10,7 @@ from database.user_queries.queries import find_user_by_number, find_wallet_by_us
 create_stokvel_bp = Blueprint("create_stokvel", __name__)
 
 node_server_initiate_grant = "http://localhost:3000/incoming-payment-setup"
+node_server_initiate_grant_stokvel_system = "/incoming-payment-setup-stokvel-payout"
 
 
 BASE_ROUTE = "/create_stokvel"
@@ -63,13 +64,6 @@ def onboard_stokvel() -> Response:
 
 
 
-        # add member - get whatsapp number
-        insert_stokvel_member(
-            application_id=None,
-            stokvel_id=inserted_stokvel_id,
-            user_id = find_user_by_number(stokvel_data.requesting_number)
-        )
-
         #update the number of contributors
         update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
 
@@ -82,9 +76,6 @@ def onboard_stokvel() -> Response:
             total_contributions=0,
             total_members=1
         )
-
-
-
 
         # USER CONTRIBUTION GRANT THINGS
 
@@ -113,31 +104,46 @@ def onboard_stokvel() -> Response:
 
         initial_continue_uri = response.json()['continue_uri']
         initial_continue_token = response.json()['continue_token']['value']
+        initial_quote_id = response.json()['quote_id']
+
+        # add member - get whatsapp number
+        insert_stokvel_member(
+            application_id=None,
+            stokvel_id=inserted_stokvel_id,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            user_contribution=stokvel_data.min_contributing_amount,
+            user_token=initial_continue_token,
+            user_url=initial_continue_uri,
+            user_quote_id=initial_quote_id,
+            stokvel_quote_id="",
+            stokvel_token="",
+            stokvel_url=""
+        )
 
 
-        # WALLET PAYOUT GRANT THINGS
+        # # WALLET PAYOUT GRANT THINGS
 
-        payload = {
-            "value": str(int(stokvel_data.min_contributing_amount*100)), #WE DONT KNOW THIS YET BECAUSE IT STILL NEEDS TO GET INTEREST - PERHAPS ONLY MAKE THESE GRANTS AT PAYOUT
-            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-            "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
-            "payment_periods": stokvel_data.payout_frequency_int, #how many contributions are going to be made
-            "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period)
-        }
+        # payload = {
+        #     "value": str(int(stokvel_data.min_contributing_amount*100)), #WE DONT KNOW THIS YET BECAUSE IT STILL NEEDS TO GET INTEREST - PERHAPS ONLY MAKE THESE GRANTS AT PAYOUT
+        #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+        #     "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+        #     "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+        #     "payment_periods": stokvel_data.payout_frequency_int, #how many contributions are going to be made
+        #     "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period)
+        # }
 
-        print("REQUEST: ")
-        print(payload)
+        # print("REQUEST: ")
+        # print(payload)
 
-        response = requests.post(node_server_initiate_grant, json=payload)
+        # response = requests.post(node_server_initiate_grant, json=payload)
 
-        print(response)
+        # print(response)
 
-        print("RESPONSE: \n", response.json())
-        print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
+        # print("RESPONSE: \n", response.json())
+        # print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
 
-        initial_continue_uri = response.json()['continue_uri']
-        initial_continue_token = response.json()['continue_token']['value']
+        # initial_continue_uri = response.json()['continue_uri']
+        # initial_continue_token = response.json()['continue_token']['value']
 
 
         # Prepare the notification message

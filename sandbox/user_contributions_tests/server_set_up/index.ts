@@ -38,7 +38,7 @@ app.get('/', (req: Request, res: Response) => {
 //create incoming payment
 app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   try {
-    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods, payment_period_length } = req.body; // Get data from request body
+    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods,length_between_periods, payment_period_length } = req.body; // Get data from request body
 
     console.log(value)
     console.log(walletAddressURL)
@@ -58,10 +58,10 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
     const incomingPayment = await createInitialIncomingPayment(client, value ,walletFullDetails, stokvel_contributions_start_date);
     const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
     const recurring_grant = await getOutgoingPaymentAuthorization(client, sender_walletFullDetails, stokvel_contributions_start_date, payment_periods,
-       payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount)
+       payment_period_length, length_between_periods ,quote.id, quote.debitAmount, quote.receiveAmount)
 
     // Send back the information about the grant as a JSON response
-    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token}); //{all information stored here should be returned}
+    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token, quote_id: quote.id}); //{all information stored here should be returned}
     
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
@@ -100,7 +100,7 @@ app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Res
        payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount)
 
     // Send back the information about the grant as a JSON response
-    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token}); //{all information stored here should be returned}
+    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token, quote_id: quote.id}); //{all information stored here should be returned}
     
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);

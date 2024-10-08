@@ -336,24 +336,6 @@ def onboard_stokvel() -> Response:
 
 
         # add member - get whatsapp number
-        insert_stokvel_member(
-            application_id=None,
-            stokvel_id=inserted_stokvel_id,
-            user_id = find_user_by_number(stokvel_data.requesting_number)
-        )
-
-        #update the number of contributors
-        update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
-
-
-        # add admin - get whatsapp number
-        insert_admin(
-            stokvel_id=inserted_stokvel_id,
-            stokvel_name= stokvel_data.stokvel_name,
-            user_id = find_user_by_number(stokvel_data.requesting_number),
-            total_contributions=0,
-            total_members=1
-        )
 
 
         # USER CONTRIBUTION GRANT THINGS
@@ -371,16 +353,16 @@ def onboard_stokvel() -> Response:
 
         print("USER CONTRIBUTION GRANT FUNCTIONALITY")
 
+        print(stokvel_data.payout_frequency_duration)
+
         payload = {
             "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
             "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
             "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
             "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
             "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
-            "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period),
-            "number_of_periods":str(1)
-        }
-
+            "payment_period_length": format_contribution_period_string(stokvel_data.contribution_period),
+            "length_between_periods": "T30" if format_contribution_period_string(stokvel_data.contribution_period) == 'S' else "1" }
         print("REQUEST: ")
         print(payload)
 
@@ -395,42 +377,68 @@ def onboard_stokvel() -> Response:
         initial_continue_token_contribution = response.json()['continue_token']['value']
         initial_payment_quote_contribution = response.json()['quote_id']
 
+        insert_stokvel_member(
+            application_id=None,
+            stokvel_id=inserted_stokvel_id,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            user_contribution=stokvel_data.min_contributing_amount,
+            user_token=initial_continue_token_contribution,
+            user_url=initial_continue_uri_contribution,
+            user_quote_id=initial_payment_quote_contribution,
+            stokvel_quote_id="",
+            stokvel_token="",
+            stokvel_url=""
+        )
+
+        #update the number of contributors
+        update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
+
+
+        # add admin - get whatsapp number
+        insert_admin(
+            stokvel_id=inserted_stokvel_id,
+            stokvel_name= stokvel_data.stokvel_name,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            total_contributions=0,
+            total_members=1
+        )
+
 
         # WALLET PAYOUT GRANT THINGS
 
 
-        payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
+        # payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
 
-        payload_payout = {
-            "value": str(int(1)), #create an initial payment of 1c
-            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-            "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
-            "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
-            "payment_period_length": payment_period_duration_converted,
-            "number_of_periods": str(number_periods)
-        }
+        # payload_payout = {
+        #     "value": str(int(1)), #create an initial payment of 1c
+        #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+        #     "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+        #     "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+        #     "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
+        #     "payment_period_length": payment_period_duration_converted,
+        #     "number_of_periods": str(number_periods)
+        # }
 
-        print("REQUEST: ")
-        print(payload_payout)
+        # print("REQUEST: ")
+        # print(payload_payout)
 
-        response_payout_grant = requests.post(node_server_initiate_grant, json=payload_payout)
-        print(response_payout_grant)
+        # response_payout_grant = requests.post(node_server_initiate_grant, json=payload_payout)
+        # print(response_payout_grant)
 
 
-        quote_json = ""
+        # quote_json = ""
 
-        response_initial_payment = requests.post(node_server_create_mini_payment, json=quote_json)
-        print(response_initial_payment)
+        # response_initial_payment = requests.post(node_server_create_mini_payment, json=quote_json)
+        # print(response_initial_payment)
         
-        initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
-        initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
+        # initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
+        # initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
 
-        # update_token_things()
+        # # update_token_things()
 
 
-        print("RESPONSE: \n", response.json())
-        print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
+        # print("RESPONSE: \n", response.json())
+        # print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
 
         # Prepare the notification message
         notification_message = (
@@ -731,4 +739,25 @@ def failed_approval_sv_full() -> str:
         action=action,
         failed_message=failed_message,
         failed_next_step_message=failed_next_step_message,
+    )
+
+
+@stokvel_bp.route(
+    f"{BASE_ROUTE}/create_stokvel/success_contribution_grant_confirmed", methods=["GET"]
+)
+def success_user_interactive_grant_accepted() -> str:
+    """
+    docstrings
+    """
+    action = "Stokvel contributions have been accepted"
+    success_message = "Your contributions will be processed at the specifed periods."
+    success_next_step_message = (
+        "Please navigate back to WhatsApp for further functions."
+    )
+
+    return render_template(
+        "action_success_template.html",
+        action=action,
+        success_message=success_message,
+        success_next_step_message=success_next_step_message,
     )

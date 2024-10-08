@@ -217,6 +217,7 @@ export async function getOutgoingPaymentAuthorization(
   stokvel_contributions_start_date: string,
   payment_periods: number,
   payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
+  length_between_periods:string,
   quote_id: string,
   debitAmount:Amount,
   receiveAmount:Amount
@@ -244,18 +245,18 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT20${payment_period_length}` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/P${length_between_periods}${payment_period_length}` //will need to change this to start date of the stokvel
             },
           },
         ],
       },
       interact: {
-        start: ["redirect"]
-        // finish: {
-        //   method: "redirect",
-        //   uri: input.redirectUrl,
-        //   nonce: randomUUID(),
-        // },
+        start: ["redirect"],
+        finish: {
+          method: "redirect",
+          uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
+          nonce: randomUUID(),
+        },
       },
     }
   );
@@ -353,6 +354,9 @@ export async function processRecurringPayments(
   console.log(token.access_token.manage) // update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
   console.log(token.access_token.value) //update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
 
+  const manageurl = token.access_token.manage;
+  const used_token = token.access_token.value;
+
   if (!token.access_token) {
     console.error("** Failed to rotate token.");
   }
@@ -406,7 +410,7 @@ export async function processRecurringPayments(
 
     //update the stuffs (token details) in the database now
 
-    return outgoingPayment;
+    return {outgoingPayment: outgoingPayment, manageurl: manageurl, token: used_token};
   } catch (error) {
     console.log(error);
     return {
@@ -516,6 +520,9 @@ export async function processInterestAddedRecurringPayments(
   console.log(token.access_token.manage) // update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
   console.log(token.access_token.value) //update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
 
+  const manageurl = token.access_token.manage;
+  const used_token = token.access_token.value
+
   if (!token.access_token) {
     console.error("** Failed to rotate token.");
   }
@@ -573,7 +580,7 @@ export async function processInterestAddedRecurringPayments(
 
     //update the stuffs (token details) in the database now
 
-    return outgoingPayment;
+    return {outgoingPayment: outgoingPayment, manageurl: manageurl, token: used_token};
   } catch (error) {
     console.log(error);
     return {

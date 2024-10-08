@@ -81,6 +81,8 @@ def format_contribution_period_string(contribution_period: str):
         contribution_period = "W"
     elif contribution_period == "Years":
         contribution_period = "Y"
+    elif contribution_period == "30 Seconds":
+        contribution_period = "S"
     return contribution_period
     
 
@@ -500,7 +502,7 @@ def insert_stokvel_member(
             print("Connected in stokvel_members insert")
             if check_available_space_in_stokvel(stokvel_id):
                 if not check_if_stokvel_member(user_id, stokvel_id):
-                    update_application_status(application_id, "Approved")
+                    update_application_status(application_id, "Approved") #what is going on here lol - issue: members are applying to be in their own stokvel and there is an error?
                     conn.execute(text(insert_query), parameters)
                     conn.commit()
                 else:
@@ -870,6 +872,7 @@ def calculate_number_periods(payout_period, start_date, end_date):
     elif payout_period == '30 Seconds':
         # Calculate the total number of seconds in the period
         total_seconds = (end_date - start_date).total_seconds()
+        print('TOTAL SECONDS ', total_seconds)
         no_periods = int(total_seconds // 30)  # Total number of 30-second periods
         period_delta = timedelta(seconds=30)  # Increment by 30 seconds
     else:
