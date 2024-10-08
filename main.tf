@@ -32,7 +32,7 @@ resource "azurerm_container_group" "aci_flask_api" {
 
   container {
     name   = "flask-api-container"
-    image  = "${azurerm_container_registry.acr.login_server}/stokvel_flask_api:v1.0.0"
+    image  = "${azurerm_container_registry.acr.login_server}/stokvel_flask_api:v1.0.2"
     cpu    = "1"
     memory = "1.5"
 
