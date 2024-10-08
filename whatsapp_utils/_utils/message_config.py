@@ -174,8 +174,8 @@ UPDATE_PROFILE = {
     3. Back""",
     "valid_actions": ["1", "2", "3"],
     "action_requests": {
-        "1": "/admin/update_username",
-        "2": "/admin/update_usersurname",
+        "1": "/users/admin/update_username",
+        "2": "/users/admin/update_usersurname",
     },
     "state_selection": {"3": "back_state"},
     "input_request_states": {
@@ -191,7 +191,7 @@ UPDATE_PROFILE = {
             "message": "Please update your updated surname. A minimum of one character is required.",
             "valid_type": str,
             "invalid_message": "Please make ensure your new surnamename is at least one character long. Returning to previous menu.",
-            "action": "1",
+            "action": "2",
         },
     },
     "state": 1,

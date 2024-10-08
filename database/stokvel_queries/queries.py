@@ -23,7 +23,6 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
         dict: A dictionary containing the user's details and total deposit amount.
     """
     from_number = extract_whatsapp_number(from_number=phone_number)
-    print(f"Extracted phone number: {from_number}")
 
     # Updated query to find total deposits using `stokvel_name`
     query = """
@@ -147,7 +146,6 @@ def get_stokvel_constitution(phone_number: str, stokvel_name: str):
     """
     # Step 1: Format the phone number (if necessary, similar to `extract_whatsapp_number`)
     formatted_number = extract_whatsapp_number(phone_number)
-    print(f"Extracted phone number: {formatted_number}")
 
     # Step 2: SQL query to find stokvel details using USERS to validate membership
     query = """

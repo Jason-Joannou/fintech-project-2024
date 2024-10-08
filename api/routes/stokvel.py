@@ -61,18 +61,6 @@ def get_user_total_deposit():
         "stokvel_selection"
     )  # Get the stokvel name from query parameters
 
-    # Validate inputs
-    if not phone_number:
-        return (
-            jsonify({"error": "Phone number is required."}),
-            400,
-        )  # Return an error if no phone number is provided
-    if not stokvel_name:
-        return (
-            jsonify({"error": "Stokvel Name is required."}),
-            400,
-        )  # Return an error if no stokvel name is provided
-
     try:
         # Fetch total deposits for the user and stokvel
         deposit_details = get_user_deposit_per_stokvel(phone_number, stokvel_name)
@@ -80,14 +68,11 @@ def get_user_total_deposit():
         active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
 
         if "error" in deposit_details:
-            return jsonify(deposit_details), 404
+            raise ValueError(deposit_details["error"])
 
         # Return an error if no data is found
         if "error" in active_users_count:
-            return (
-                jsonify(active_users_count),
-                404,
-            )  # Return an error if no data is found
+            raise ValueError(active_users_count["error"])
 
         # Prepare the notification message
         notification_message = (
@@ -98,26 +83,9 @@ def get_user_total_deposit():
             f"Number of Active Users in Stokvel: {active_users_count['nr_of_active_users']}\n\n"
             "Thank you for being a part of our community!\n"
         )
-        print("Notification Message: ", notification_message)
-
-        # Send the notification message to the user via WhatsApp
-        send_notification_message(
-            to=f"whatsapp:{phone_number}", body=notification_message
-        )
 
         # Return the deposit details along with the sent notification status
-        return (
-            jsonify(
-                {
-                    "total_deposit_details": total_deposit_details,
-                    "user_deposit_details": deposit_details,
-                    "active_users_count": active_users_count,
-                    "message": "Notification sent successfully!",
-                    "notification_message": notification_message,
-                }
-            ),
-            200,
-        )
+        return notification_message
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
@@ -139,24 +107,12 @@ def get_stokvels_constitution_handler():
         "stokvel_selection"
     )  # Get the stokvel name from query parameters
 
-    # Validate inputs
-    if not phone_number:
-        return (
-            jsonify({"error": "Phone number is required."}),
-            400,
-        )  # Return an error if no phone number is provided
-    if not stokvel_name:
-        return (
-            jsonify({"error": "Stokvel Name is required."}),
-            400,
-        )  # Return an error if no stokvel name is provided
-
     try:
         # Fetch total deposits for the user and stokvel
         stokvel_constitution = get_stokvel_constitution(phone_number, stokvel_name)
 
         if "error" in stokvel_constitution:
-            return jsonify(stokvel_constitution), 404
+            raise ValueError(stokvel_constitution["error"])
 
         # Prepare the notification message
         notification_message = (
@@ -167,29 +123,14 @@ def get_stokvels_constitution_handler():
             f"Creation Date of Stokvel: {stokvel_constitution['creation_date']}\n\n"
             "Thank you for being a part of our community!\n"
         )
-        print("Notification Message: ", notification_message)
-
-        # Send the notification message to the user via WhatsApp
-        send_notification_message(
-            to=f"whatsapp:{phone_number}", body=notification_message
-        )
 
         # Return the deposit details along with the sent notification status
-        return (
-            jsonify(
-                {
-                    "stokvel_constitution": stokvel_constitution,
-                    "message": "Notification sent successfully!",
-                    "notification_message": notification_message,
-                }
-            ),
-            200,
-        )
+        return notification_message
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_stokvel_constitution.__name__}: {e}")
-        return jsonify({"error": msg}), 500  # Return internal server error
+        return msg  # Return internal server error
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])

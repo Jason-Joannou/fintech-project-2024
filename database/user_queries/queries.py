@@ -330,15 +330,10 @@ def update_user_name(phone_number: str, new_name: str):
     """
 
     with sqlite_conn.connect() as conn:
-        result = conn.execute(
+        conn.execute(
             text(update_query), {"new_name": new_name, "user_number": formatted_number}
         )
         conn.commit()
-
-        if result.rowcount == 0:
-            return f"No user found with phone number: {phone_number}"
-
-        return f"User name updated successfully for phone number: {phone_number}"
 
 
 def update_user_surname(phone_number: str, new_surname: str):
@@ -352,17 +347,11 @@ def update_user_surname(phone_number: str, new_surname: str):
 
     try:
         with sqlite_conn.connect() as conn:
-            result = conn.execute(
+            conn.execute(
                 text(update_query),
                 {"new_surname": new_surname, "user_number": formatted_number},
             )
             conn.commit()
 
-            if result.rowcount == 0:
-                return f"No user found with phone number: {phone_number}"
-
-            return f"User surname updated successfully for phone number: {phone_number}"
-
     except Exception as e:
         print(f"Error updating surname: {e}")
-        return None  # Ensure that None is returned on error

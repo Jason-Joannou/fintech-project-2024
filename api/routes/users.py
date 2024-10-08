@@ -18,6 +18,7 @@ from database.user_queries.queries import (
     update_user_name,
     update_user_surname,
 )
+from database.utils import extract_whatsapp_number
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
@@ -59,80 +60,47 @@ def get_account_details_endpoint() -> str:
         "user_number"
     )  # Get the phone number from the query parameters
 
-    if not phone_number:
-        return (
-            jsonify({"error": "Phone number is required."}),
-            400,
-        )  # Return an error if no phone number is provided
-
     try:
         user_details = get_account_details(
             phone_number
         )  # Call the function and store the result
 
-        if user_details:
-            # Prepare the notification message
-            notification_message = (
-                f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
-                f"Your user ID: {user_details['u.user_id']}\n"
-                f"Your wallet ID: {user_details['uw.user_wallet']}\n"
-                f"Your wallet balance: {user_details['uw.UserBalance']}\n\n"
-            )
+        # Prepare the notification message
+        notification_message = (
+            f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
+            f"Your user ID: {user_details['u.user_id']}\n"
+            f"Your wallet ID: {user_details['uw.user_wallet']}\n"
+            f"Your wallet balance: {user_details['uw.UserBalance']}\n\n"
+        )
 
-            # Send the notification message to the user via WhatsApp
-            send_notification_message(
-                to=f"whatsapp:{user_details['u.user_number']}",
-                body=notification_message,
-            )
+        return notification_message
 
-            # Return the user details along with the sent notification status
-            return (
-                jsonify(
-                    {
-                        "user_details": user_details,
-                        "message": "Notification sent successfully!",
-                        "notification_message": notification_message,
-                    }
-                ),
-                200,
-            )
-
-        else:
-            return (
-                jsonify({"error": "User not found."}),
-                404,
-            )  # Return an error if user is not found
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_account_details_endpoint.__name__}: {e}")
-        return jsonify({"error": msg}), 500  # Return internal server error
+        return msg
 
 
 @users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=["POST"])
 def update_user_name_endpoint():
 
     phone_number = request.json.get("user_number")
-    new_name = request.args.get("user_input")
+    new_name = request.json.get("user_input")
 
     # Call the function to update the user's name
-    result = update_user_name(phone_number, new_name)
+    try:
+        update_user_name(phone_number, new_name)
 
-    if "No user found" in result:
-        return (
-            jsonify({"message": result}),
-            404,
-        )  # Return a 404 error if no user is found
+        # Prepare the notification message
+        notification_message = (
+            f"Your name has been updated successfully to: {new_name}!"
+        )
 
-    # Prepare the notification message
-    notification_message = (
-        f"Your name has been updated successfully to: {new_name}!\n"
-        f"If you have any questions, feel free to reach out."
-    )
-
-    # Send the notification message to the user via WhatsApp
-    send_notification_message(to=f"whatsapp:{phone_number}", body=notification_message)
-
-    return jsonify({"message": result, "notification": notification_message}), 200
+        return notification_message
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_user_name_endpoint.__name__}: {e}")
+        return msg
 
 
 @users_bp.route(f"{BASE_ROUTE}/admin/update_usersurname", methods=["POST"])
@@ -141,24 +109,19 @@ def update_user_surname_endpoint():
     new_surname = request.json.get("user_input")
 
     # Call the function to update the user's surname
-    result = update_user_surname(phone_number, new_surname)
+    try:
+        update_user_surname(phone_number, new_surname)
 
-    if "No user found" in result:
-        return (
-            jsonify({"message": result}),
-            404,
-        )  # Return a 404 error if no user is found
+        # Prepare the notification message
+        notification_message = (
+            f"Your surname has been updated successfully to: {new_surname}!"
+        )
 
-    # Prepare the notification message
-    notification_message = (
-        f"Your surname has been updated successfully to: {new_surname}!\n"
-        f"If you have any questions, feel free to reach out."
-    )
-
-    # Send the notification message to the user via WhatsApp
-    send_notification_message(to=f"whatsapp:{phone_number}", body=notification_message)
-
-    return jsonify({"message": result, "notification": notification_message}), 200
+        return notification_message
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_user_surname_endpoint.__name__}: {e}")
+        return msg
 
 
 @users_bp.route(f"{BASE_ROUTE}/fund_wallet", methods=["POST"])
