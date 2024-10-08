@@ -9,11 +9,6 @@ from flask import (
     url_for,
 )
 from sqlalchemy.exc import SQLAlchemyError
-from database.sqlite_connection import SQLiteConnection
-from database.stokvel_queries.queries import get_user_deposit_per_stokvel, get_deposits_per_stokvel, get_nr_of_active_users_per_stokvel, get_stokvel_constitution
-from whatsapp_utils._utils.twilio_messenger import send_notification_message
-
-db_conn = SQLiteConnection(database="./database/test_db.db")
 
 from api.schemas.onboarding import JoinStokvelSchema, RegisterStokvelSchema
 from database.stokvel_queries.queries import (
@@ -21,7 +16,11 @@ from database.stokvel_queries.queries import (
     get_admin_by_stokvel,
     get_all_applications,
     get_all_stokvels,
+    get_deposits_per_stokvel,
+    get_nr_of_active_users_per_stokvel,
+    get_stokvel_constitution,
     get_stokvel_id_by_name,
+    get_user_deposit_per_stokvel,
     insert_admin,
     insert_stokvel,
     insert_stokvel_join_application,
@@ -48,20 +47,31 @@ def stokvel() -> str:
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
+
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["POST"])
 def get_user_total_deposit():
     """
     This endpoint returns the total deposits of a user for a given stokvel.
     The user's phone number and stokvel name should be provided as query parameters.
     """
-    phone_number = request.json.get("user_number")  # Get the phone number from query parameters
-    stokvel_name = request.json.get("stokvel_selection")  # Get the stokvel name from query parameters
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
 
     # Validate inputs
     if not phone_number:
-        return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
+        return (
+            jsonify({"error": "Phone number is required."}),
+            400,
+        )  # Return an error if no phone number is provided
     if not stokvel_name:
-        return jsonify({"error": "Stokvel Name is required."}), 400  # Return an error if no stokvel name is provided
+        return (
+            jsonify({"error": "Stokvel Name is required."}),
+            400,
+        )  # Return an error if no stokvel name is provided
 
     try:
         # Fetch total deposits for the user and stokvel
@@ -69,13 +79,15 @@ def get_user_total_deposit():
         total_deposit_details = get_deposits_per_stokvel(stokvel_name)
         active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
 
-
         if "error" in deposit_details:
             return jsonify(deposit_details), 404
-        
+
         # Return an error if no data is found
         if "error" in active_users_count:
-            return jsonify(active_users_count), 404  # Return an error if no data is found     
+            return (
+                jsonify(active_users_count),
+                404,
+            )  # Return an error if no data is found
 
         # Prepare the notification message
         notification_message = (
@@ -94,13 +106,18 @@ def get_user_total_deposit():
         )
 
         # Return the deposit details along with the sent notification status
-        return jsonify({
-            "total_deposit_details": total_deposit_details,
-            "user_deposit_details": deposit_details,
-            "active_users_count": active_users_count,
-            "message": "Notification sent successfully!",
-            "notification_message": notification_message
-        }), 200
+        return (
+            jsonify(
+                {
+                    "total_deposit_details": total_deposit_details,
+                    "user_deposit_details": deposit_details,
+                    "active_users_count": active_users_count,
+                    "message": "Notification sent successfully!",
+                    "notification_message": notification_message,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
@@ -108,28 +125,38 @@ def get_user_total_deposit():
         print(f"Error in {get_nr_of_active_users_per_stokvel.__name__}: {e}")
         print(f"Error in {get_deposits_per_stokvel.__name__}: {e}")
         return jsonify({"error": msg}), 500  # Return internal server error
-    
+
+
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["POST"])
 def get_stokvels_constitution_handler():
     """
     This endpoint returns the stokvels constitution
     """
-    phone_number = request.json.get("user_number")  # Get the phone number from query parameters
-    stokvel_name = request.json.get("stokvel_selection")  # Get the stokvel name from query parameters
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
 
     # Validate inputs
     if not phone_number:
-        return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
+        return (
+            jsonify({"error": "Phone number is required."}),
+            400,
+        )  # Return an error if no phone number is provided
     if not stokvel_name:
-        return jsonify({"error": "Stokvel Name is required."}), 400  # Return an error if no stokvel name is provided
+        return (
+            jsonify({"error": "Stokvel Name is required."}),
+            400,
+        )  # Return an error if no stokvel name is provided
 
     try:
         # Fetch total deposits for the user and stokvel
         stokvel_constitution = get_stokvel_constitution(phone_number, stokvel_name)
 
-
         if "error" in stokvel_constitution:
-            return jsonify(stokvel_constitution), 404  
+            return jsonify(stokvel_constitution), 404
 
         # Prepare the notification message
         notification_message = (
@@ -148,17 +175,22 @@ def get_stokvels_constitution_handler():
         )
 
         # Return the deposit details along with the sent notification status
-        return jsonify({
-            "stokvel_constitution": stokvel_constitution,
-            "message": "Notification sent successfully!",
-            "notification_message": notification_message
-        }), 200
+        return (
+            jsonify(
+                {
+                    "stokvel_constitution": stokvel_constitution,
+                    "message": "Notification sent successfully!",
+                    "notification_message": notification_message,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_stokvel_constitution.__name__}: {e}")
         return jsonify({"error": msg}), 500  # Return internal server error
-    
+
 
 @stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])
 def update_stokvel_contribution() -> str:

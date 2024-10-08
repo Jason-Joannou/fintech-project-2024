@@ -1,4 +1,3 @@
-# from .sql_connection import sql_connection
 import sqlite3
 from datetime import datetime
 from typing import Optional
@@ -9,7 +8,6 @@ from database.sqlite_connection import SQLiteConnection
 from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
-# sql_conn = sql_connection()
 
 
 def get_total_number_of_users() -> int:
@@ -260,6 +258,7 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         print(f"Error occurred during insert: {e}")
         raise e
 
+
 def get_account_details(phone_number: str):
     """
     Retrieve account details for a user based on their phone number.
@@ -268,19 +267,19 @@ def get_account_details(phone_number: str):
     print(f"Extracted phone number: {from_number}")
 
     query = """
-    SELECT 
-        u.user_id, 
-        u.user_number, 
-        u.user_name, 
-        u.user_surname, 
-        uw.user_wallet, 
-        uw.UserBalance, 
+    SELECT
+        u.user_id,
+        u.user_number,
+        u.user_name,
+        u.user_surname,
+        uw.user_wallet,
+        uw.UserBalance,
         u.created_at
-    FROM 
+    FROM
         USERS u
-    JOIN 
+    JOIN
         USER_WALLET uw ON u.user_id = uw.user_id
-    WHERE 
+    WHERE
         u.user_number = :user_number;
     """
 
@@ -306,8 +305,9 @@ def get_account_details(phone_number: str):
             "u.created_at": result[6],
         }
 
-        #print(f"User details: {user_details}")
+        # print(f"User details: {user_details}")
         return user_details  # Return the complete user details
+
 
 def update_user_name(phone_number: str, new_name: str):
     """
@@ -330,13 +330,16 @@ def update_user_name(phone_number: str, new_name: str):
     """
 
     with sqlite_conn.connect() as conn:
-        result = conn.execute(text(update_query), {"new_name": new_name, "user_number": formatted_number})
+        result = conn.execute(
+            text(update_query), {"new_name": new_name, "user_number": formatted_number}
+        )
         conn.commit()
 
         if result.rowcount == 0:
             return f"No user found with phone number: {phone_number}"
 
         return f"User name updated successfully for phone number: {phone_number}"
+
 
 def update_user_surname(phone_number: str, new_surname: str):
     formatted_number = extract_whatsapp_number(from_number=phone_number)
@@ -349,9 +352,12 @@ def update_user_surname(phone_number: str, new_surname: str):
 
     try:
         with sqlite_conn.connect() as conn:
-            result = conn.execute(text(update_query), {"new_surname": new_surname, "user_number": formatted_number})
+            result = conn.execute(
+                text(update_query),
+                {"new_surname": new_surname, "user_number": formatted_number},
+            )
             conn.commit()
-            
+
             if result.rowcount == 0:
                 return f"No user found with phone number: {phone_number}"
 
@@ -360,4 +366,3 @@ def update_user_surname(phone_number: str, new_surname: str):
     except Exception as e:
         print(f"Error updating surname: {e}")
         return None  # Ensure that None is returned on error
-

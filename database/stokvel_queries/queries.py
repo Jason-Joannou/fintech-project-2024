@@ -1,19 +1,20 @@
-from sqlalchemy import text
-
-from database.utils import extract_whatsapp_number
 import sqlite3
 from datetime import datetime
 from typing import List, Optional
 
+from sqlalchemy import text
+
 from database.sqlite_connection import SQLiteConnection
+from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
+
 def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
     """
     Retrieve total deposit details for a specific user and stokvel based on stokvel name.
-    
+
     Args:
         phone_number (str): The user's phone number.
         stokvel_name (str): The name of the stokvel to filter by.
@@ -26,26 +27,30 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
 
     # Updated query to find total deposits using `stokvel_name`
     query = """
-    SELECT 
+    SELECT
         SUM(t.amount) AS total_deposits
-    FROM 
+    FROM
         USERS u
-    JOIN 
+    JOIN
         TRANSACTIONS t ON u.user_id = t.user_id
-    WHERE 
+    WHERE
         u.user_number = :user_number
         AND t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
         AND t.tx_type = 'DEPOSIT'
-    GROUP BY 
+    GROUP BY
         u.user_id;
     """
-    
+
     # Executing the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(text(query), {"user_number": from_number, "stokvel_name": stokvel_name}).fetchone()
+        result = conn.execute(
+            text(query), {"user_number": from_number, "stokvel_name": stokvel_name}
+        ).fetchone()
 
         if not result:
-            return {"error": f"No data found for the given user number and stokvel name: {stokvel_name}."}
+            return {
+                "error": f"No data found for the given user number and stokvel name: {stokvel_name}."
+            }
 
         # Building the result dictionary from the query response
         return {
@@ -56,7 +61,7 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
 def get_deposits_per_stokvel(stokvel_name: str):
     """
     Retrieve total deposit details for a specific stokvel based on its name.
-    
+
     Args:
         stokvel_name (str): The name of the stokvel.
 
@@ -65,23 +70,25 @@ def get_deposits_per_stokvel(stokvel_name: str):
     """
     # Updated query to fetch the total deposits using stokvel_id from the STOKVELS table
     query = """
-    SELECT 
+    SELECT
         SUM(t.amount) AS total_deposits
-    FROM 
+    FROM
         TRANSACTIONS t
-    WHERE 
+    WHERE
         t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
         AND t.tx_type = 'deposit'
-    GROUP BY 
+    GROUP BY
         t.stokvel_id;
     """
-    
+
     # Executing the query using the SQLite connection
     with sqlite_conn.connect() as conn:
         result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
 
         if not result:
-            return {"error": f"No data found for the given stokvel name: {stokvel_name}"}
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name}"
+            }
 
         # Building the result dictionary from the query response
         return {
@@ -89,10 +96,11 @@ def get_deposits_per_stokvel(stokvel_name: str):
             "total_deposits": result[0],
         }
 
+
 def get_nr_of_active_users_per_stokvel(stokvel_name: str):
     """
     Retrieve the number of active members for a specific stokvel based on its name.
-    
+
     Args:
         stokvel_name (str): The name of the stokvel.
 
@@ -101,11 +109,11 @@ def get_nr_of_active_users_per_stokvel(stokvel_name: str):
     """
     # Corrected query to fetch the count of active members for the stokvel
     query = """
-    SELECT 
+    SELECT
         COUNT(sm.user_id) as nr_of_active_users_in_stokvel
-    FROM 
+    FROM
         STOKVEL_MEMBERS sm
-    WHERE 
+    WHERE
         sm.stokvel_id = (SELECT s.stokvel_id FROM STOKVELS s WHERE s.stokvel_name = :stokvel_name)
         AND sm.active_status = 'active';
     """
@@ -114,7 +122,9 @@ def get_nr_of_active_users_per_stokvel(stokvel_name: str):
         result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
 
         if not result or result[0] is None:
-            return {"error": f"No data found for the given stokvel name: {stokvel_name}"}
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name}"
+            }
 
         # Building the result dictionary from the query response
         return {
@@ -122,16 +132,17 @@ def get_nr_of_active_users_per_stokvel(stokvel_name: str):
             "nr_of_active_users": result[0],
         }
 
+
 def get_stokvel_constitution(phone_number: str, stokvel_name: str):
     """
     Retrieve minimum contribution amount and maximum number of members for a specific stokvel based on its name and user's phone number.
-    
+
     Args:
         phone_number (str): The user's phone number.
         stokvel_name (str): The name of the stokvel to filter by.
 
     Returns:
-        dict: A dictionary containing the stokvel's constitution details, including the minimum contribution amount, 
+        dict: A dictionary containing the stokvel's constitution details, including the minimum contribution amount,
               maximum number of contributors, and creation date.
     """
     # Step 1: Format the phone number (if necessary, similar to `extract_whatsapp_number`)
@@ -140,35 +151,40 @@ def get_stokvel_constitution(phone_number: str, stokvel_name: str):
 
     # Step 2: SQL query to find stokvel details using USERS to validate membership
     query = """
-    SELECT 
+    SELECT
         s.min_contributing_amount AS minimum_contributing_amount,
         s.max_number_of_contributors AS max_number_of_contributors,
         s.created_at AS creation_date
-    FROM 
+    FROM
         STOKVELS s
-    JOIN 
+    JOIN
         STOKVEL_MEMBERS sm ON s.stokvel_id = sm.stokvel_id
-    JOIN 
+    JOIN
         USERS u ON sm.user_id = u.user_id
-    WHERE 
+    WHERE
         s.stokvel_name = :stokvel_name
         AND u.user_number = :user_number;
     """
 
     # Step 3: Execute the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(text(query), {"stokvel_name": stokvel_name, "user_number": formatted_number}).fetchone()
+        result = conn.execute(
+            text(query), {"stokvel_name": stokvel_name, "user_number": formatted_number}
+        ).fetchone()
 
         if not result:
-            return {"error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {phone_number}."}
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {phone_number}."
+            }
 
         # Step 4: Build the result dictionary from the query response
         return {
             "stokvel_name": stokvel_name,
             "minimum_contributing_amount": result[0],
             "max_number_of_contributors": result[1],
-            "creation_date": result[2]
+            "creation_date": result[2],
         }
+
 
 def get_next_unique_id(conn, table_name, id_column):
     """

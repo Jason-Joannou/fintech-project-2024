@@ -53,35 +53,15 @@ STOKVEL_ACTIONS_USER = {
     "message": """
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
-    2. Change my contribution amount
-    3. View stokvel constitution
-    4. Make a contribution
-    5. Leave stokvel
-    6. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    2. View stokvel constitution
+    3. Leave stokvel
+    4. Back""",
+    "valid_actions": ["1", "2", "3", "4"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
-        "2": "/stokvel/change_contribution",
-        "3": "/stokvel/view_constitution",
-        "4": "/stokvel/make_contribution",
+        "2": "/stokvel/view_constitution",
     },
-    "state_selection": {"5": "leave_stokvel", "6": "back_state"},
-    "input_request_states": {
-        "2": {
-            "tag": "stokvel_actions_user:input_request_states:2",
-            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
-            "valid_type": float,
-            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
-            "action": "2",
-        },
-        "4": {
-            "tag": "stokvel_actions_user:input_request_states:4",
-            "message": "Please enter the contribution amount for your stokvel in Rands.",
-            "valid_type": float,
-            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
-            "action": "4",
-        },
-    },
+    "state_selection": {"3": "leave_stokvel", "4": "back_state"},
     "state": 1,
 }
 
@@ -91,36 +71,16 @@ STOKVEL_ACTIONS_ADMIN = {
     "message": """
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
-    2. Change my contribution amount
-    3. View stokvel constitution
-    4. Make a contribution
-    5. Leave stokvel
-    6. Administrative actions
-    7. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5", "6", "7"],
+    2. View stokvel constitution
+    3. Leave stokvel
+    4. Administrative actions
+    5. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
-        "2": "/stokvel/change_contribution",
-        "3": "/stokvel/view_constitution",
-        "4": "/stokvel/make_contribution",
+        "2": "/stokvel/view_constitution",
     },
-    "state_selection": {"5": "leave_stokvel", "6": "admin_services", "7": "back_state"},
-    "input_request_states": {
-        "2": {
-            "tag": "stokvel_actions_admin:input_request_states:2",
-            "message": "Please enter the new recurring contribution amount for your stokvel in Rands.",
-            "valid_type": float,
-            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
-            "action": "2",
-        },
-        "4": {
-            "tag": "stokvel_actions_admin:input_request_states:4",
-            "message": "Please enter the contribution amount for your stokvel in Rands.",
-            "valid_type": float,
-            "invalid_message": "Please make sure you specify a number value. Returning to previous menu.",
-            "action": "4",
-        },
-    },
+    "state_selection": {"3": "leave_stokvel", "4": "admin_services", "5": "back_state"},
     "state": 1,
 }
 
@@ -132,7 +92,7 @@ LEAVE_STOKVEL = {
     2. Back
     """,
     "valid_actions": ["1", "2"],
-    "action_requests": {"1": "admin/leave_stokvel"},
+    "action_requests": {"1": "stokvels/admin/leave_stokvel"},
     "state_selection": {"2": "back_state"},
     "state": 1,
 }
@@ -143,21 +103,17 @@ STOKVEL_ADMIN_SERVICES = {
 Welcome to stokvel administration! Please select one of the following options to proceed:
 1. Change stokvel name
 2. Change maximum member number
-3. Change minimum contributing amount
-4. Change payout date
-5. View pending applications
-6. Back
+3. View pending applications
+4. Back
 """,
-    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    "valid_actions": ["1", "2", "3", "4"],
     "action_requests": {  # Maybe we specify the endpoint per action
         "1": "/stokvel/admin/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
         "2": "/stokvel/admin/change_member_number",
-        "3": "/stokvel/admin/change_contributing_amt",
-        "4": "/stokvel/admin/change_payout_date",
     },
-    "state_selection": {"6": "back_state"},
+    "state_selection": {"4": "back_state"},
     "action_responses": {
-        "5": "View pending applications here: http://stokveldigital.uksouth.azurecontainer.io/stokvel/approvals",
+        "3": "View pending applications here: http://stokveldigital.uksouth.azurecontainer.io/stokvel/approvals",
     },
     "input_request_states": {
         "1": {
@@ -173,20 +129,6 @@ Welcome to stokvel administration! Please select one of the following options to
             "valid_type": float,
             "invalid_message": "Please make sure the number of members is numeric and greater than 0. Returning you to the previous menu.",
             "action": "2",
-        },
-        "3": {
-            "tag": "admin_services:input_request_states:3",
-            "message": "Please specify the minimum contributing for your stokvel.",
-            "valid_type": float,
-            "invalid_message": "Please make sure the amount is numeric and greater than 0. Returning you to the previous menu.",
-            "action": "3",
-        },
-        "4": {
-            "tag": "admin_services:input_request_states:4",
-            "message": "Please specify the new payout date for your stokvel in the format dd/mm/yyy.",
-            "valid_type": str,
-            "invalid_message": "Please make sure you provide the new payout date in the format dd/mm/yyyy. Returning you to the previous menu.",
-            "action": "4",
         },
     },
     "state": 1,
@@ -208,21 +150,17 @@ VIEW_PROFILE = {
     "tag": "view_profile",
     "message": """
     Please select what you would view to see on your profile:
-    1. View user name
-    2. View user surname
-    3. View wallet my address
-    4. View my wallet balance
-    5. My transactions
-    6. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5", "6"],
+    1. View Account Details
+    2. View my wallet balance
+    3. My transactions
+    4. Back""",
+    "valid_actions": ["1", "2", "3", "4"],
     "action_requests": {
-        "1": "/stokvel/view_username",
-        "2": "/stokvel/view_usersurname",
-        "3": "/stokvel/view_wallet_address",
-        "4": "/stokvel/view_wallet_balances",
-        "5": "/stokvel/view_transactions",
+        "1": "/users/view_account_details",
+        "2": "/accounting/view_wallet_balances",
+        "3": "/accounting/view_transactions",
     },
-    "state_selection": {"6": "back_state"},
+    "state_selection": {"4": "back_state"},
     "state": 2,
 }
 
