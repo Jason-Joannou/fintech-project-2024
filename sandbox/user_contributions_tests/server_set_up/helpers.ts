@@ -15,6 +15,7 @@ import {
 import { randomUUID } from "crypto";
 import { type components } from "@interledger/open-payments/dist/openapi/generated/auth-server-types";
 import { access } from "fs";
+import { string } from "zod";
 
 
 export async function getAuthenticatedClient() {
@@ -243,7 +244,7 @@ export async function getOutgoingPaymentAuthorization(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT1${payment_period_length}` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT20${payment_period_length}` //will need to change this to start date of the stokvel
             },
           },
         ],
@@ -420,3 +421,102 @@ export async function processRecurringPayments(
     } as OutgoingPaymentWithSpentAmounts;
   }
 }
+
+
+export async function processInterestAddedRecurringPayments(
+  client: AuthenticatedClient,
+  sender_wallet_address: string,
+  receiving_wallet_address: string,
+  // quoteId: string, // the previous quote
+  manageUrl: string, //manage url from the 
+  previousToken: string,
+  payout_value: string
+
+) {
+  // rotate the token
+  const token = await client.token.rotate({
+    url: manageUrl,
+    accessToken: previousToken,
+  });
+
+  console.log('ROTATED THE TOKEN')
+
+  console.log(token.access_token.manage) // update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
+  console.log(token.access_token.value) //update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
+
+  if (!token.access_token) {
+    console.error("** Failed to rotate token.");
+  }
+
+  console.log("** Rotated Token ");
+  console.log(token.access_token);
+
+  const tokenAccessDetails = token.access_token.access as {
+    type: "outgoing-payment";
+    actions: ("create" | "read" | "read-all" | "list" | "list-all")[];
+    identifier: string;
+    limits?: components["schemas"]["limits-outgoing"];
+  }[];
+
+  let receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
+
+  if (payout_value != null){
+    receiveAmount = payout_value
+  }
+
+  const [receiverWalletAddress, receiverWalletAddressDetails] =
+    await getWalletAddressInfo(client, receiving_wallet_address);
+
+  const [senderWalletAddress, senderWalletAddressDetails] =
+    await getWalletAddressInfo(client, tokenAccessDetails[0]?.identifier ?? "");
+
+  // create incoming payment
+  const incomingPayment = await createStandardIncomingPayment(
+    client,
+    receiveAmount!,
+    receiverWalletAddressDetails,
+  );
+
+  // create qoute
+  const quote = await createQuote(
+    client,
+    incomingPayment.id,
+    senderWalletAddressDetails,
+  );
+
+  // create outgoing payment
+  try {
+    const outgoingPayment = await client.outgoingPayment.create(
+      {
+        url: new URL(senderWalletAddress).origin,
+        accessToken: token.access_token.value, //OUTGOING_PAYMENT_ACCESS_TOKEN -- using the new token
+      },
+      {
+        walletAddress: senderWalletAddress,
+        quoteId: quote.id, //QUOTE_URL,
+      },
+    );
+
+    //update the stuffs (token details) in the database now
+
+    return outgoingPayment;
+  } catch (error) {
+    console.log(error);
+    return {
+      id: "",
+      walletAddress: senderWalletAddress,
+      quoteId: quote.id,
+      failed: true,
+      receiver: "",
+      receiveAmount: tokenAccessDetails[0]?.limits?.receiveAmount,
+      debitAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      sentAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      createdAt: "",
+      updatedAt: "",
+    } as OutgoingPaymentWithSpentAmounts;
+  }
+}
+
+
+
+

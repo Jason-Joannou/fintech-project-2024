@@ -8,6 +8,7 @@ import {
   getAuthenticatedClient,
   getOutgoingPaymentAuthorization,
   getWalletAddressInfo,
+  processInterestAddedRecurringPayments,
 } from "./helpers";
 
 import {
@@ -184,6 +185,32 @@ app.post('/process-recurring-payment', async (req: Request, res: Response) => {
   }}
 });
 
+
+app.post('/process-recurring-winterest-payment', async (req: Request, res: Response) => {
+  try {
+      const { sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, payout_value } = req.body; // Get data from request body
+
+    const client = await getAuthenticatedClient()
+    
+    // const walletFullDetails = await client.walletAddress.get({
+    //   url: walletAddressURL,
+    // });
+
+
+    const recurring_payment = await processInterestAddedRecurringPayments(client, sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, payout_value);
+    
+    // Send back the incoming payment as a JSON response
+    res.json(recurring_payment);
+} catch (error: unknown) {  // Specify that error can be of type unknown
+  console.error(error);
+
+  // Handle the error safely
+  if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+  } else {
+      res.status(500).json({ error: "An unknown error occurred" });
+  }}
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

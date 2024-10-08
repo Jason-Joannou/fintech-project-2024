@@ -58,6 +58,42 @@ def process_application():
             declined_applications_list = insert_stokvel_member(application_id= application_id, stokvel_id=application_stokvel_id, user_id=application_joiner_id)
             update_stokvel_members_count(application_stokvel_id)
 
+            # CREATE GRANT REQUEST THINGS HERE
+            # (REMEMBER TO IMPORT MISSING METHODS ETC)
+
+            # DO A CHECK - IF THE STOCKVELS DATE HAS ALREADY PASSED, THEN DO THE GRANT REQUEST, CHECK THE RESPONSE IF APPROVED AND THEN DO THE INITIAL PAYMENT AS WELL
+
+            # ELSE - IF THE STOKVEL START DATE HAS NOT YET PASSED, JUST ADD IT SIMILAR TO THE CREATE FLOW:
+
+            #     payload = {
+            #     "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
+            #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+            #     "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            #     "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+            #     "payment_periods": stokvel_data.payout_frequency_int, #how many contributions are going to be made
+            #     "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period)
+            # }
+
+            # print("REQUEST: ")
+            # print(payload)
+
+            # response = requests.post(node_server_initiate_grant, json=payload)
+
+            # print(response)
+
+            # print("RESPONSE: \n", response.json())
+            # print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
+
+            # initial_continue_uri = response.json()['continue_uri']
+            # initial_continue_token = response.json()['continue_token']['value']
+
+
+
+
+
+
+
+
             if declined_applications_list is not None and len(declined_applications_list)>0:
                 error_message = "The stokvel is full. No new members can be added"
 
