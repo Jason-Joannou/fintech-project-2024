@@ -394,5 +394,5 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
         except Exception as e:
             transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
-            return None
+            return 0.00
         
