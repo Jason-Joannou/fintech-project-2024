@@ -84,15 +84,63 @@ def format_contribution_period_string(contribution_period: str):
     return contribution_period
     
 
+# def get_all_applications(user_id):
+#     """
+#     docstring
+#     """
+#     query = """
+#         SELECT
+#             a.id,
+#             a.stokvel_id,
+#             a.user_id,
+#             a.user_contribution,
+#             a.AppStatus,
+#             a.AppDate,
+#             u.user_number,
+#             u.user_name,
+#             u.user_surname,
+#             s.stokvel_name
+#         FROM APPLICATIONS a
+#         JOIN USERS u ON a.user_id = u.user_id
+#         JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
+#         JOIN ADMIN ad ON s.stokvel_id = ad.stokvel_id  -- Join ADMIN to check admin link
+#         WHERE ad.user_id = :user_id          -- Check if requesting number is an admin
+#         AND a.AppStatus = 'Application Submitted'    -- Application status filter
+#     """
+
+#     with sqlite_conn.connect() as conn:
+#         cursor = conn.execute(text(query), {"user_id": user_id})
+#         result = cursor.fetchall()
+
+#         applications = [
+#             {
+#                 "id": i[0],
+#                 "stokvel_id": i[1],
+#                 "user_id": i[2],
+#                 "AppStatus": i[3],
+#                 "AppDate": i[4],
+#                 "user_number": i[5],
+#                 "user_name": i[6],
+#                 "user_surname": i[7],
+#                 "stokvel_name": i[8],
+#             }
+#             for i in result
+#         ]
+
+#         return applications
+
+
 def get_all_applications(user_id):
     """
-    docstring
+    Fetches all applications for a stokvel where the user is an admin.
+    Returns the applications, including user contributions.
     """
     query = """
         SELECT
             a.id,
             a.stokvel_id,
             a.user_id,
+            a.user_contribution,
             a.AppStatus,
             a.AppDate,
             u.user_number,
@@ -103,8 +151,8 @@ def get_all_applications(user_id):
         JOIN USERS u ON a.user_id = u.user_id
         JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
         JOIN ADMIN ad ON s.stokvel_id = ad.stokvel_id  -- Join ADMIN to check admin link
-        WHERE ad.user_id = :user_id          -- Check if requesting number is an admin
-        AND a.AppStatus = 'Application Submitted'    -- Application status filter
+        WHERE ad.user_id = :user_id                    -- Check if requesting number is an admin
+        AND a.AppStatus = 'Application Submitted'      -- Application status filter
     """
 
     with sqlite_conn.connect() as conn:
@@ -116,17 +164,19 @@ def get_all_applications(user_id):
                 "id": i[0],
                 "stokvel_id": i[1],
                 "user_id": i[2],
-                "AppStatus": i[3],
-                "AppDate": i[4],
-                "user_number": i[5],
-                "user_name": i[6],
-                "user_surname": i[7],
-                "stokvel_name": i[8],
+                "user_contribution": i[3],  # Add user contribution here
+                "AppStatus": i[4],
+                "AppDate": i[5],
+                "user_number": i[6],
+                "user_name": i[7],
+                "user_surname": i[8],
+                "stokvel_name": i[9],
             }
             for i in result
         ]
 
         return applications
+
 
 
 def insert_stokvel(
@@ -258,6 +308,7 @@ def insert_stokvel_member(
     application_id: Optional[int],
     stokvel_id: Optional[str],  # unique constraint here
     user_id: Optional[str],
+    user_contribution: Optional[float],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> List:
@@ -277,9 +328,9 @@ def insert_stokvel_member(
 
     insert_query = """
         INSERT INTO STOKVEL_MEMBERS (
-            stokvel_id, user_id, created_at, updated_at
+            stokvel_id, user_id, user_contribution, created_at, updated_at
         ) VALUES (
-            :stokvel_id, :user_id, :created_at, :updated_at
+            :stokvel_id, :user_id, : user_contribution, :created_at, :updated_at
         )
         """
 
@@ -287,6 +338,7 @@ def insert_stokvel_member(
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id,
+        "user_contribution":user_contribution,
         "created_at": created_at,
         "updated_at": updated_at,
     }
@@ -580,6 +632,7 @@ def check_available_space_in_stokvel(stokvel_id):
 def insert_stokvel_join_application(
     stokvel_id: Optional[str],  # unique constraint here
     user_id: Optional[str],
+    user_contribution: Optional[float],
     app_status: Optional[str] = None,
     app_date: Optional[str] = None,
 ):
@@ -595,9 +648,9 @@ def insert_stokvel_join_application(
 
     insert_query = """
         INSERT INTO APPLICATIONS (
-            id, stokvel_id, user_id, AppStatus, AppDate
+            id, stokvel_id, user_id, user_contribution, AppStatus, AppDate
         ) VALUES (
-            :id, :stokvel_id, :user_id, :AppStatus, :AppDate
+            :id, :stokvel_id, :user_id, :user_contribution, :AppStatus, :AppDate
         )
         """
 
@@ -605,6 +658,7 @@ def insert_stokvel_join_application(
         "id": None,
         "stokvel_id": stokvel_id,
         "user_id": user_id,
+        "user_contribution":user_contribution,
         "AppStatus": app_status,
         "AppDate": app_date,
     }

@@ -49,6 +49,7 @@ class JoinStokvelSchema(BaseModel):
         ..., example="John's Soccer Stokvel"
     )  # unique constraint here
     stokvel_id: int = Field(None, example=123)
+    user_contribution: float = Field(..., example=100)
 
 
 class UpdateUser(BaseModel):

@@ -564,6 +564,7 @@ def process_application():
     application_joiner_id = request.form.get("user_id")
     stokvel_name = request.form.get("stokvel_name")
     action = request.form.get("action")
+    user_contribution = request.form.get("user_contribution")
 
     requesting_number = request.form.get(
         "requesting_number"
