@@ -227,7 +227,7 @@ class MessageStateManager:
 
     def execute_action_request(
         self, endpoint: str, payload: Optional[Dict] = None
-    ) -> str:
+    ) -> Union[str, Dict]:
         """
         Executes an external action request to a specified endpoint and returns the response.
 
@@ -323,9 +323,9 @@ class MessageStateManager:
         if self.current_state:
             msg = self.unrecognized_state + self._get_current_state_message_formatted()
             return send_conversational_message(msg)
-        else:
-            msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
-            return send_conversational_message(msg)
+
+        msg = "Sorry, I don't understand. Please activate the service by sending 'Hi' or 'Hello'"
+        return send_conversational_message(msg)
 
     def get_current_state_valid_actions(self) -> List[str]:
         """
@@ -426,11 +426,11 @@ class MessageStateManager:
                 cast(StateSchema, retrieved_state) if retrieved_state else {}
             )
         else:
-            retrieved_state = self.execute_action_request(
+            retrieved_state = self.execute_action_request(  # type: ignore
                 endpoint="/stokvel/my_stokvels",
                 payload={"user_number": self.user_number},
             )
-            self.current_state = json.loads(retrieved_state) if retrieved_state else {}
+            self.current_state = json.loads(retrieved_state) if retrieved_state else {}  # type: ignore
 
     def handle_input_state_validation(
         self, user_input: str

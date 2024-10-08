@@ -8,7 +8,7 @@ UNREGISTERED_NUMBER = {
     """,
     "valid_actions": ["1", "2"],
     "action_responses": {
-        "1": "Please register through our online portal: https://stokvels.com/register",
+        "1": "Please register through our online portal: http://stokveldigital.uksouth.azurecontainer.io/onboard",
         "2": "Please register through our online portal: https://stokvels.com/register",
     },
     "state": -1,
@@ -40,8 +40,8 @@ STOKVEL_SERVICES = {
     """,
     "valid_actions": ["1", "2", "3", "4"],
     "action_responses": {
-        "1": "Please join a stokvel through our online portal: https://stokvels.com/register",
-        "2": "Please create a new stokvel through our online portal: https://stokvels.com/register",
+        "1": "Please join a stokvel through our online portal: http://stokveldigital.uksouth.azurecontainer.io/stokvel/join_stokvel",
+        "2": "Please create a new stokvel through our online portal: http://stokveldigital.uksouth.azurecontainer.io/stokvel/create_stokvel",
     },
     "action_requests": {"3": "/stokvel/my_stokvels"},
     "state_selection": {"4": "back_state"},
@@ -148,7 +148,7 @@ Welcome to stokvel administration! Please select one of the following options to
 5. View pending applications
 6. Back
 """,
-    "valid_actions": ["1", "2", "3", "4", "5"],
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {  # Maybe we specify the endpoint per action
         "1": "/stokvel/admin/change_stokvel_name",  # We need to specify the type of endpoint, ie endpoing:Method(post)
         "2": "/stokvel/admin/change_member_number",
@@ -157,7 +157,7 @@ Welcome to stokvel administration! Please select one of the following options to
     },
     "state_selection": {"6": "back_state"},
     "action_responses": {
-        "5": "View pending applications here: https://stokvels.com/register",
+        "5": "View pending applications here: http://stokveldigital.uksouth.azurecontainer.io/stokvel/approvals",
     },
     "input_request_states": {
         "1": {

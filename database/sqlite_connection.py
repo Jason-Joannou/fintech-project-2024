@@ -38,7 +38,7 @@ class SQLiteConnection:
         Raises:
             Exception: An error occurred creating the engine.
         """
-        
+
         if not os.path.exists(self.database):
             raise FileNotFoundError(f"SQLite database file '{self.database}' not found")
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Onboarding</title>
+    <title>Application Approvals</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,6 +83,7 @@
             color: red;
             font-size: 14px;
         }
+
         .header {
         text-align: center;
         margin-bottom: 20px;
@@ -93,19 +94,15 @@
         align-items: center;
     }
 
-    .header img {
-        width: 40px; /* Adjust size to your liking */
-        height: 40px; /* Adjust size to your liking */
-        margin-right: 10px; /* Space between the image and the text */
-    }
+        .header img {
+            width: 40px; /* Adjust size to your liking */
+            height: 40px; /* Adjust size to your liking */
+            margin-right: 10px; /* Space between the image and the text */
+        }
 
-    .company-name {
-        font-weight: bold;
-    }
-
-    .rafiki_link{
-        text-align: center;
-    }
+        .company-name {
+            font-weight: bold;
+        }
 
     </style>
 </head>
@@ -118,32 +115,33 @@
             <h1 class="company-name">Digi Stokvels</h1>
         </div>
 
-        <h2>User Onboarding</h2>
-        <form action="{{ url_for('onboarding.onboard_user') }}" method="POST">
-            <label for="name">First Name:</label>
-            <input type="text" id="name" name="name" required>
+        <h1>Application Approvals:</h1>
+            <!-- <p>{{ applications }}</p> -->
+            {% for app in applications %}
+            <form method="POST" action="{{ url_for('stokvel.process_application') }}">
+            <div class="application">
+                <h3>Stokvel: {{app.stokvel_name}}</h3>
+                <strong>Application ID: {{ app.id }}</strong>
+                <br>
+                <strong>Application Status: {{ app.AppStatus }}</strong>
+                <br>
+                <strong>Applicant Name: {{ app.user_name }} {{ app.user_surname }}</strong>
+                <br>
+                <strong> Applicant Number: {{ app.user_number }}</strong>
 
-            <label for="surname">Last Name:</label>
-            <input type="text" id="surname" name="surname" required>
+                <input type="hidden" name="application_id" value="{{ app.id }}">
+                <input type="hidden" name="requesting_number" value="{{ requesting_number }}">
+                <input type="hidden" name="user_id" value="{{app.user_id }}">
+                <input type="hidden" name="stokvel_id" value="{{ app.stokvel_id }}">
+                <input type="hidden" name="admin_id" value="{{ admin_id }}">
+                <input type="hidden" name="stokvel_name" value="{{app.stokvel_name }}">
 
-            <label for="cellphone_number">Cellphone Number:</label>
-            <input type="tel" id="cellphone_number" name="cellphone_number" required>
-
-            <label for="id_number">ID Number:</label>
-            <input type="number" maxlength="13" id="id_number" name="id_number" required>
-
-            <label for="wallet_id">ILP Wallet Address:</label>
-            <input type="url"  id="wallet_id" name="wallet_id" required>
-            
-            <br>
-            <br>
-            <br>
-            <div class = "rafiki_link">
-                <a href = "https://rafiki.money/auth/signup">Create Rafiki Wallet</a>
+                <br>
+                <button type="submit" name="action" value="approve">Approve</button>
+                <button type="submit" name="action" value="decline">Decline</button>
             </div>
-
-            <input type="submit" value="Submit">
         </form>
+        {% endfor %}
     </div>
 </body>
 

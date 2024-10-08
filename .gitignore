@@ -197,6 +197,10 @@ dist/
 
 # Ignore the .terraform directory
 .terraform/
+*.tfstate
+*.backup.tfstate
+*.hcl
+main-execution-plan
 
 # Ignore variable files with sensitive data
 *.tfvars

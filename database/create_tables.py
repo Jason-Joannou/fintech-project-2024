@@ -38,19 +38,22 @@ def create_stokvel_table_sqlite() -> None:
         conn.execute(
             text(
                 """
-            CREATE TABLE IF NOT EXISTS STOKVELS (
-                stokvel_id INTEGER PRIMARY KEY,
-                stokvel_name TEXT UNIQUE,  -- Add UNIQUE constraint here
-                ILP_wallet TEXT,
-                MOMO_wallet TEXT,
-                total_members INTEGER,
-                min_contributing_amount NUMBER,
-                max_number_of_contributors INTEGER,
-                Total_contributions NUMBER,
-                prev_payout DATEIME,
-                created_at TIMESTAMP,
-                updated_at TIMESTAMP
-            );
+            CREATE TABLE STOKVELS (
+            stokvel_id INTEGER PRIMARY KEY, -- In SQLite, INTEGER PRIMARY KEY creates an alias for ROWID
+            stokvel_name TEXT NOT NULL, -- Using TEXT for variable-length strings
+            ILP_wallet TEXT NOT NULL, -- SQLite uses REAL for floating-point numbers
+            MOMO_wallet TEXT,
+            total_members INTEGER,
+            min_contributing_amount REAL,
+            max_number_of_contributors INTEGER,
+            total_contributions REAL,
+            start_date TEXT, -- Dates often stored as text in ISO8601 format or as numbers
+            end_date TEXT,
+            payout_frequency_int INTEGER,
+            payout_frequency_period TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Set current timestamp by default
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
         """
             )
         )
