@@ -1,10 +1,11 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Optional
 
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
+from database.stokvel_queries.queries import get_stokvel_monthly_interest
 from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
@@ -259,59 +260,6 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         raise e
 
 
-def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
-    """
-    Get the accumulated interest for a stokvel in the current savings period.
-
-    :param stokvel_id: The ID of the stokvel to check interest for.
-    :return: A dictionary of montlhy interest values keyed by the date.
-    """
-    engine = sqlite_conn.get_engine()
-    with engine.connect() as conn:
-        transaction = conn.begin()
-        try:
-            # Get most recent payout date from STOKVELS table
-            query = text(
-                "SELECT prev_payout FROM STOKVELS WHERE stokvel_id = :stokvel_id"
-            )
-            result = conn.execute(query, {"stokvel_id": stokvel_id})
-            prev_payout = result.scalar()
-
-            if not prev_payout:
-                query = text(
-                    "SELECT created_at FROM STOKVELS WHERE stokvel_id = :stokvel_id"
-                )
-                result = conn.execute(query, {"stokvel_id": stokvel_id})
-                prev_payout = result.scalar()
-
-            # Get all interest values from the INTEREST table where the stokvel_id matches
-            # and date is after the previous payout
-            interest_query = text(
-                """
-                SELECT interest_value, date 
-                FROM INTEREST 
-                WHERE stokvel_id = :stokvel_id 
-                AND date > :prev_payout
-            """
-            )
-
-            interest_result = conn.execute(
-                interest_query, {"stokvel_id": stokvel_id, "prev_payout": prev_payout}
-            )
-
-            # Store the interest values in a dictionary (keyed by date)
-            interest = {row[1]: row[0] for row in interest_result}
-
-            transaction.commit()
-
-            return interest
-
-        except Exception as e:
-            transaction.rollback()
-            print(f"There was an error retrieving the SQL data: {e}")
-            return {}
-
-
 def get_user_interest(user_id: int, stokvel_id: int) -> float:
     """
     Get the accumulated interest for a user in the current savings period.
@@ -340,11 +288,11 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             # SQL query to get monthly sums of users deposits after the start_date
             user_deposit_query = text(
                 """
-                SELECT 
+                SELECT
                     strftime('%Y-%m', tx_date) AS month,  -- Get the year-month part of the date
                     SUM(amount) AS total_deposit
                 FROM TRANSACTIONS
-                WHERE user_id = :user_id 
+                WHERE user_id = :user_id
                 AND stokvel_id = :stokvel_id
                 AND tx_type = 'deposit'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
@@ -421,9 +369,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
             return 0.00
-        
-print(get_stokvel_monthly_interest(stokvel_id=1))
-print(get_user_interest(user_id=1, stokvel_id=1))
+
 
 def get_account_details(phone_number: str):
     """
