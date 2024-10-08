@@ -61,31 +61,6 @@ def get_admin_by_stokvel(stokvel_id):
             return result
         return None
 
-# def get_all_applications(user_id):
-#     query = "SELECT * FROM APPLICATIONS where user_id = :user_id"
-#     applicant_data_query = "select user_number, user_name, user_surname from USERS where user_id = :user_id"
-    
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchall()
-
-#         applicant_cursor = conn.execute(text(applicant_data_query), {"user_id": user_id})
-#         applicant_result = applicant_cursor.fetchone()  # Assuming one user with one ID
-
-#         applications = [
-#             {
-#                 'id':i[0],
-#                 'stokvel_id': i[1],
-#                 'user_id': i[2],
-#                 'AppStatus': i[3],
-#                 'AppDate': i[4],
-#                 'user_number': applicant_result[0],
-#                 'user_name': applicant_result[1],
-#                 'user_surname': applicant_result[2]
-#             } for i in result
-#         ]
-#         return applications
-
 def get_all_applications(user_id):
     query = """
         SELECT 
