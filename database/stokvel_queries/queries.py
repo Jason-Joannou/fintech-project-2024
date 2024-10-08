@@ -56,7 +56,30 @@ def get_admin_by_stokvel(stokvel_id):
         if result:
             return result
         return None
+    
 
+def get_iso_with_default_time(date_string: str) -> str:
+    try:
+        # Try parsing the date string with time
+        date_object = datetime.fromisoformat(date_string)
+    except ValueError:
+        # If no time is provided, append 12:00 AM (00:00:00) and parse again
+        date_object = datetime.fromisoformat(date_string + 'T00:00:00')
+    
+    # Return the date in ISO format with Z for UTC timezone
+    return date_object.isoformat() + 'Z'
+
+def format_contribution_period_string(contribution_period: str):
+    if contribution_period == "Days":
+        contribution_period = "D"
+    elif contribution_period == "Months":
+        contribution_period = "M"
+    elif contribution_period == "Weeks":
+        contribution_period = "W"
+    elif contribution_period == "Years":
+        contribution_period = "Y"
+    return contribution_period
+    
 
 def get_all_applications(user_id):
     """
@@ -652,4 +675,27 @@ def update_application_status(app_id: Optional[int], app_status: str):
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise e
+        raise Exception(f"Exception occurred during inserting a application: {e}")  # Stops execution by raising the error
+
+def add_url_token(userid, stokvel_id, url, token):
+    try:
+        with sqlite_conn.connect() as conn:
+            print("Connected to the database for stokvel members update TOKEN details")
+            
+            update_query = "UPDATE STOKVEL_MEMBERS SET url = :url, token = :token WHERE stokvel_id = :stokvel_id AND user_id = :user_id;"
+            update_parameters = {
+                "stokvel_id": stokvel_id,
+                "user_id": userid,
+                "url":url,
+                "token":token
+            }
+            
+            conn.execute(text(update_query), update_parameters)
+            conn.commit() 
+            
+            print(f"Updated token for stokvel_id {stokvel_id} and usser_id {userid} to {token}")
+            
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
+
