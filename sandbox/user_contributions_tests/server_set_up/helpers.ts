@@ -369,6 +369,8 @@ export async function processRecurringPayments(
 
   const receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
 
+  
+
   const [receiverWalletAddress, receiverWalletAddressDetails] =
     await getWalletAddressInfo(client, receiving_wallet_address);
 
@@ -422,6 +424,76 @@ export async function processRecurringPayments(
   }
 }
 
+export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
+  client: AuthenticatedClient,
+  walletAddressDetails: WalletAddress,
+  stokvel_contributions_start_date: string,
+  payment_periods: number,
+  payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
+  quote_id: string,
+  debitAmount:Amount,
+  receiveAmount:Amount
+): Promise<PendingGrant> {
+  const dateNow = new Date().toISOString();
+  console.log(dateNow)
+  const stokvel_contributions_start_date_converted = new Date(stokvel_contributions_start_date).toISOString();  // Example date
+
+  console.log(stokvel_contributions_start_date)
+ 
+  console.log(debitAmount, '\n', receiveAmount)
+
+  debitAmount.value = "100000000000000"
+  receiveAmount.value = "100000000000000"
+
+
+
+  const pending_recurring_grant = await client.grant.request(
+    {
+      url: walletAddressDetails.authServer,
+    },
+    {
+      access_token: {
+        access: [
+          {
+            identifier: walletAddressDetails.id,
+            type: "outgoing-payment",
+            actions: ["list", "list-all", "read", "read-all", "create"],
+            limits: {
+              debitAmount: debitAmount,
+              receiveAmount: receiveAmount,
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT20${payment_period_length}` //will need to change this to start date of the stokvel
+            },
+          },
+        ],
+      },
+      interact: {
+        start: ["redirect"]
+        // finish: {
+        //   method: "redirect",
+        //   uri: input.redirectUrl,
+        //   nonce: randomUUID(),
+        // },
+      },
+    }
+  );
+
+  if (!isPendingGrant(pending_recurring_grant)) {
+    throw new Error("Expected interactive grant");
+  }
+
+  // console.log(pending_recurring_grant.continue.)
+  console.log('GRANT STUFFS - GRANT CREATIONS')
+  console.log(pending_recurring_grant.continue.uri) // save this to the database
+  console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
+  console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
+
+  console.log('printing the grant:')
+  console.log(pending_recurring_grant)
+
+  return pending_recurring_grant;
+}
+
+
 
 export async function processInterestAddedRecurringPayments(
   client: AuthenticatedClient,
@@ -458,17 +530,17 @@ export async function processInterestAddedRecurringPayments(
     limits?: components["schemas"]["limits-outgoing"];
   }[];
 
+
   let receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
-
   if (payout_value != null){
-    receiveAmount = payout_value
+    receiveAmount = payout_value;
   }
-
+  
   const [receiverWalletAddress, receiverWalletAddressDetails] =
     await getWalletAddressInfo(client, receiving_wallet_address);
 
   const [senderWalletAddress, senderWalletAddressDetails] =
-    await getWalletAddressInfo(client, tokenAccessDetails[0]?.identifier ?? "");
+    await getWalletAddressInfo(client, sender_wallet_address);
 
   // create incoming payment
   const incomingPayment = await createStandardIncomingPayment(
@@ -476,6 +548,8 @@ export async function processInterestAddedRecurringPayments(
     receiveAmount!,
     receiverWalletAddressDetails,
   );
+
+  console.log('recurring payment with interest: \n', incomingPayment)
 
   // create qoute
   const quote = await createQuote(
@@ -508,9 +582,9 @@ export async function processInterestAddedRecurringPayments(
       quoteId: quote.id,
       failed: true,
       receiver: "",
-      receiveAmount: tokenAccessDetails[0]?.limits?.receiveAmount,
-      debitAmount: tokenAccessDetails[0]?.limits?.debitAmount,
-      sentAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      // receiveAmount: tokenAccessDetails[0]?.limits?.receiveAmount,
+      // debitAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      // sentAmount: tokenAccessDetails[0]?.limits?.debitAmount,
       createdAt: "",
       updatedAt: "",
     } as OutgoingPaymentWithSpentAmounts;

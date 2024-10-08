@@ -9,6 +9,7 @@ import {
   getOutgoingPaymentAuthorization,
   getWalletAddressInfo,
   processInterestAddedRecurringPayments,
+  getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout,
 } from "./helpers";
 
 import {
@@ -73,46 +74,34 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   }}
 });
 
-/*COMMENTED OUT, BECAUSE...YOU'D ONLY NEED TO USE THE RECURRING GRANT INITIALLY????
-//create recurring grant thing
-app.post('/create-recurring-grant-request', async (req: Request, res: Response) => {
+//create incoming payment
+app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Response) => {
   try {
-    const {
-      walletAddressURL,
-      stokvel_contributions_start_date,
-      payment_periods,
-      payment_period_length,
-      quote_id,
-      // quote_access_token
-    } = req.body;
+    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods, payment_period_length } = req.body; // Get data from request body
 
-    // Log or use the data
-      // console.log(client);
-      console.log(walletAddressURL);
-      console.log(stokvel_contributions_start_date);
-      console.log(payment_periods);
-      console.log(payment_period_length);
-      console.log(quote_id);
-      // console.log(quote_access_token);
+    console.log(value)
+    console.log(walletAddressURL)
 
     const client = await getAuthenticatedClient()
     
-    const walletFullDetails = await client.walletAddress.get({
+    const walletFullDetails = await client.walletAddress.get({ //receiver
       url: walletAddressURL,
     });
 
     
-    const pending_recurring_grant = await getOutgoingPaymentAuthorization(
-      client, walletFullDetails, stokvel_contributions_start_date, payment_periods,
-       payment_period_length, quote_id )
+    const sender_walletFullDetails = await client.walletAddress.get({ //sender
+      url: sender_walletAddressURL,
+    });
     
-    // Send back the incoming payment as a JSON response
-    console.log("CONTINUE INFORMATION")
-    console.log(pending_recurring_grant.continue.uri)
-    console.log(pending_recurring_grant.continue.access_token)
+    // Call the createStandardIncomingPayment function
+    const incomingPayment = await createInitialIncomingPayment(client, value ,walletFullDetails, stokvel_contributions_start_date);
+    const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
+    const recurring_grant = await getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(client, sender_walletFullDetails, stokvel_contributions_start_date, payment_periods,
+       payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount)
 
-    res.json(pending_recurring_grant);
-    return {continue_uri: pending_recurring_grant.continue.uri, continue_token: pending_recurring_grant.continue.access_token}//we need to store this to create the inital payment
+    // Send back the information about the grant as a JSON response
+    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token}); //{all information stored here should be returned}
+    
 } catch (error: unknown) {  // Specify that error can be of type unknown
   console.error(error);
 
@@ -122,7 +111,7 @@ app.post('/create-recurring-grant-request', async (req: Request, res: Response) 
   } else {
       res.status(500).json({ error: "An unknown error occurred" });
   }}
-});*/
+});
 
 //create initial outgoing payment
 app.post('/create-initial-outgoing-payment', async (req: Request, res: Response) => {
