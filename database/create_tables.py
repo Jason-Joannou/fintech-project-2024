@@ -261,6 +261,7 @@ def create_state_management_table() -> None:
             )
         )
 
+
 def create_interest_table() -> None:
     """
     docstring
@@ -279,6 +280,7 @@ def create_interest_table() -> None:
         """
             )
         )
+
 
 if __name__ == "__main__":
     create_user_table_sqlite()
