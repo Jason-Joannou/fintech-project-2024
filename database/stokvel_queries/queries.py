@@ -653,3 +653,38 @@ def update_application_status(app_id: Optional[int], app_status: str):
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise e
+    
+
+# First attempt at transaction table
+
+def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
+    """
+    Insert a transaction into the TRANSACTIONS table with success and exception handling.
+    """
+    try:
+        # Get the next unique id for the transaction
+        transaction_id = get_next_unique_id(conn, 'TRANSACTIONS', 'id')
+
+        # Insert the transaction into the table
+        conn.execute(
+            text(
+                """
+                INSERT INTO TRANSACTIONS (id, user_id, stokvel_id, amount, tx_type, tx_date, created_at, updated_at)
+                VALUES (:id, :user_id, :stokvel_id, :amount, :tx_type, :tx_date, :created_at, :updated_at)
+                """
+            ),
+            {
+                'id': transaction_id,
+                'user_id': user_id,
+                'stokvel_id': stokvel_id,
+                'amount': amount,
+                'tx_type': tx_type,
+                'tx_date': tx_date,
+                'created_at': datetime.now(),
+                'updated_at': datetime.now()
+            }
+        )
+        print(f"Transaction with ID {transaction_id} was successfully added.")
+
+    except Exception as e:
+        print(f"Failed to insert transaction. Error: {str(e)}")

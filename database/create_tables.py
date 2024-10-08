@@ -23,15 +23,20 @@ def create_stokvel_members_table_sqlite() -> None:
                 user_id INTEGER,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
+                contribution_amount NUMBER,
+                active_status TEXT,
                 user_payment_token TEXT,
                 user_payment_URI TEXT,
+                user_quote_id TEXT, 
                 stokvel_payment_token TEXT,
                 stokvel_payment_URI TEXT,
+                stokvel_quote_id TEXT, 
                 UNIQUE (stokvel_id, user_id)  -- Ensure stokvel_id and user_id combination is unique
             )
         """
             )
         )
+
 
 
 def create_stokvel_table_sqlite() -> None:
@@ -102,7 +107,6 @@ def create_transaction_table_sqlite() -> None:
                 stokvel_id INTEGER,
                 amount NUMBER,
                 tx_type TEXT,
-                wallet_type TEXT,
                 tx_date TEXT,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP
