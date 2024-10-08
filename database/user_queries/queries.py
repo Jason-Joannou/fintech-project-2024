@@ -368,7 +368,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             stokvel_monthly_deposits = {row[0]: row[1] for row in stokvel_deposits_result}
 
             # Calculate the user's total interest for the savings period
-            user_total_interest = 0
+            user_total_interest = 0.00
             user_deposit = 0
             stokvel_deposit = 0
             for month, interest_value in stokvel_interest.items():
@@ -384,16 +384,16 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
                     user_interest = (user_deposit / stokvel_deposit) * interest_value
                     user_total_interest += user_interest
 
-            user_total_interest = Decimal(user_total_interest).quantize(Decimal("0.00"))
+            user_total_interest = round(user_total_interest, 2)
 
             transaction.commit()
 
-            return f"Your interest earned for the period: R{user_total_interest}"
+            return user_total_interest
 
         except Exception as e:
             transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
-            return {}
+            return None
         
 print(get_stokvel_monthly_interest(stokvel_id=1))
 print(get_user_interest(user_id=1, stokvel_id=1))
