@@ -1,7 +1,6 @@
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Optional, Dict
-from decimal import Decimal
 
 from sqlalchemy import text
 
