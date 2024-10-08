@@ -421,9 +421,11 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
             return 0.00
-        
+
+
 print(get_stokvel_monthly_interest(stokvel_id=1))
 print(get_user_interest(user_id=1, stokvel_id=1))
+
 
 def get_account_details(phone_number: str):
     """
