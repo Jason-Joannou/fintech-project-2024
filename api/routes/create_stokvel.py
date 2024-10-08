@@ -2,9 +2,9 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.schemas.onboarding import RegisterStokvelSchema
-from database.stokvel_queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count
+from database.stokvel_queries.queries import insert_stokvel, insert_stokvel_member, insert_admin, update_stokvel_members_count
 from database.contribution_payout_queries import insert_member_contribution_parameters
-from database.queries import find_user_by_number2
+from database.user_queries.queries import find_user_by_number
 
 create_stokvel_bp = Blueprint("create_stokvel", __name__)
 
@@ -55,7 +55,7 @@ def onboard_stokvel() -> Response:
         print('Printing requseting number id = ')
         print(stokvel_data.requesting_number)
 
-        user_id = find_user_by_number2(stokvel_data.requesting_number)
+        user_id = find_user_by_number(stokvel_data.requesting_number)
 
 
 
@@ -63,7 +63,7 @@ def onboard_stokvel() -> Response:
         insert_stokvel_member(
             application_id=None,
             stokvel_id=inserted_stokvel_id,
-            user_id = find_user_by_number2(stokvel_data.requesting_number)
+            user_id = find_user_by_number(stokvel_data.requesting_number)
         )
 
         #update the number of contributors
@@ -74,7 +74,7 @@ def onboard_stokvel() -> Response:
         insert_admin(
             stokvel_id=inserted_stokvel_id,
             stokvel_name= stokvel_data.stokvel_name,
-            user_id = find_user_by_number2(stokvel_data.requesting_number),
+            user_id = find_user_by_number(stokvel_data.requesting_number),
             total_contributions=0,
             total_members=1
         )
