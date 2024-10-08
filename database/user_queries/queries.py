@@ -1,4 +1,3 @@
-# from .sql_connection import sql_connection
 import sqlite3
 from datetime import datetime
 from typing import Optional
@@ -9,7 +8,6 @@ from database.sqlite_connection import SQLiteConnection
 from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
-# sql_conn = sql_connection()
 
 
 def get_total_number_of_users() -> int:
@@ -259,3 +257,101 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise e
+
+
+def get_account_details(phone_number: str):
+    """
+    Retrieve account details for a user based on their phone number.
+    """
+    from_number = extract_whatsapp_number(from_number=phone_number)
+    print(f"Extracted phone number: {from_number}")
+
+    query = """
+    SELECT
+        u.user_id,
+        u.user_number,
+        u.user_name,
+        u.user_surname,
+        uw.user_wallet,
+        uw.UserBalance,
+        u.created_at
+    FROM
+        USERS u
+    JOIN
+        USER_WALLET uw ON u.user_id = uw.user_id
+    WHERE
+        u.user_number = :user_number;
+    """
+
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"user_number": from_number})
+        result = cursor.fetchone()
+        print(f"Query result: {result}")
+
+        if result is None:
+            print("No user found for this phone number.")
+            return None
+
+        print(f"Number of fields returned: {len(result)}")
+
+        # Create a dictionary with column names as keys and the corresponding values
+        user_details = {
+            "u.user_id": result[0],
+            "u.user_number": result[1],
+            "u.user_name": result[2],
+            "u.user_surname": result[3],
+            "uw.user_wallet": result[4],
+            "uw.UserBalance": result[5],
+            "u.created_at": result[6],
+        }
+
+        # print(f"User details: {user_details}")
+        return user_details  # Return the complete user details
+
+
+def update_user_name(phone_number: str, new_name: str):
+    """
+    Update the user's name based on their phone number.
+
+    Args:
+        phone_number (str): The user's phone number.
+        new_name (str): The new name to update.
+
+    Returns:
+        str: Success or failure message.
+    """
+    formatted_number = extract_whatsapp_number(from_number=phone_number)
+
+    # SQL query to update user name
+    update_query = """
+    UPDATE USERS
+    SET user_name = :new_name
+    WHERE user_number = :user_number;
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(update_query), {"new_name": new_name, "user_number": formatted_number}
+        )
+        conn.commit()
+
+
+def update_user_surname(phone_number: str, new_surname: str):
+    formatted_number = extract_whatsapp_number(from_number=phone_number)
+
+    update_query = """
+    UPDATE USERS
+    SET user_surname = :new_surname
+    WHERE user_number = :user_number;
+    """
+
+    try:
+        with sqlite_conn.connect() as conn:
+            conn.execute(
+                text(update_query),
+                {"new_surname": new_surname, "user_number": formatted_number},
+            )
+            conn.commit()
+
+    except Exception as e:
+        print(f"Error updating surname: {e}")
