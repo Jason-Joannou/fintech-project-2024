@@ -38,7 +38,6 @@ def create_stokvel_members_table_sqlite() -> None:
         )
 
 
-
 def create_stokvel_table_sqlite() -> None:
     """
     Create STOKVELS table with a unique constraint on stokvel_id.
