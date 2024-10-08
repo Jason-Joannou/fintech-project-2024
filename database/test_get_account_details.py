@@ -1,10 +1,13 @@
 import json
-from sqlalchemy import create_engine, text
+
+from sqlalchemy import text
+
 from database.sqlite_connection import SQLiteConnection
 from database.utils import extract_whatsapp_number
 
 # Use the provided SQLite connection
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
+
 
 def get_account_details(phone_number: str):
     """
@@ -42,6 +45,7 @@ def get_account_details(phone_number: str):
         }
 
         return user_details  # Return the complete user details
+
 
 # Testing the function
 if __name__ == "__main__":

@@ -1,12 +1,4 @@
-from flask import (
-    Blueprint,
-    Response,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import Blueprint, Response, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
@@ -18,7 +10,6 @@ from database.user_queries.queries import (
     update_user_name,
     update_user_surname,
 )
-from database.utils import extract_whatsapp_number
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
