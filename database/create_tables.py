@@ -21,6 +21,7 @@ def create_stokvel_members_table_sqlite() -> None:
                 id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
                 user_id INTEGER,
+                active_status TEXT,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
                 contribution_amount NUMBER,

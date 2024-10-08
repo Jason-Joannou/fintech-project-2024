@@ -9,6 +9,11 @@ from flask import (
     url_for,
 )
 from sqlalchemy.exc import SQLAlchemyError
+from database.sqlite_connection import SQLiteConnection
+from database.stokvel_queries.queries import get_user_deposit_per_stokvel, get_deposits_per_stokvel, get_nr_of_active_users_per_stokvel, get_stokvel_constitution
+from whatsapp_utils._utils.twilio_messenger import send_notification_message
+
+db_conn = SQLiteConnection(database="./database/test_db.db")
 
 from api.schemas.onboarding import JoinStokvelSchema, RegisterStokvelSchema
 from database.stokvel_queries.queries import (
@@ -43,6 +48,117 @@ def stokvel() -> str:
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["GET"])
+def get_user_total_deposit():
+    """
+    This endpoint returns the total deposits of a user for a given stokvel.
+    The user's phone number and stokvel name should be provided as query parameters.
+    """
+    phone_number = request.json.get("phone_number")  # Get the phone number from query parameters
+    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from query parameters
+
+    # Validate inputs
+    if not phone_number:
+        return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
+    if not stokvel_name:
+        return jsonify({"error": "Stokvel Name is required."}), 400  # Return an error if no stokvel name is provided
+
+    try:
+        # Fetch total deposits for the user and stokvel
+        deposit_details = get_user_deposit_per_stokvel(phone_number, stokvel_name)
+        total_deposit_details = get_deposits_per_stokvel(stokvel_name)
+        active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
+
+
+        if "error" in deposit_details:
+            return jsonify(deposit_details), 404
+        
+        # Return an error if no data is found
+        if "error" in active_users_count:
+            return jsonify(active_users_count), 404  # Return an error if no data is found     
+
+        # Prepare the notification message
+        notification_message = (
+            f"📊 Stokvel Summary\n\n"
+            f"Stokvel Name: {total_deposit_details['stokvel_name']}\n"
+            f"Total Deposits in Stokvel: R{total_deposit_details['total_deposits']:.2f}\n"
+            f"Your Total Deposits: R{deposit_details['total_deposits']:.2f}\n"
+            f"Number of Active Users in Stokvel: {active_users_count['nr_of_active_users']}\n\n"
+            "Thank you for being a part of our community!\n"
+        )
+        print("Notification Message: ", notification_message)
+
+        # Send the notification message to the user via WhatsApp
+        #send_notification_message(
+        #    to=f"whatsapp:{phone_number}", body=notification_message
+        #)
+
+        # Return the deposit details along with the sent notification status
+        return jsonify({
+            "total_deposit_details": total_deposit_details,
+            "user_deposit_details": deposit_details,
+            "active_users_count": active_users_count,
+            "message": "Notification sent successfully!",
+            "notification_message": notification_message
+        }), 200
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_user_deposit_per_stokvel.__name__}: {e}")
+        print(f"Error in {get_nr_of_active_users_per_stokvel.__name__}: {e}")
+        print(f"Error in {get_deposits_per_stokvel.__name__}: {e}")
+        return jsonify({"error": msg}), 500  # Return internal server error
+    
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["GET"])
+def get_stokvels_constitution_handler():
+    """
+    This endpoint returns the stokvels constitution
+    """
+    phone_number = request.json.get("phone_number")  # Get the phone number from query parameters
+    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from query parameters
+
+    # Validate inputs
+    if not phone_number:
+        return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
+    if not stokvel_name:
+        return jsonify({"error": "Stokvel Name is required."}), 400  # Return an error if no stokvel name is provided
+
+    try:
+        # Fetch total deposits for the user and stokvel
+        stokvel_constitution = get_stokvel_constitution(phone_number, stokvel_name)
+
+
+        if "error" in stokvel_constitution:
+            return jsonify(stokvel_constitution), 404  
+
+        # Prepare the notification message
+        notification_message = (
+            f"Stokvel Constitution\n\n"
+            f"Stokvel Name: {stokvel_constitution['stokvel_name']}\n"
+            f"Minimum Contributing Amount for Stokvel: R{stokvel_constitution['minimum_contributing_amount']:.2f}\n"
+            f"Maximum Number of Contributors: R{stokvel_constitution['max_number_of_contributors']:.2f}\n"
+            f"Creation Date of Stokvel: {stokvel_constitution['creation_date']}\n\n"
+            "Thank you for being a part of our community!\n"
+        )
+        print("Notification Message: ", notification_message)
+
+        # Send the notification message to the user via WhatsApp
+        #send_notification_message(
+        #    to=f"whatsapp:{phone_number}", body=notification_message
+        #)
+
+        # Return the deposit details along with the sent notification status
+        return jsonify({
+            "stokvel_constitution": stokvel_constitution,
+            "message": "Notification sent successfully!",
+            "notification_message": notification_message
+        }), 200
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_stokvel_constitution.__name__}: {e}")
+        return jsonify({"error": msg}), 500  # Return internal server error
+    
 
 @stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])
 def update_stokvel_contribution() -> str:

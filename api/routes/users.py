@@ -3,8 +3,11 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
 from database.stokvel_queries.queries import get_all_applications
-from database.user_queries.queries import find_user_by_number, get_total_number_of_users
+from database.user_queries.queries import find_user_by_number, get_total_number_of_users, get_account_details
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
+
+
+
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
 users_bp = Blueprint("users", __name__)
@@ -33,6 +36,53 @@ def get_all_users() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
+    
+@users_bp.route(f"{BASE_ROUTE}/stokvel/view_username", methods=["GET"])
+def get_account_details_endpoint() -> str:
+    """
+    This endpoint returns account details of a user based on their phone number.
+    The phone number should be provided as a query parameter.
+    """
+    phone_number = request.args.get("phone_number")  # Get the phone number from the query parameters
+
+    if not phone_number:
+        return jsonify({"error": "Phone number is required."}), 400  # Return an error if no phone number is provided
+
+    try:
+        user_details = get_account_details(phone_number)  # Call the function and store the result
+
+        if user_details:
+            # Prepare the notification message
+            notification_message = (
+                f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
+                f"Your user ID: {user_details['u.user_id']}\n"
+                f"Your wallet ID: {user_details['uw.user_wallet']}\n"
+                f"Your wallet balance: {user_details['uw.UserBalance']}\n\n"
+            )
+
+            # Send the notification message to the user via WhatsApp
+            send_notification_message(
+                to=f"whatsapp:{user_details['u.user_number']}", body=notification_message
+            )
+
+            # Return the user details along with the sent notification status
+            return jsonify({
+                "user_details": user_details,
+                "message": "Notification sent successfully!",
+                "notification_message": notification_message
+            }), 200
+
+        else:
+            return jsonify({"error": "User not found."}), 404  # Return an error if user is not found
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_account_details_endpoint.__name__}: {e}")
+        return jsonify({"error": msg}), 500  # Return internal server error
+    
+
+
+
+
 
 
 @users_bp.route(f"{BASE_ROUTE}/fund_wallet", methods=["POST"])
