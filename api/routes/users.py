@@ -9,6 +9,7 @@ from database.user_queries.queries import (
     get_total_number_of_users,
     update_user_name,
     update_user_surname,
+    get_user_interest
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -40,6 +41,20 @@ def get_all_users() -> str:
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
 
+@users_bp.route(f"{BASE_ROUTE}/user_total_interest", methods=["POST"])
+def user_total_interest() -> float:
+    """
+    This endpoint returns the total for a user in a stokvel in the savings period.
+    """
+    try:
+        interest = get_user_interest()
+        msg = f"Your total interest in this Stokvel is: R{interest}"
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_all_users.__name__}: {e}")
+        return msg
+    
 
 @users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
 def get_account_details_endpoint() -> str:
