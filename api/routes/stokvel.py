@@ -378,35 +378,6 @@ def onboard_stokvel() -> Response:
         initial_continue_token_contribution = response.json()['continue_token']['value']
         initial_payment_quote_contribution = response.json()['quote_id']
 
-        #On accept, redirect to the logic to: add status active and forward date payments
-
-        insert_stokvel_member(
-            application_id=None,
-            stokvel_id=inserted_stokvel_id,
-            user_id = find_user_by_number(stokvel_data.requesting_number),
-            user_contribution=stokvel_data.min_contributing_amount,
-            user_token=initial_continue_token_contribution,
-            user_url=initial_continue_uri_contribution,
-            user_quote_id=initial_payment_quote_contribution,
-            stokvel_quote_id="",
-            stokvel_token="",
-            stokvel_url=""
-        )
-
-        #update the number of contributors
-        update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
-
-
-        # add admin - get whatsapp number
-        insert_admin(
-            stokvel_id=inserted_stokvel_id,
-            stokvel_name= stokvel_data.stokvel_name,
-            user_id = find_user_by_number(stokvel_data.requesting_number),
-            total_contributions=0,
-            total_members=1
-        )
-
-
         # WALLET PAYOUT GRANT THINGS
 
 
@@ -430,18 +401,45 @@ def onboard_stokvel() -> Response:
 
 
         # quote_json = ""
-
-        # response_initial_payment = requests.post(node_server_create_mini_payment, json=quote_json)
-        # print(response_initial_payment)
         
-        # initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
-        # initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
+        initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
+        initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
+        initial_quote_stokvel = response_payout_grant.json()['quote_id']
+
 
         # # update_token_things()
 
 
         # print("RESPONSE: \n", response.json())
-        # print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
+        print("\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ", response_payout_grant.json()['recurring_grant']['interact']['redirect'])
+
+        #On grant accept, redirect to the logic to: add status active and forward date payments
+
+        insert_stokvel_member(
+            application_id=None,
+            stokvel_id=inserted_stokvel_id,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            user_contribution=stokvel_data.min_contributing_amount,
+            user_token=initial_continue_token_contribution,
+            user_url=initial_continue_uri_contribution,
+            user_quote_id=initial_payment_quote_contribution,
+            stokvel_quote_id=initial_quote_stokvel,
+            stokvel_token=initial_continue_token_stokvel,
+            stokvel_url=initial_continue_uri_stokvel
+        )
+
+        #update the number of contributors
+        update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
+
+
+        # add admin - get whatsapp number
+        insert_admin(
+            stokvel_id=inserted_stokvel_id,
+            stokvel_name= stokvel_data.stokvel_name,
+            user_id = find_user_by_number(stokvel_data.requesting_number),
+            total_contributions=0,
+            total_members=1
+        )
 
         # Prepare the notification message
         notification_message = (

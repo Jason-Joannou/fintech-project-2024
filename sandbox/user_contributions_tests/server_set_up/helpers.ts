@@ -482,11 +482,11 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
       },
       interact: {
         start: ["redirect"],
-          finish: {
-          method: "redirect",
-          uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
-          nonce: randomUUID(),
-        }
+          // finish: {
+          // method: "redirect",
+          // uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
+          // nonce: randomUUID(),
+        //}
         // finish: {
         //   method: "redirect",
         //   uri: input.redirectUrl,
