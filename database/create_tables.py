@@ -310,11 +310,6 @@ def create_interest_table() -> None:
             )
         )
 
-def create_interest_table() -> None:
-    """
-    docstring
-    """
-
 
 
 if __name__ == "__main__":
