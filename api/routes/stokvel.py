@@ -745,4 +745,4 @@ def stokvel_total_interest() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error: {e}")
         return msg
-    
+

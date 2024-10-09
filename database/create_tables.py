@@ -285,20 +285,6 @@ def create_interest_table() -> None:
     docstring
     """
 
-    with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(
-                """
-        CREATE TABLE IF NOT EXISTS INTEREST (
-            id INTEGER PRIMARY KEY,
-            stokvel_id INTEGER,
-            date DATETIME,
-            interest_value NUMBER
-        );
-        """
-            )
-        )
-
 
 if __name__ == "__main__":
     create_user_table_sqlite()
