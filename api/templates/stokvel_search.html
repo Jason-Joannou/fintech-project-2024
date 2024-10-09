@@ -114,43 +114,19 @@
         display: none; /* Hide the form initially */
         background-color: #d0efeb;
         }
-        .tooltip {
-            position: relative;
-            display: inline-block;
+
+        .error-message {
+            color: #ff4d4d;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
         }
 
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #ff4d4d;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
+        input:invalid {
+            border-color: #ff4d4d;
         }
 
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #ff4d4d transparent transparent transparent;
-        }
 
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
     </style>
 </head>
 
@@ -183,10 +159,8 @@
             <label for="requesting_number">Cellphone Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
             <label for="contribution_amount">Contribution Amount:</label>
-            <div class="tooltip">
-                <input type="number" id="contribution_amount" name="contribution_amount" required>
-                <span class="tooltiptext" id="contribution_error"></span>
-            </div>
+            <input type="number" id="contribution_amount" name="contribution_amount" required>
+            <div id="contribution_error" class="error-message"></div>
 
             <!-- Hidden field for selected stokvel -->
             <input type="hidden" id="min_contributing_amount" name="min_contributing_amount" value="">
@@ -345,12 +319,10 @@
 
             if (isNaN(contributionAmount) || contributionAmount < minContributingAmount) {
                 errorElement.textContent = `Contribution amount must be at least R${minContributingAmount}.`;
-                errorElement.style.visibility = 'visible';
-                errorElement.style.opacity = '1';
+                errorElement.style.display = 'block';
                 this.setCustomValidity(`Contribution amount must be at least R${minContributingAmount}.`);
             } else {
-                errorElement.style.visibility = 'hidden';
-                errorElement.style.opacity = '0';
+                errorElement.style.display = 'none';
                 this.setCustomValidity('');
             }
         });
