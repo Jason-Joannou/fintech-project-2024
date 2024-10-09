@@ -130,7 +130,7 @@
             <label for="stokvel_type">Type of Stokvel:</label>
             <input type="text" id="stokvel_type" name="stokvel_type" required> -->
 
-            <!-- Frequency of Stokvel Payout -->   
+            <!-- Frequency of Stokvel Contribution -->
 
             <label for="min_contributing_amount">Minimum contribution (ZAR):</label>
             <input type="number" id="min_contributing_amount" name="min_contributing_amount" required>
@@ -143,10 +143,10 @@
             <label for="end_date">End Date:</label>
             <input type="datetime-local" id="end_date" name="end_date" required>
 
-            <label for="payout_frequency_int">Frequency of Stokvel Payout:</label>
+            <label for="payout_frequency_int">Frequency of Stokvel Contribution:</label>
             <input type="number" id="payout_frequency_int" name="payout_frequency_int" required>
 
-            <label for="payout_frequency_period">Stokvel Payout Period:</label>
+            <label for="payout_frequency_period">Stokvel Contribution Period:</label>
             <select id="payout_frequency_period" name="payout_frequency_period" required>
                 <option value="Days">Days</option>
                 <option value="Weeks">Weeks</option>
@@ -172,6 +172,17 @@
                 <p id="constitution-text"></p>
                 <button type="button" id="confirm-button">Confirm Constitution</button>
             </div>
+
+            <label for="payout-frequency">Payout Frequency:</label>
+            <select id="payout-frequency" name="payout-frequency" required>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+                <!-- Add other payout frequencies as needed -->
+            </select>
+
+            <label for="payout-dates">Payout Dates:</label>
+            <input type="text" id="payout-dates" name="payout-dates" required>
 
             <!-- Submit Button -->
             <input type="submit" id="register-button" value="Register Stokvel" disabled>
