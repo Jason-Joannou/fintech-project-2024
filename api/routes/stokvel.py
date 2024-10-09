@@ -45,6 +45,7 @@ stokvel_bp = Blueprint("stokvel", __name__)
 BASE_ROUTE = "/stokvel"
 
 node_server_initiate_grant = "http://localhost:3000/incoming-payment-setup"
+node_server_initiate_stokvelpayout_grant = "http://localhost:3000/incoming-payment-setup-stokvel-payout"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -377,6 +378,8 @@ def onboard_stokvel() -> Response:
         initial_continue_token_contribution = response.json()['continue_token']['value']
         initial_payment_quote_contribution = response.json()['quote_id']
 
+        #On accept, redirect to the logic to: add status active and forward date payments
+
         insert_stokvel_member(
             application_id=None,
             stokvel_id=inserted_stokvel_id,
@@ -407,23 +410,23 @@ def onboard_stokvel() -> Response:
         # WALLET PAYOUT GRANT THINGS
 
 
-        # payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
+        payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
 
-        # payload_payout = {
-        #     "value": str(int(1)), #create an initial payment of 1c
-        #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-        #     "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-        #     "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
-        #     "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
-        #     "payment_period_length": payment_period_duration_converted,
-        #     "number_of_periods": str(number_periods)
-        # }
+        payload_payout = {
+            "value": str(int(1)), #create an initial payment of 1c
+            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+            "walletAddressURL": find_wallet_by_userid( user_id= user_id),
+            "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
+            "payment_period_length": payment_period_duration_converted,
+            "number_of_periods": str(number_periods)
+        }
 
-        # print("REQUEST: ")
-        # print(payload_payout)
+        print("PAYOUT SET UP REQUEST: ")
+        print(payload_payout)
 
-        # response_payout_grant = requests.post(node_server_initiate_grant, json=payload_payout)
-        # print(response_payout_grant)
+        response_payout_grant = requests.post(node_server_initiate_stokvelpayout_grant, json=payload_payout)
+        print(response_payout_grant)
 
 
         # quote_json = ""
@@ -754,6 +757,8 @@ def success_user_interactive_grant_accepted() -> str:
     success_next_step_message = (
         "Please navigate back to WhatsApp for further functions."
     )
+
+    #add initial payment logic here
 
     return render_template(
         "action_success_template.html",

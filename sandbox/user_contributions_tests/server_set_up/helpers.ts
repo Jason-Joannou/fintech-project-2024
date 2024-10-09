@@ -445,7 +445,8 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
   payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
   quote_id: string,
   debitAmount:Amount,
-  receiveAmount:Amount
+  receiveAmount:Amount,
+  number_of_periods:string
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
   console.log(dateNow)
@@ -474,13 +475,18 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT20${payment_period_length}` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/P${number_of_periods}${payment_period_length}` //will need to change this to start date of the stokvel
             },
           },
         ],
       },
       interact: {
-        start: ["redirect"]
+        start: ["redirect"],
+          finish: {
+          method: "redirect",
+          uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
+          nonce: randomUUID(),
+        }
         // finish: {
         //   method: "redirect",
         //   uri: input.redirectUrl,

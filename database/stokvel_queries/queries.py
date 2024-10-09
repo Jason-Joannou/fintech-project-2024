@@ -881,7 +881,8 @@ def calculate_number_periods(payout_period, start_date, end_date):
     return no_periods
 
 def double_number_periods_for_same_daterange(period):
-    period_duration, number_of_periods_coverted, = ""
+    period_duration =  ""
+    number_of_periods_coverted = ""
     if period == 'Years':
         period_duration = "M"
         number_of_periods_coverted = 6
@@ -894,6 +895,10 @@ def double_number_periods_for_same_daterange(period):
     elif period == "Days":
         period_duration = "H"
         number_of_periods_coverted = "T12"
+    elif period == "30 Seconds":
+        period_duration = "S"
+        number_of_periods_coverted = "T15"
+    print(period, ' ',period_duration, ' ', number_of_periods_coverted)
     return period_duration, number_of_periods_coverted
 
 def update_user_active_status(userid, stokvelid, grantaccepted):
