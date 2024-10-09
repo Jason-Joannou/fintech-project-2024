@@ -2,7 +2,7 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
-from database.stokvel_queries.queries import get_all_applications
+from database.stokvel_queries.queries import (get_all_applications, get_stokvel_id_by_name)
 from database.user_queries.queries import (
     find_user_by_number,
     get_account_details,
@@ -47,8 +47,19 @@ def user_total_interest() -> str:
     """
     This endpoint returns the total for a user in a stokvel in the savings period.
     """
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from the query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
     try:
-        interest = get_user_interest()
+        # get stokvel_id an user_id
+        stokvel_id = get_stokvel_id_by_name(stokvel_name)
+        user_id = find_user_by_number(phone_number)
+        # get total interest for the user relating to the selected stokvel
+        interest = get_user_interest(user_id, stokvel_id)
         msg = f"Your total interest in this Stokvel is: R{interest}"
         return msg
     except Exception as e:
