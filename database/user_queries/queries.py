@@ -260,7 +260,7 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         raise e
 
 
-def get_user_interest(user_id: str, stokvel_id: str) -> float:
+def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> float:
     """
     Get the accumulated interest for a user in the current savings period.
 

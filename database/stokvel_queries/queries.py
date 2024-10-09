@@ -864,7 +864,7 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
         print(f"Failed to insert transaction. Error: {str(e)}")
 
 
-def get_stokvel_monthly_interest(stokvel_id: str) -> Dict[str, float]:
+def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
     """
     Get the accumulated interest for a stokvel in the current savings period.
 
