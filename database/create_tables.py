@@ -175,7 +175,7 @@ def create_contributions_table_sqlite() -> None:
                 NextDate DATIME,
                 PreviousDate DATIME,
                 EndDate DATETIME,
-                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
+                UNIQUE (stokvel_id)  -- Ensure each stokvel_id and user_id combination is unique
             );
         """
             )
@@ -197,7 +197,7 @@ def create_payouts_table_sqlite() -> None:
                 NextDate DATIME,
                 PreviousDate DATIME,
                 EndDate DATETIME,
-                UNIQUE (stokvel_id, user_id)  -- Ensure each stokvel_id and user_id combination is unique
+                UNIQUE (stokvel_id)  -- Ensure each stokvel_id and user_id combination is unique
             );
         """
             )
