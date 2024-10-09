@@ -280,11 +280,6 @@ def create_interest_table() -> None:
             )
         )
 
-def create_interest_table() -> None:
-    """
-    docstring
-    """
-
 
 if __name__ == "__main__":
     create_user_table_sqlite()
