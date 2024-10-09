@@ -109,12 +109,48 @@
         .company-name {
             font-weight: bold;
         }
-     
+
         #joinStokvelForm {
         display: none; /* Hide the form initially */
         background-color: #d0efeb;
         }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
 
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #ff4d4d;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ff4d4d transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -136,7 +172,7 @@
         <br>
 
         <p id="stokvels_data" style="display: none;">{{ stokvel_list | tojson }}</p>
-                
+
         <div id="stokvelList">
         </div>
 
@@ -146,11 +182,17 @@
             <!-- <h3 id = "stokvel_display_name"></h3> -->
             <label for="requesting_number">Cellphone Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
+            <label for="contribution_amount">Contribution Amount:</label>
+            <div class="tooltip">
+                <input type="number" id="contribution_amount" name="contribution_amount" required>
+                <span class="tooltiptext" id="contribution_error"></span>
+            </div>
 
             <!-- Hidden field for selected stokvel -->
+            <input type="hidden" id="min_contributing_amount" name="min_contributing_amount" value="">
             <input type="hidden" id="stokvel_name" name="stokvel_name" value="">
             <input type="submit" value="Agree and Apply to Join">
-        
+
         </form>
 
 
@@ -182,7 +224,7 @@
             if (stokvelList.innerHTML === '') {
                 stokvelList.innerHTML = '<p>No stokvels found matching your search.</p>';
             }
-            
+
 
         }
 
@@ -212,11 +254,11 @@
                     <!--strong>Admin:</strong> ${stokvel.admin}<br> -->
                     ${stokvel.available_space === 0 ? '<h4 style="color: red;">Stokvel is full</h4>' : ''}
                 </div>
-                
+
                 <div class="buttons">
                     <input type="button" value="View Constitution" onclick="viewConstitution('${stokvel.stokvel_name}', '${stokvel.available_space}')">
                 </div>
-                
+
                 <br>
 
                 <div id="constitution-${stokvel.stokvel_name}" class="hidden constitution-details">
@@ -228,10 +270,10 @@
                     <strong>Payout period:</strong> ${stokvel.payout_frequency_period}<br>
                     <strong>Payout period frequency:</strong> ${stokvel.payout_frequency_int}<br>
 
-                    <br>  
-                    
+                    <br>
+
                     <p>Complete form below to apply to join.</p>
-                
+
 
 
                 </div>
@@ -248,8 +290,8 @@
         //     constitution.classList.toggle('hidden');
 
         //     const joinForm = document.getElementById("joinStokvelForm");
-        //     joinForm.classList.toggle('hidden');  // Toggle form visibility            
-            
+        //     joinForm.classList.toggle('hidden');  // Toggle form visibility
+
         //     document.getElementById('stokvel_name').value = stokvelName;
 
         // }
@@ -269,7 +311,7 @@
 
                         // // Show the join form when constitution is clicked
             if (available_space > 0 & !constitution.classList.contains('hidden')) {
-                
+
                 joinForm.style.display = "block"; // Show the join form
             }
             else{
@@ -284,16 +326,45 @@
 // }
 
             // Set the stokvel name in the join form
+            const selectedStokvel = stokvels.find(stokvel => stokvel.stokvel_name === stokvelName);
             document.getElementById('stokvel_name').value = stokvelName;
             document.getElementById('stokvel_display_name').textContent = stokvelName;
-
+            document.getElementById('min_contributing_amount').value = selectedStokvel.min_contributing_amount;
         }
 
         // Function to apply to join a stokvel
         function applyToJoin(stokvelName) {
             alert(`Sign Up confirmed for ${stokvelName}`);
         }
+
+        // Add event listener for real-time validation
+        document.getElementById('contribution_amount').addEventListener('input', function() {
+            const contributionAmount = parseFloat(this.value);
+            const minContributingAmount = parseFloat(document.getElementById('min_contributing_amount').value);
+            const errorElement = document.getElementById('contribution_error');
+
+            if (isNaN(contributionAmount) || contributionAmount < minContributingAmount) {
+                errorElement.textContent = `Contribution amount must be at least R${minContributingAmount}.`;
+                errorElement.style.visibility = 'visible';
+                errorElement.style.opacity = '1';
+                this.setCustomValidity(`Contribution amount must be at least R${minContributingAmount}.`);
+            } else {
+                errorElement.style.visibility = 'hidden';
+                errorElement.style.opacity = '0';
+                this.setCustomValidity('');
+            }
+        });
+
+        // Add event listener for form submission
+        document.getElementById('joinStokvelForm').addEventListener('submit', function(event) {
+            const contributionAmount = parseFloat(document.getElementById('contribution_amount').value);
+            const minContributingAmount = parseFloat(document.getElementById('min_contributing_amount').value);
+
+            if (isNaN(contributionAmount) || contributionAmount < minContributingAmount) {
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+
     </script>
 </body>
-
 </html>
