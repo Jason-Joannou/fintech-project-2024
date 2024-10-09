@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stokvel Admin Page</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <title>Edit Stokvel Form</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
         }
 
-        .admin-container {
+        .form-container {
             background-color: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 600px;
-            margin: 0 auto;
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #333;
         }
@@ -34,19 +37,19 @@
             color: #555;
         }
 
-        input[type="text"], input[type="number"], textarea {
-            width: 100%;
+        input[type="text"], input[type="number"], input[type="date"], input[type="tel"], select {
+            width: 90%;
             padding: 10px;
             margin-top: 5px;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
 
-        input[type="submit"], input[type="button"] {
+        input[type="submit"] {
             width: 100%;
             padding: 10px;
             margin-top: 20px;
-            background-color: #4CAF50;
+            background-color: #45a095;
             color: white;
             border: none;
             border-radius: 5px;
@@ -54,44 +57,82 @@
             font-size: 16px;
         }
 
-        input[type="submit"]:hover, input[type="button"]:hover {
-            background-color: #45a049;
+        input[type="submit"]:hover {
+            background-color: #45a095;
         }
 
-        .success-message {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
+        .error {
+            color: red;
+            font-size: 14px;
         }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .company-name {
+            font-weight: bold;
+        }
+
     </style>
 </head>
 
 <body>
-    <div class="admin-container">
-        <h1>Stokvel Admin Page</h1>
-        <form id="stokvelForm" onsubmit="handleFormSubmit(event)">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
+    <div class="form-container">
 
-            <label for="surname">Surname:</label>
-            <input type="text" id="surname" name="surname" required>
-
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-
-            <label for="idNumber">ID Number:</label>
-            <input type="text" id="idNumber" name="idNumber" required>
-
-            <input type="submit" value="Update Details">
-        </form>
-
-        <div id="successMessage" class="success-message" style="display: none;">
-            Your details have been successfully updated!
+        <div class="header">
+            <img src= "{{url_for('static', filename='/wallet.png')}}" >
+            <h1 class="company-name">Digi Stokvels</h1>
         </div>
+
+        <h2>Edit Stokvel</h2>
+        <form action="{{ url_for('update_stokvel.edit_stokvel', stokvel_id=stokvel.id) }}" method="POST">
+            <label for="stokvel_name">Stokvel Name:</label>
+            <input type="text" id="stokvel_name" name="stokvel_name" value="{{ stokvel.stokvel_name }}" required>
+
+            <label for="max_number_of_contributors">Max Number of Members:</label>
+            <input type="number" id="max_number_of_contributors" name="max_number_of_contributors" value="{{ stokvel.max_number_of_contributors }}" required>
+
+            <label for="min_contributing_amount">Minimum Contribution (ZAR):</label>
+            <input type="number" id="min_contributing_amount" name="min_contributing_amount" value="{{ stokvel.min_contributing_amount }}" required>
+
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ stokvel.start_date }}" required>
+
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ stokvel.end_date }}" required>
+
+            <label for="payout_frequency_int">Frequency of Payout:</label>
+            <input type="number" id="payout_frequency_int" name="payout_frequency_int" value="{{ stokvel.payout_frequency_int }}" required>
+
+            <label for="payout_frequency_period">Payout Period:</label>
+            <select id="payout_frequency_period" name="payout_frequency_period" required>
+                <option value="Days" {% if stokvel.payout_frequency_period == 'Days' %}selected{% endif %}>Days</option>
+                <option value="Weeks" {% if stokvel.payout_frequency_period == 'Weeks' %}selected{% endif %}>Weeks</option>
+                <option value="Months" {% if stokvel.payout_frequency_period == 'Months' %}selected{% endif %}>Months</option>
+                <option value="Years" {% if stokvel.payout_frequency_period == 'Years' %}selected{% endif %}>Years</option>
+            </select>
+
+            <label for="stokvel_type">Type of Stokvel:</label>
+            <select id="stokvel_type" name="stokvel_type" required>
+                <option value="savings" {% if stokvel.stokvel_type == 'savings' %}selected{% endif %}>Savings</option>
+            </select>
+
+            <input type="submit" value="Update Stokvel">
+        </form>
     </div>
 </body>
+
 </html>
