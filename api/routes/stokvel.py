@@ -1105,8 +1105,16 @@ def stokvel_total_interest() -> str:
     """
     This enpoint returns the total stokvel interest in the savings period.
     """
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
     try:
-        interest_dict = get_stokvel_monthly_interest()
+        # fetch stokvel id
+        stokvel_id = get_stokvel_id_by_name(stokvel_name)
+        # get monthly interest values
+        interest_dict = get_stokvel_monthly_interest(stokvel_id)
+        # get total accumulated interest for the period
         stkvl_interest = sum(interest_dict.values())
         msg = f"The total interest for this Stokvel is: R{stkvl_interest}"
         return msg

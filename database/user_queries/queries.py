@@ -320,7 +320,7 @@ def find_wallet_by_userid(user_id: str) -> Optional[str]:
 
 
 
-def get_user_interest(user_id: int, stokvel_id: int) -> float:
+def get_user_interest(user_id: str, stokvel_id: str) -> float:
     """
     Get the accumulated interest for a user in the current savings period.
 
