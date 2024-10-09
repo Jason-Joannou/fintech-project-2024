@@ -32,7 +32,7 @@ from database.user_queries.queries import (
     find_number_by_userid,
     find_user_by_number,
     get_linked_stokvels,
-    get_stokvel_monthly_interest
+    get_stokvel_monthly_interest,
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -731,6 +731,7 @@ def failed_approval_sv_full() -> str:
         failed_next_step_message=failed_next_step_message,
     )
 
+
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel_total_interest", methods=["POST"])
 def stokvel_total_interest() -> str:
     """
@@ -753,4 +754,3 @@ def stokvel_total_interest() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error: {e}")
         return msg
-
