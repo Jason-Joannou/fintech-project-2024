@@ -41,8 +41,9 @@ def get_all_users() -> str:
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
 
+
 @users_bp.route(f"{BASE_ROUTE}/user_total_interest", methods=["POST"])
-def user_total_interest() -> float:
+def user_total_interest() -> str:
     """
     This endpoint returns the total for a user in a stokvel in the savings period.
     """

@@ -1101,7 +1101,7 @@ def failed_approval_sv_full() -> str:
     )
 
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel_total_interest", methods=["POST"])
-def stokvel_total_interest() -> float:
+def stokvel_total_interest() -> str:
     """
     This enpoint returns the total stokvel interest in the savings period.
     """
