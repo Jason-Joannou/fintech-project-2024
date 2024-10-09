@@ -7,9 +7,9 @@ from database.user_queries.queries import (
     find_user_by_number,
     get_account_details,
     get_total_number_of_users,
+    get_user_interest,
     update_user_name,
     update_user_surname,
-    get_user_interest
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -66,7 +66,7 @@ def user_total_interest() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
-    
+
 
 @users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
 def get_account_details_endpoint() -> str:

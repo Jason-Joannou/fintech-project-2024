@@ -51,7 +51,7 @@ from database.user_queries.queries import (
     find_user_by_number,
     find_wallet_by_userid,
     get_linked_stokvels,
-    get_stokvel_monthly_interest
+    get_stokvel_monthly_interest,
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -1099,6 +1099,7 @@ def failed_approval_sv_full() -> str:
         failed_message=failed_message,
         failed_next_step_message=failed_next_step_message,
     )
+
 
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel_total_interest", methods=["POST"])
 def stokvel_total_interest() -> str:
