@@ -118,7 +118,7 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
   try {
     const { quote_id, continueUri, continueAccessToken, walletAddressURL } = req.body; // Get data from request body
     
-    console.log(walletAddressURL)
+    console.log(walletAddressURL) //this needs to be the sender wallet address
     console.log(continueUri)
     console.log(continueAccessToken)
     console.log(quote_id)
@@ -130,7 +130,7 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
     });
 
     const { payment, token, manageurl } = await createInitialOutgoingPayment(client, quote_id, 
-      continueUri, continueAccessToken, walletAddressURL)
+      continueUri, continueAccessToken, walletAddressURL) //sender wallet address
     
     // Send back the outgoing payment as a JSON response
     res.json({payment, token: token, manageurl: manageurl});
