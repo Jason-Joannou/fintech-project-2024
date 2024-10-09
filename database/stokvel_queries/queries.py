@@ -1,14 +1,187 @@
-# from .sql_connection import sql_connection
 import sqlite3
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
+from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
+
+
+def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
+    """
+    Retrieve total deposit details for a specific user and stokvel based on stokvel name.
+
+    Args:
+        phone_number (str): The user's phone number.
+        stokvel_name (str): The name of the stokvel to filter by.
+
+    Returns:
+        dict: A dictionary containing the user's details and total deposit amount.
+    """
+    from_number = extract_whatsapp_number(from_number=phone_number)
+
+    # Updated query to find total deposits using `stokvel_name`
+    query = """
+    SELECT
+        SUM(t.amount) AS total_deposits
+    FROM
+        USERS u
+    JOIN
+        TRANSACTIONS t ON u.user_id = t.user_id
+    WHERE
+        u.user_number = :user_number
+        AND t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
+        AND t.tx_type = 'DEPOSIT'
+    GROUP BY
+        u.user_id;
+    """
+
+    # Executing the query using the SQLite connection
+    with sqlite_conn.connect() as conn:
+        result = conn.execute(
+            text(query), {"user_number": from_number, "stokvel_name": stokvel_name}
+        ).fetchone()
+
+        if not result:
+            return {
+                "error": f"No data found for the given user number and stokvel name: {stokvel_name}."
+            }
+
+        # Building the result dictionary from the query response
+        return {
+            "total_deposits": result[0],
+        }
+
+
+def get_deposits_per_stokvel(stokvel_name: str):
+    """
+    Retrieve total deposit details for a specific stokvel based on its name.
+
+    Args:
+        stokvel_name (str): The name of the stokvel.
+
+    Returns:
+        dict: A dictionary containing the total deposit amount for the given stokvel.
+    """
+    # Updated query to fetch the total deposits using stokvel_id from the STOKVELS table
+    query = """
+    SELECT
+        SUM(t.amount) AS total_deposits
+    FROM
+        TRANSACTIONS t
+    WHERE
+        t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
+        AND t.tx_type = 'deposit'
+    GROUP BY
+        t.stokvel_id;
+    """
+
+    # Executing the query using the SQLite connection
+    with sqlite_conn.connect() as conn:
+        result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
+
+        if not result:
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name}"
+            }
+
+        # Building the result dictionary from the query response
+        return {
+            "stokvel_name": stokvel_name,
+            "total_deposits": result[0],
+        }
+
+
+def get_nr_of_active_users_per_stokvel(stokvel_name: str):
+    """
+    Retrieve the number of active members for a specific stokvel based on its name.
+
+    Args:
+        stokvel_name (str): The name of the stokvel.
+
+    Returns:
+        dict: A dictionary containing the number of active members in the stokvel.
+    """
+    # Corrected query to fetch the count of active members for the stokvel
+    query = """
+    SELECT
+        COUNT(sm.user_id) as nr_of_active_users_in_stokvel
+    FROM
+        STOKVEL_MEMBERS sm
+    WHERE
+        sm.stokvel_id = (SELECT s.stokvel_id FROM STOKVELS s WHERE s.stokvel_name = :stokvel_name)
+        AND sm.active_status = 'active';
+    """
+    # Executing the query using the SQLite connection
+    with sqlite_conn.connect() as conn:
+        result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
+
+        if not result or result[0] is None:
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name}"
+            }
+
+        # Building the result dictionary from the query response
+        return {
+            "stokvel_name": stokvel_name,
+            "nr_of_active_users": result[0],
+        }
+
+
+def get_stokvel_constitution(phone_number: str, stokvel_name: str):
+    """
+    Retrieve minimum contribution amount and maximum number of members for a specific stokvel based on its name and user's phone number.
+
+    Args:
+        phone_number (str): The user's phone number.
+        stokvel_name (str): The name of the stokvel to filter by.
+
+    Returns:
+        dict: A dictionary containing the stokvel's constitution details, including the minimum contribution amount,
+              maximum number of contributors, and creation date.
+    """
+    # Step 1: Format the phone number (if necessary, similar to `extract_whatsapp_number`)
+    formatted_number = extract_whatsapp_number(phone_number)
+
+    # Step 2: SQL query to find stokvel details using USERS to validate membership
+    query = """
+    SELECT
+        s.min_contributing_amount AS minimum_contributing_amount,
+        s.max_number_of_contributors AS max_number_of_contributors,
+        s.created_at AS creation_date
+    FROM
+        STOKVELS s
+    JOIN
+        STOKVEL_MEMBERS sm ON s.stokvel_id = sm.stokvel_id
+    JOIN
+        USERS u ON sm.user_id = u.user_id
+    WHERE
+        s.stokvel_name = :stokvel_name
+        AND u.user_number = :user_number;
+    """
+
+    # Step 3: Execute the query using the SQLite connection
+    with sqlite_conn.connect() as conn:
+        result = conn.execute(
+            text(query), {"stokvel_name": stokvel_name, "user_number": formatted_number}
+        ).fetchone()
+
+        if not result:
+            return {
+                "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {phone_number}."
+            }
+
+        # Step 4: Build the result dictionary from the query response
+        return {
+            "stokvel_name": stokvel_name,
+            "minimum_contributing_amount": result[0],
+            "max_number_of_contributors": result[1],
+            "creation_date": result[2],
+        }
 
 
 def get_next_unique_id(conn, table_name, id_column):
@@ -689,3 +862,56 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
 
     except Exception as e:
         print(f"Failed to insert transaction. Error: {str(e)}")
+
+
+def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
+    """
+    Get the accumulated interest for a stokvel in the current savings period.
+
+    :param stokvel_id: The ID of the stokvel to check interest for.
+    :return: A dictionary of montlhy interest values keyed by the date.
+    """
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            # Get most recent payout date from STOKVELS table
+            query = text(
+                "SELECT prev_payout FROM STOKVELS WHERE stokvel_id = :stokvel_id"
+            )
+            result = conn.execute(query, {"stokvel_id": stokvel_id})
+            prev_payout = result.scalar()
+
+            if not prev_payout:
+                query = text(
+                    "SELECT created_at FROM STOKVELS WHERE stokvel_id = :stokvel_id"
+                )
+                result = conn.execute(query, {"stokvel_id": stokvel_id})
+                prev_payout = result.scalar()
+
+            # Get all interest values from the INTEREST table where the stokvel_id matches
+            # and date is after the previous payout
+            interest_query = text(
+                """
+                SELECT interest_value, date
+                FROM INTEREST
+                WHERE stokvel_id = :stokvel_id
+                AND date > :prev_payout
+            """
+            )
+
+            interest_result = conn.execute(
+                interest_query, {"stokvel_id": stokvel_id, "prev_payout": prev_payout}
+            )
+
+            # Store the interest values in a dictionary (keyed by date)
+            interest = {row[1]: row[0] for row in interest_result}
+
+            transaction.commit()
+
+            return interest
+
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retrieving the SQL data: {e}")
+            return {}

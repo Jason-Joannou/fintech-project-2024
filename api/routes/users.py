@@ -3,7 +3,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
 from database.stokvel_queries.queries import get_all_applications
-from database.user_queries.queries import find_user_by_number, get_total_number_of_users, get_user_interest
+from database.user_queries.queries import (
+    find_user_by_number,
+    get_account_details,
+    get_total_number_of_users,
+    update_user_name,
+    update_user_surname,
+)
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
@@ -48,6 +54,81 @@ def user_total_interest() -> float:
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
     
+
+@users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
+def get_account_details_endpoint() -> str:
+    """
+    This endpoint returns account details of a user based on their phone number.
+    The phone number should be provided as a query parameter.
+    """
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from the query parameters
+
+    try:
+        user_details = get_account_details(
+            phone_number
+        )  # Call the function and store the result
+
+        # Prepare the notification message
+        notification_message = (
+            f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
+            f"Your user ID: {user_details['u.user_id']}\n"
+            f"Your wallet ID: {user_details['uw.user_wallet']}\n"
+            f"Your wallet balance: {user_details['uw.UserBalance']}\n\n"
+        )
+
+        return notification_message
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_account_details_endpoint.__name__}: {e}")
+        return msg
+
+
+@users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=["POST"])
+def update_user_name_endpoint():
+
+    phone_number = request.json.get("user_number")
+    new_name = request.json.get("user_input")
+
+    # Call the function to update the user's name
+    try:
+        update_user_name(phone_number, new_name)
+
+        # Prepare the notification message
+        notification_message = (
+            f"Your name has been updated successfully to: {new_name}!"
+        )
+
+        return notification_message
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_user_name_endpoint.__name__}: {e}")
+        return msg
+
+
+@users_bp.route(f"{BASE_ROUTE}/admin/update_usersurname", methods=["POST"])
+def update_user_surname_endpoint():
+    phone_number = request.json.get("user_number")
+    new_surname = request.json.get("user_input")
+
+    # Call the function to update the user's surname
+    try:
+        update_user_surname(phone_number, new_surname)
+
+        # Prepare the notification message
+        notification_message = (
+            f"Your surname has been updated successfully to: {new_surname}!"
+        )
+
+        return notification_message
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {update_user_surname_endpoint.__name__}: {e}")
+        return msg
+
+
 @users_bp.route(f"{BASE_ROUTE}/fund_wallet", methods=["POST"])
 def example_fund_wallet() -> str:
     """
