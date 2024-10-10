@@ -388,10 +388,8 @@ def onboard_stokvel() -> Response:
             "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
             "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
             "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
-            "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_duration),
-            "number_of_periods":str(1)
-        }
-
+            "payment_period_length": format_contribution_period_string(stokvel_data.contribution_period),
+            "length_between_periods": "T30" if format_contribution_period_string(stokvel_data.contribution_period) == 'S' else "1" }
         print("REQUEST: ")
         print(payload)
 

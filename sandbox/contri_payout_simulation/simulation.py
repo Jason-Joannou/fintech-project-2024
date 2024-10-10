@@ -36,8 +36,8 @@ def run_contribution_simulation(stokvel_id:int, user_id_wallets:dict):
         
         payload = {
             "quote_id": stokvel_members_details.get('user_quote_id'),                                    
-            "continueUri": stokvel_members_details.get('user_payment_token'),
-            "continueAccessToken": stokvel_members_details.get('user_payment_URI'),
+            "continueUri": stokvel_members_details.get('user_payment_URI'),
+            "continueAccessToken": stokvel_members_details.get('user_payment_token'),
             "walletAddressURL": str(wallet)
         }
 
@@ -67,7 +67,7 @@ def run_contribution_simulation(stokvel_id:int, user_id_wallets:dict):
                     "previousToken":stokvel_members_details.get('user_payment_token'),
                 }
 
-                response = requests.post(node_server_create_initial_payment, json=payload)
+                response = requests.post(node_server_recurring_payment, json=payload)
 
                 print("RESPONSE: \n", response.json())
         
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
 
     #arguments
-    stokvel_id = 12
+    stokvel_id = 5
     user_id_wallets = {
         "980618": "https://ilp.rafiki.money/bob_account",
     }

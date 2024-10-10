@@ -141,6 +141,11 @@ def calculate_next_date(contribution_or_payout_period, current_date):
     # pevious_date = next_date --> update in DB
     # new next_date = update_next_date()
     current_date = str(current_date)
+    if ":" in current_date and "T" not in current_date:
+        current_date = current_date.split(" ")[0]
+        current_date += "T00:00:00"  # Add the time component if not present
+
+
     if "T" not in current_date:  # Check if the time component is already present
         current_date += "T00:00:00"  # Add the time component if not present
     

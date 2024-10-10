@@ -1023,7 +1023,7 @@ def get_stokvel_details(stokvel_id):
 
 
 def get_stokvel_member_details(stokvel_id, user_id):
-    select_query = 'SELECT * FROM STOKVELS_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id'
+    select_query = 'SELECT * FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id'
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id
@@ -1039,7 +1039,7 @@ def get_stokvel_member_details(stokvel_id, user_id):
                 return None  # Return None if no record is found
             
             # Convert the result to a dictionary if necessary
-            columns = [column[0] for column in result.description]  # Get column names
+            columns = result.keys()  # Extract column names from the result
             stokvel_members_dict = dict(zip(columns, stokvel_members_details))  # Create a dictionary from column names and values
             
             print(f"Selected stokvel details: {stokvel_members_dict}")
