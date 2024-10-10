@@ -333,7 +333,7 @@ def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> floa
 
     start_date = next(iter(stokvel_interest))
 
-    start_date = start_date[:7]
+    start_date = start_date[:7] 
 
     # Convert start_date to a datetime object and calculate the date one month before
     start_date_dt = datetime.strptime(start_date, "%Y-%m")
