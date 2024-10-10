@@ -77,10 +77,10 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
 //create incoming payment
 app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Response) => {
   try {
-    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods, payment_period_length } = req.body; // Get data from request body
+    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, payment_periods, payment_period_length, number_of_periods } = req.body; // Get data from request body
 
     console.log(value)
-    console.log(walletAddressURL)
+    console.log('stockvel setup body \n', req.body)
 
     const client = await getAuthenticatedClient()
     
@@ -97,7 +97,7 @@ app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Res
     const incomingPayment = await createInitialIncomingPayment(client, value ,walletFullDetails, stokvel_contributions_start_date);
     const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
     const recurring_grant = await getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(client, sender_walletFullDetails, stokvel_contributions_start_date, payment_periods,
-       payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount)
+       payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount, number_of_periods)
 
     // Send back the information about the grant as a JSON response
     res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token, quote_id: quote.id}); //{all information stored here should be returned}
@@ -118,7 +118,7 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
   try {
     const { quote_id, continueUri, continueAccessToken, walletAddressURL } = req.body; // Get data from request body
     
-    console.log(walletAddressURL)
+    console.log(walletAddressURL) //this needs to be the sender wallet address
     console.log(continueUri)
     console.log(continueAccessToken)
     console.log(quote_id)
@@ -130,7 +130,7 @@ app.post('/create-initial-outgoing-payment', async (req: Request, res: Response)
     });
 
     const { payment, token, manageurl } = await createInitialOutgoingPayment(client, quote_id, 
-      continueUri, continueAccessToken, walletAddressURL)
+      continueUri, continueAccessToken, walletAddressURL) //sender wallet address
     
     // Send back the outgoing payment as a JSON response
     res.json({payment, token: token, manageurl: manageurl});

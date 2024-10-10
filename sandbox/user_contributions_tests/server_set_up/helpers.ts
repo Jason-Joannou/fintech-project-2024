@@ -90,13 +90,15 @@ export async function createStandardIncomingPayment(
 export async function createInitialIncomingPayment(
   client: AuthenticatedClient,
   value: string,
-  walletAddressDetails: WalletAddress,
+  walletAddressDetails: WalletAddress, //RECEIVER ADDRESS!!!
   stokvel_contributions_start_date: string
 ) {
   // Request IP grant
   // const dateNow = new Date().toISOString();
   // console.log(dateNow)
   const stokvel_contributions_start_date_converted = Date.parse(stokvel_contributions_start_date);  // Example date
+
+  console.log("EXPIRATION DATE: \n", stokvel_contributions_start_date_converted)
 
   const grant = await client.grant.request(
     {
@@ -134,6 +136,8 @@ export async function createInitialIncomingPayment(
       expiresAt: new Date(stokvel_contributions_start_date_converted + 48 * 60 * 60 * 1000).toISOString(),
     },
   );
+
+
 
   console.log("** Income Payment");
   console.log(incomingPayment);
@@ -252,11 +256,11 @@ export async function getOutgoingPaymentAuthorization(
       },
       interact: {
         start: ["redirect"],
-        finish: {
-          method: "redirect",
-          uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
-          nonce: randomUUID(),
-        },
+        // finish: {
+        //   method: "redirect",
+        //   uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
+        //   nonce: randomUUID(),
+        // },
       },
     }
   );
@@ -292,11 +296,16 @@ export async function createInitialOutgoingPayment(
       url: walletAddress,
     });
 
+    console.log('ABOUT TO CONTINUE THE GRANT')
+
   const finalizedOutgoingPaymentGrant = (await client.grant.continue({ //check which key/token pair should be used here
     accessToken: continueAccessToken,
     url: continueUri
   }
   )) as Grant;
+
+  console.log('GRANT CONTINUED')
+
 
   console.log('Grant details')
   console.log(finalizedOutgoingPaymentGrant.continue)
@@ -436,7 +445,8 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
   payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
   quote_id: string,
   debitAmount:Amount,
-  receiveAmount:Amount
+  receiveAmount:Amount,
+  number_of_periods:string
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
   console.log(dateNow)
@@ -465,13 +475,18 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
             limits: {
               debitAmount: debitAmount,
               receiveAmount: receiveAmount,
-              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/PT20${payment_period_length}` //will need to change this to start date of the stokvel
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/P${number_of_periods}${payment_period_length}` //will need to change this to start date of the stokvel
             },
           },
         ],
       },
       interact: {
-        start: ["redirect"]
+        start: ["redirect"],
+          // finish: {
+          // method: "redirect",
+          // uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
+          // nonce: randomUUID(),
+        //}
         // finish: {
         //   method: "redirect",
         //   uri: input.redirectUrl,
