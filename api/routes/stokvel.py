@@ -16,7 +16,11 @@ from database.stokvel_queries.queries import (
     get_admin_by_stokvel,
     get_all_applications,
     get_all_stokvels,
+    get_deposits_per_stokvel,
+    get_nr_of_active_users_per_stokvel,
+    get_stokvel_constitution,
     get_stokvel_id_by_name,
+    get_user_deposit_per_stokvel,
     insert_admin,
     insert_stokvel,
     insert_stokvel_join_application,
@@ -42,6 +46,91 @@ def stokvel() -> str:
     docstrings
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["POST"])
+def get_user_total_deposit():
+    """
+    This endpoint returns the total deposits of a user for a given stokvel.
+    The user's phone number and stokvel name should be provided as query parameters.
+    """
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
+    try:
+        # Fetch total deposits for the user and stokvel
+        deposit_details = get_user_deposit_per_stokvel(phone_number, stokvel_name)
+        total_deposit_details = get_deposits_per_stokvel(stokvel_name)
+        active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
+
+        if "error" in deposit_details:
+            raise ValueError(deposit_details["error"])
+
+        # Return an error if no data is found
+        if "error" in active_users_count:
+            raise ValueError(active_users_count["error"])
+
+        # Prepare the notification message
+        notification_message = (
+            f"📊 Stokvel Summary\n\n"
+            f"Stokvel Name: {total_deposit_details['stokvel_name']}\n"
+            f"Total Deposits in Stokvel: R{total_deposit_details['total_deposits']:.2f}\n"
+            f"Your Total Deposits: R{deposit_details['total_deposits']:.2f}\n"
+            f"Number of Active Users in Stokvel: {active_users_count['nr_of_active_users']}\n\n"
+            "Thank you for being a part of our community!\n"
+        )
+
+        # Return the deposit details along with the sent notification status
+        return notification_message
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_user_deposit_per_stokvel.__name__}: {e}")
+        print(f"Error in {get_nr_of_active_users_per_stokvel.__name__}: {e}")
+        print(f"Error in {get_deposits_per_stokvel.__name__}: {e}")
+        return jsonify({"error": msg}), 500  # Return internal server error
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["POST"])
+def get_stokvels_constitution_handler():
+    """
+    This endpoint returns the stokvels constitution
+    """
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
+    try:
+        # Fetch total deposits for the user and stokvel
+        stokvel_constitution = get_stokvel_constitution(phone_number, stokvel_name)
+
+        if "error" in stokvel_constitution:
+            raise ValueError(stokvel_constitution["error"])
+
+        # Prepare the notification message
+        notification_message = (
+            f"Stokvel Constitution\n\n"
+            f"Stokvel Name: {stokvel_constitution['stokvel_name']}\n"
+            f"Minimum Contributing Amount for Stokvel: R{stokvel_constitution['minimum_contributing_amount']:.2f}\n"
+            f"Maximum Number of Contributors: R{stokvel_constitution['max_number_of_contributors']:.2f}\n"
+            f"Creation Date of Stokvel: {stokvel_constitution['creation_date']}\n\n"
+            "Thank you for being a part of our community!\n"
+        )
+
+        # Return the deposit details along with the sent notification status
+        return notification_message
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_stokvel_constitution.__name__}: {e}")
+        return msg  # Return internal server error
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])

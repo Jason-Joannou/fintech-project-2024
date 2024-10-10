@@ -21,6 +21,7 @@ def create_stokvel_members_table_sqlite() -> None:
                 id INTEGER PRIMARY KEY,
                 stokvel_id INTEGER,
                 user_id INTEGER,
+                active_status TEXT,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
                 contribution_amount NUMBER,
@@ -283,6 +284,26 @@ def create_state_management_table() -> None:
         )
 
 
+def create_interest_table() -> None:
+    """
+    docstring
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+        CREATE TABLE IF NOT EXISTS INTEREST (
+            id INTEGER PRIMARY KEY,
+            stokvel_id INTEGER,
+            date DATETIME,
+            interest_value NUMBER
+        );
+        """
+            )
+        )
+
+
 if __name__ == "__main__":
     create_user_table_sqlite()
     create_resource_table_sqlite()
@@ -295,4 +316,4 @@ if __name__ == "__main__":
     create_stokvel_wallet_table_sqlite()
     create_applications_table_sqlite()
     create_state_management_table()
-    create_payouts_table_sqlite()
+    create_interest_table()
