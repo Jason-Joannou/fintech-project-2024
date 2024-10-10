@@ -294,7 +294,7 @@ def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> floa
                 FROM TRANSACTIONS
                 WHERE user_id = :user_id
                 AND stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """
@@ -319,7 +319,7 @@ def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> floa
                     SUM(amount) AS total_deposit_stokvel
                 FROM TRANSACTIONS
                 WHERE stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """

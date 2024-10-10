@@ -877,7 +877,7 @@ def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
         try:
             # Get most recent payout date from STOKVELS table
             query = text(
-                "SELECT MAX(tx_date) FROM TRANSACTIONS WHERE tx_type='payout' AND stokvel_id = :stokvel_id"
+                "SELECT MAX(tx_date) FROM TRANSACTIONS WHERE tx_type='PAYOUT' AND stokvel_id = :stokvel_id"
             )
             result = conn.execute(query, {"stokvel_id": stokvel_id})
             prev_payout = result.scalar()
