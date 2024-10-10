@@ -883,6 +883,169 @@ def insert_transaction(conn,user_id, stokvel_id, amount, tx_type, tx_date):
         print(f"Failed to insert transaction. Error: {str(e)}")
 
 
+def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
+    """
+    Get the accumulated interest for a stokvel in the current savings period.
+
+    :param stokvel_id: The ID of the stokvel to check interest for.
+    :return: A dictionary of montlhy interest values keyed by the date.
+    """
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            # Get most recent payout date from STOKVELS table
+            query = text(
+                "SELECT MAX(tx_date) FROM TRANSACTIONS WHERE tx_type='PAYOUT' AND stokvel_id = :stokvel_id"
+            )
+            result = conn.execute(query, {"stokvel_id": stokvel_id})
+            prev_payout = result.scalar()
+
+            if not prev_payout:
+                query = text(
+                    "SELECT created_at FROM STOKVELS WHERE stokvel_id = :stokvel_id"
+                )
+                result = conn.execute(query, {"stokvel_id": stokvel_id})
+                prev_payout = result.scalar()
+
+            # Get all interest values from the INTEREST table where the stokvel_id matches
+            # and date is after the previous payout
+            interest_query = text(
+                """
+                SELECT interest_value, date
+                FROM INTEREST
+                WHERE stokvel_id = :stokvel_id
+                AND date > :prev_payout
+            """
+            )
+
+            interest_result = conn.execute(
+                interest_query, {"stokvel_id": stokvel_id, "prev_payout": prev_payout}
+            )
+
+            # Store the interest values in a dictionary (keyed by date)
+            interest = {row[1]: row[0] for row in interest_result}
+
+            transaction.commit()
+
+            return interest
+
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retrieving the SQL data: {e}")
+            return {}
+        
+def get_user_interest(user_id: int, stokvel_id: int) -> float:
+    """
+    Get the accumulated interest for a user in the current savings period.
+
+    :param user_id: the ID of the user to check interest for.
+    :param stokvel_id: The ID of the stokvel to check interest for.
+    :return: Total user interest for the savings period.
+    """
+
+    stokvel_interest = get_stokvel_monthly_interest(stokvel_id)
+
+    start_date = next(iter(stokvel_interest))
+
+    start_date = start_date[:7]
+
+    # Convert start_date to a datetime object and calculate the date one month before
+    start_date_dt = datetime.strptime(start_date, "%Y-%m")
+    previous_month_date = (
+        (start_date_dt - timedelta(days=1)).replace(day=1).strftime("%Y-%m")
+    )
+
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            # SQL query to get monthly sums of users deposits after the start_date
+            user_deposit_query = text(
+                """
+                SELECT
+                    strftime('%Y-%m', tx_date) AS month,  -- Get the year-month part of the date
+                    SUM(amount) AS total_deposit
+                FROM TRANSACTIONS
+                WHERE user_id = :user_id
+                AND stokvel_id = :stokvel_id
+                AND tx_type = 'DEPOSIT'
+                AND tx_date > :previous_month_date  -- Start from the month before the interest period
+                GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
+            """
+            )
+
+            user_deposit_result = conn.execute(
+                user_deposit_query,
+                {
+                    "user_id": user_id,
+                    "stokvel_id": stokvel_id,
+                    "previous_month_date": previous_month_date,
+                },
+            )
+
+            # Store the deposit sums in a dictionary (keyed by year-month)
+            user_monthly_deposits = {row[0]: row[1] for row in user_deposit_result}
+
+            # SQL query to get monthly total deposits into stokvel after the start_date
+            stokvel_deposits_query = text(
+                """
+                SELECT strftime('%Y-%m', tx_date) AS month,  -- Get the year-month part of the date
+                    SUM(amount) AS total_deposit_stokvel
+                FROM TRANSACTIONS
+                WHERE stokvel_id = :stokvel_id
+                AND tx_type = 'DEPOSIT'
+                AND tx_date > :previous_month_date  -- Start from the month before the interest period
+                GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
+            """
+            )
+
+            stokvel_deposits_result = conn.execute(
+                stokvel_deposits_query,
+                {"stokvel_id": stokvel_id, "previous_month_date": previous_month_date},
+            )
+
+            # Store stokvel contributions in a dictionary keyed by year-month
+            stokvel_monthly_deposits = {
+                row[0]: row[1] for row in stokvel_deposits_result
+            }
+
+            # Calculate the user's total interest for the savings period
+            user_total_interest = 0.00
+            user_deposit = 0
+            stokvel_deposit = 0
+            for month, interest_value in stokvel_interest.items():
+                # Calculate the previous month (shift the deposits back by one month)
+                previous_month = (
+                    (datetime.strptime(month[:7], "%Y-%m") - timedelta(days=1))
+                    .replace(day=1)
+                    .strftime("%Y-%m")
+                )
+
+                # If the previous month's deposits are available
+                if (
+                    previous_month in user_monthly_deposits
+                    and previous_month in stokvel_monthly_deposits
+                ):
+                    user_deposit += user_monthly_deposits[previous_month]
+                    stokvel_deposit += stokvel_monthly_deposits[previous_month]
+
+                    # Calculate the user's share of the interest for the current month
+                    user_interest = (user_deposit / stokvel_deposit) * interest_value
+                    user_total_interest += user_interest
+
+            user_total_interest = round(user_total_interest, 2)
+
+            transaction.commit()
+
+            return user_total_interest
+
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retrieving the SQL data: {e}")
+            return 0.00
+
+
 # Contributions function
 
 def contribution_trigger():
@@ -891,6 +1054,7 @@ def contribution_trigger():
     """
 
     input_date = datetime.now().date()  # Only compare the date part
+    tx_date = datetime.now()
 
     try:
         with sqlite_conn.connect() as conn:
@@ -928,7 +1092,7 @@ def contribution_trigger():
                             amount = member[5]
                             user_quote_id = member[9]
                             tx_type = "DEPOSIT"
-                            tx_date = input_date
+                            tx_date = tx_date
                             manageUrl = member[7]
                             previousToken = member[8]
 
@@ -1002,6 +1166,7 @@ def payout_trigger():
     """
 
     input_date = datetime.now().date()  # Only compare the date part
+    tx_date = datetime.now()
 
     try:
         with sqlite_conn.connect() as conn:
@@ -1041,7 +1206,7 @@ def payout_trigger():
                             user_id = member[2]
                             stokvel_quote_id = member[12]
                             tx_type = "PAYOUT"
-                            tx_date = input_date
+                            tx_date = tx_date
                             manageUrl = member[7]
                             previousToken = member[8]
 
@@ -1068,7 +1233,12 @@ def payout_trigger():
 
                             deposits = float(deposits)
 
-                            print({deposits})
+                            interest = get_user_interest(user_id=user_id,stokvel_id=stokvel_id)
+
+                            print(f'Total deposits: {deposits}')
+                            print(f'Total interest: {interest}')
+
+                            payout = deposits + interest
 
                             receiving_wallet_address = conn.execute(
                                 text(
@@ -1109,7 +1279,7 @@ def payout_trigger():
                                     {'user_id': user_id}
                                 )
 
-                                insert_transaction(conn,user_id, stokvel_id, deposits, tx_type, tx_date)
+                                insert_transaction(conn,user_id, stokvel_id, payout, tx_type, tx_date)
 
                                 print(f"Ran the initial payout") 
 
@@ -1117,7 +1287,7 @@ def payout_trigger():
                                 # Create contribution payment
                                 # create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
 
-                                insert_transaction(conn,user_id, stokvel_id, deposits, tx_type, tx_date) 
+                                insert_transaction(conn,user_id, stokvel_id, payout, tx_type, tx_date) 
                                 
                                 print(f"Ran the recurring payout")                     
 
@@ -1184,11 +1354,11 @@ def insert_test_data_contributions(num_records: int) -> None:
 
 def clear_contributions_table() -> None:
     """
-    Clear all records from the CONTRIBUTIONS table.
+    Clear all records from the TRANSACTIONS table.
     """
     try:
         with sqlite_conn.connect() as conn:
-            conn.execute(text("DELETE FROM CONTRIBUTIONS"))
+            conn.execute(text("DELETE FROM STOKVELS"))
             conn.commit()  # Commit the transaction to the database
         print("All records have been cleared from the CONTRIBUTIONS table.")
     except Exception as e:
@@ -1306,7 +1476,7 @@ def insert_test_stokvel() -> None:
     end_date = "2024-12-31"     # Example end date in ISO8601 format
     payout_frequency_int = 1
     payout_frequency_period = "month"
-    created_at = datetime.now()
+    created_at = datetime.now() - timedelta(days=123)
     updated_at = datetime.now()
 
     try:
@@ -1386,21 +1556,57 @@ def insert_test_data_payouts(num_records: int) -> None:
         except Exception as e:
             print(f"Failed to insert test data. Error: {str(e)}")
 
+def insert_test_interest_data() -> None:
+    """
+    Inserts test data into the INTEREST table, ensuring date is in DATETIME format.
+    """
+    id = 4
+    stokvel_id = 1
+    date = '2024-07-30'  # Make sure this is in a valid SQL date format (YYYY-MM-DD)
+    interest_value = 15.00
+
+    # Connect to the database and insert the test data
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(
+                """
+                INSERT INTO INTEREST (id, stokvel_id, date, interest_value)
+                VALUES (:id, :stokvel_id, :date, :interest_value)
+                """
+            ),
+            {
+                "id": id,
+                "stokvel_id": stokvel_id,
+                "date": date,
+                "interest_value": interest_value
+            }
+        )
+        conn.commit()
+
 
 
 if __name__ == "__main__":
-    tx_date = datetime.now() + timedelta(days=1)
+    tx_date = datetime.now() - timedelta(days=90)
+    tx_date2 = datetime.now() - timedelta(days=60)
+    tx_date3 = datetime.now() - timedelta(days=30)
     num_records = 1
     conn = sqlite_conn.connect() 
     #contribution_trigger()
     payout_trigger()
     #insert_test_data_payouts(num_records)
-    #insert_transaction(conn, 1, 1, 100, "DEPOSIT", tx_date)
-    #insert_test_stokvel()
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date) 
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    
     #insert_test_user_into_stokvel_members()
     #insert_test_user()
     #insert_test_data_contributions(num_records)
     #clear_contributions_table()
+    #insert_test_stokvel()
+    #insert_test_interest_data()
+    #print(get_user_interest(user_id=1,stokvel_id=1))
+    #print(get_user_interest(user_id=2,stokvel_id=1))
+    #print(get_stokvel_monthly_interest(stokvel_id = 1))
 
 
 def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
