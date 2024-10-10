@@ -294,7 +294,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
                 FROM TRANSACTIONS
                 WHERE user_id = :user_id
                 AND stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """
@@ -319,7 +319,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
                     SUM(amount) AS total_deposit_stokvel
                 FROM TRANSACTIONS
                 WHERE stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """
@@ -467,3 +467,5 @@ def update_user_surname(phone_number: str, new_surname: str):
 
     except Exception as e:
         print(f"Error updating surname: {e}")
+
+print(get_user_interest(user_id=1,stokvel_id=1))
