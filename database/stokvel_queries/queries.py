@@ -1011,7 +1011,7 @@ def get_stokvel_details(stokvel_id):
                 return None  # Return None if no record is found
             
             # Convert the result to a dictionary if necessary
-            columns = [column[0] for column in result.description]  # Get column names
+            columns = result.keys()  # Extract column names from the result
             stokvel_dict = dict(zip(columns, stokvel_details))  # Create a dictionary from column names and values
             
             print(f"Selected stokvel details: {stokvel_dict}")

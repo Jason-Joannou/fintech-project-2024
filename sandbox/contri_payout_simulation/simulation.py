@@ -61,7 +61,7 @@ def run_contribution_simulation(stokvel_id:int, user_id_wallets:dict):
 
                 print("add recurring payment")
                 payload = {
-                    "sender_wallet_address":"https://ilp.rafiki.money/bob_account",
+                    "sender_wallet_address":wallet,
                     "receiving_wallet_address":"https://ilp.rafiki.money/alices_stokvel",
                     "manageUrl":stokvel_members_details.get('user_payment_URI'),
                     "previousToken":stokvel_members_details.get('user_payment_token'),
@@ -113,9 +113,10 @@ if __name__ == "__main__":
 
 
     #arguments
-    stokvel_id = 5
+    stokvel_id = 3
     user_id_wallets = {
         "980618": "https://ilp.rafiki.money/bob_account",
+        "880618": "https://ilp.rafiki.money/joe_account"
     }
 
     # thread1 = threading.Thread(target=run_contribution_simulation(stokvel_id=stokvel_id, user_id_wallets=user_id_wallets))
