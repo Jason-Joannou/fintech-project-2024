@@ -38,6 +38,11 @@ from database.user_queries.queries import (
     get_linked_stokvels,
     find_wallet_by_userid
 )
+
+from database.contribution_payout_queries import (
+    insert_member_contribution_parameters,
+    insert_stokvel_payouts_parameters
+)
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 stokvel_bp = Blueprint("stokvel", __name__)
@@ -336,6 +341,7 @@ def onboard_stokvel() -> Response:
 
         user_id = find_user_by_number(stokvel_data.requesting_number)
 
+    #region Commented out old inserts
 
 
         # add member - get whatsapp number
@@ -357,96 +363,115 @@ def onboard_stokvel() -> Response:
         #     total_contributions=0,
         #     total_members=1
         # )
+    #endregion
 
 
-        # USER CONTRIBUTION GRANT THINGS
+    #region USER CONTRIBUTION GRANT THINGS
 
-        print(get_iso_with_default_time(stokvel_data.start_date), ' ', get_iso_with_default_time(stokvel_data.end_date))
+        # print(get_iso_with_default_time(stokvel_data.start_date), ' ', get_iso_with_default_time(stokvel_data.end_date))
 
-        number_payout_periods_between_start_end_date = calculate_number_periods(stokvel_data.payout_frequency_duration, 
-                                                                         start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
+        # number_payout_periods_between_start_end_date = calculate_number_periods(stokvel_data.payout_frequency_duration, 
+        #                                                                  start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
         
-        number_contribution_periods_between_start_end_date = calculate_number_periods(stokvel_data.contribution_period, 
-                                                                         start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
+        # number_contribution_periods_between_start_end_date = calculate_number_periods(stokvel_data.contribution_period, 
+        #                                                                  start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
 
-        print(number_payout_periods_between_start_end_date)
-        print(number_contribution_periods_between_start_end_date)
+        # print(number_payout_periods_between_start_end_date)
+        # print(number_contribution_periods_between_start_end_date)
 
-        print("USER CONTRIBUTION GRANT FUNCTIONALITY")
+        # print("USER CONTRIBUTION GRANT FUNCTIONALITY")
 
-        payload = {
-            "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
-            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-            "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
-            "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
-            "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period),
-            "number_of_periods":str(1)
-        }
+        # payload = {
+        #     "value": str(int(stokvel_data.min_contributing_amount*100)), #multiply by 100 because the asset scale is 2?
+        #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+        #     "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+        #     "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
+        #     "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
+        #     "payment_period_length": format_contribution_period_string(stokvel_data.payout_frequency_period),
+        #     "number_of_periods":str(1)
+        # }
 
-        print("REQUEST: ")
-        print(payload)
+        # print("REQUEST: ")
+        # print(payload)
 
-        response = requests.post(node_server_initiate_grant, json=payload)
+        # response = requests.post(node_server_initiate_grant, json=payload)
 
-        print(response)
-
-        print("RESPONSE: \n", response.json())
-        print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
-
-        initial_continue_uri_contribution = response.json()['continue_uri']
-        initial_continue_token_contribution = response.json()['continue_token']['value']
-        initial_payment_quote_contribution = response.json()['quote_id']
-
-        # WALLET PAYOUT GRANT THINGS
-
-
-        payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
-
-        payload_payout = {
-            "value": str(int(1)), #create an initial payment of 1c
-            "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-            "walletAddressURL": find_wallet_by_userid( user_id= user_id),
-            "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-            "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
-            "payment_period_length": payment_period_duration_converted,
-            "number_of_periods": str(number_periods)
-        }
-
-        print("PAYOUT SET UP REQUEST: ")
-        print(payload_payout)
-
-        response_payout_grant = requests.post(node_server_initiate_stokvelpayout_grant, json=payload_payout)
-        print(response_payout_grant)
-
-
-        # quote_json = ""
-        
-        initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
-        initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
-        initial_quote_stokvel = response_payout_grant.json()['quote_id']
-
-
-        # # update_token_things()
-
+        # print(response)
 
         # print("RESPONSE: \n", response.json())
-        print("\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ", response_payout_grant.json()['recurring_grant']['interact']['redirect'])
+        # print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
 
-        #On grant accept, redirect to the logic to: add status active and forward date payments
+        # initial_continue_uri_contribution = response.json()['continue_uri']
+        # initial_continue_token_contribution = response.json()['continue_token']['value']
+        # initial_payment_quote_contribution = response.json()['quote_id']
+    
+    #endregion
 
+    #region WALLET PAYOUT GRANT THINGS
+
+
+        # payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
+
+        # payload_payout = {
+        #     "value": str(int(1)), #create an initial payment of 1c
+        #     "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
+        #     "walletAddressURL": find_wallet_by_userid( user_id= user_id),
+        #     "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+        #     "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
+        #     "payment_period_length": payment_period_duration_converted,
+        #     "number_of_periods": str(number_periods)
+        # }
+
+        # print("PAYOUT SET UP REQUEST: ")
+        # print(payload_payout)
+
+        # response_payout_grant = requests.post(node_server_initiate_stokvelpayout_grant, json=payload_payout)
+        # print(response_payout_grant)
+
+
+        # # quote_json = ""
+        
+        # initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
+        # initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
+        # initial_quote_stokvel = response_payout_grant.json()['quote_id']
+
+
+        # # # update_token_things()
+
+
+        # # print("RESPONSE: \n", response.json())
+        # print("\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ", response_payout_grant.json()['recurring_grant']['interact']['redirect'])
+
+        # #On grant accept, redirect to the logic to: add status active and forward date payments
+
+    #endregion
+
+    #region INSERTS USER IN TABLES
         insert_stokvel_member(
             application_id=None,
             stokvel_id=inserted_stokvel_id,
             user_id = find_user_by_number(stokvel_data.requesting_number),
             user_contribution=stokvel_data.min_contributing_amount,
-            user_token=initial_continue_token_contribution,
-            user_url=initial_continue_uri_contribution,
-            user_quote_id=initial_payment_quote_contribution,
-            stokvel_quote_id=initial_quote_stokvel,
-            stokvel_token=initial_continue_token_stokvel,
-            stokvel_url=initial_continue_uri_stokvel
+            user_token='initial_continue_token_contribution',
+            user_url='initial_continue_uri_contribution',
+            user_quote_id='initial_payment_quote_contribution',
+            stokvel_quote_id='initial_quote_stokvel',
+            stokvel_token='initial_continue_token_stokvel',
+            stokvel_url='initial_continue_uri_stokvel'
         )
+
+        # insert_stokvel_member(
+        #     application_id=None,
+        #     stokvel_id=inserted_stokvel_id,
+        #     user_id = find_user_by_number(stokvel_data.requesting_number),
+        #     user_contribution=stokvel_data.min_contributing_amount,
+        #     user_token=initial_continue_token_contribution,
+        #     user_url=initial_continue_uri_contribution,
+        #     user_quote_id=initial_payment_quote_contribution,
+        #     stokvel_quote_id=initial_quote_stokvel,
+        #     stokvel_token=initial_continue_token_stokvel,
+        #     stokvel_url=initial_continue_uri_stokvel
+        # )
 
         #update the number of contributors
         update_stokvel_members_count(stokvel_id=inserted_stokvel_id)
@@ -460,6 +485,24 @@ def onboard_stokvel() -> Response:
             total_contributions=0,
             total_members=1
         )
+
+        #generate contribution dates
+        insert_member_contribution_parameters(
+            stokvel_id=stokvel_data.stokvel_id,
+            start_date= stokvel_data.start_date,
+            payout_period=stokvel_data.contribution_period
+        )
+
+
+        #generate payouts
+        insert_stokvel_payouts_parameters(
+            stokvel_id=stokvel_data.stokvel_id,
+            start_date=stokvel_data.start_date,
+            payout_period=stokvel_data.payout_frequency_duration
+        )
+
+        #endregion
+
 
         # Prepare the notification message
         notification_message = (
