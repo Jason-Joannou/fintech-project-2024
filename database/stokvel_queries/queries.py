@@ -453,6 +453,7 @@ def insert_stokvel_member(
     stokvel_token: Optional[str],
     stokvel_url: Optional[str],
     stokvel_quote_id: Optional[str],
+    stokvel_initial_payment_needed:Optional[int],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> List:
@@ -473,10 +474,10 @@ def insert_stokvel_member(
     insert_query = """
         INSERT INTO STOKVEL_MEMBERS (
             stokvel_id, user_id, contribution_amount, user_payment_token, user_payment_URI, user_quote_id, 
-            stokvel_payment_token, stokvel_payment_URI, stokvel_quote_id, created_at, updated_at
+            stokvel_payment_token, stokvel_payment_URI, stokvel_quote_id, stokvel_initial_payment_needed, created_at, updated_at
         ) VALUES (
             :stokvel_id, :user_id, :contribution_amount, :user_payment_token, :user_payment_URI, :user_quote_id, 
-            :stokvel_payment_token, :stokvel_payment_URI, :stokvel_quote_id, :created_at, :updated_at
+            :stokvel_payment_token, :stokvel_payment_URI, :stokvel_quote_id, :stokvel_initial_payment_needed, :created_at, :updated_at
         )
     """
 
@@ -491,6 +492,7 @@ def insert_stokvel_member(
         "stokvel_payment_token": stokvel_token,
         "stokvel_payment_URI": stokvel_url,
         "stokvel_quote_id": stokvel_quote_id,
+        "stokvel_initial_payment_needed":1,
         "created_at": created_at,
         "updated_at": updated_at,
     }
@@ -523,6 +525,59 @@ def insert_stokvel_member(
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise e
+    
+def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
+    query = """
+    SELECT stokvel_initial_payout_required 
+    FROM STOKVEL_MEMBERS 
+    WHERE user_id = :user_id AND stokvel_id = :stokvel_id
+    """
+    parameters = {
+        "user_id": user_id,
+        "stokvel_id": stokvel_id
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(query), parameters)
+            payout_required = result.fetchone()  # Fetch one record
+
+            if payout_required is None:
+                print(f"No record found for stokvel_id: {stokvel_id} and user_id: {user_id}")
+                return None
+
+            print(f"Initial payout required: {payout_required[0]}")
+            return payout_required[0]  # Return the value of `stokvel_initial_payout_required`
+
+    except sqlite3.Error as e:
+        print(f"Error retrieving stokvel initial payout: {e}")
+        raise e
+
+def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
+    update_query = """
+    UPDATE STOKVEL_MEMBERS
+    SET stokvel_initial_payout_required = 0
+    WHERE stokvel_id = :stokvel_id AND user_id = :user_id
+    """
+    parameters = {
+        "stokvel_id": stokvel_id,
+        "user_id": user_id
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(update_query), parameters)
+            conn.commit()
+            
+            if result.rowcount > 0:
+                print(f"Successfully updated stokvel_initial_payout_required to 0 for stokvel_id: {stokvel_id} and user_id: {user_id}")
+            else:
+                print(f"No records found to update for stokvel_id: {stokvel_id} and user_id: {user_id}")
+                
+    except sqlite3.Error as e:
+        print(f"Error updating stokvel initial payout required: {e}")
+        raise e
+
 
 
 def get_all_stokvels():
@@ -940,5 +995,58 @@ def update_user_active_status(userid, stokvelid, grantaccepted):
         print(f"Error updating user status: {e}")
         raise e
 
+def get_stokvel_details(stokvel_id):
+    select_query = 'SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id'
+    parameters = {
+        "stokvel_id": stokvel_id
+    }
+    
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(select_query), parameters)
+            stokvel_details = result.fetchone()  # Fetch one record
+            
+            if stokvel_details is None:
+                print(f"No stokvel found with id: {stokvel_id}")
+                return None  # Return None if no record is found
+            
+            # Convert the result to a dictionary if necessary
+            columns = [column[0] for column in result.description]  # Get column names
+            stokvel_dict = dict(zip(columns, stokvel_details))  # Create a dictionary from column names and values
+            
+            print(f"Selected stokvel details: {stokvel_dict}")
+            return stokvel_dict  # Return the details
+
+    except sqlite3.Error as e:
+        print(f"Error retrieving stokvel details: {e}")
+        raise e
+
+
+def get_stokvel_member_details(stokvel_id, user_id):
+    select_query = 'SELECT * FROM STOKVELS_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id'
+    parameters = {
+        "stokvel_id": stokvel_id,
+        "user_id": user_id
+    }
+    
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(select_query), parameters)
+            stokvel_members_details = result.fetchone()  # Fetch one record
+            
+            if stokvel_members_details is None:
+                print(f"No stokvel found with id: {stokvel_id}")
+                return None  # Return None if no record is found
+            
+            # Convert the result to a dictionary if necessary
+            columns = [column[0] for column in result.description]  # Get column names
+            stokvel_members_dict = dict(zip(columns, stokvel_members_details))  # Create a dictionary from column names and values
+            
+            print(f"Selected stokvel details: {stokvel_members_dict}")
+            return stokvel_members_dict  # Return the details
+
+    except sqlite3.Error as e:
+        print(f"Error retrieving stokvel details: {e}")
+        raise e
 
 

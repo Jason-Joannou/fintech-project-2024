@@ -98,7 +98,7 @@ def insert_stokvel_payouts_parameters(stokvel_id: int,
     start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")  # Convert to datetime object
 
     # Calculate the next contribution date
-    next_date = start_date
+    next_date = calculate_next_date(payout_period, start_date)
     frequency_days = 0  # Get the frequency in days
 
     # Prepare insert query for CONTRIBUTIONS table
