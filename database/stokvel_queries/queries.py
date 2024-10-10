@@ -940,5 +940,28 @@ def update_user_active_status(userid, stokvelid, grantaccepted):
         print(f"Error updating user status: {e}")
         raise e
 
+def get_stokvel_details(stokvel_id):
+    select_query = 'SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id'
+    parameters = {
+        "stokvel_id": stokvel_id
+    }
+    
+    try:
+        with sqlite_conn.connect() as conn:
+            result = conn.execute(text(select_query), parameters)
+            stokvel_details = result.fetchone()  # Fetch one record
+            
+            if stokvel_details is None:
+                print(f"No stokvel found with id: {stokvel_id}")
+                return None  # Return None if no record is found
+            
+            # Convert the result to a dictionary if necessary
+            columns = [column[0] for column in result.description]  # Get column names
+            stokvel_dict = dict(zip(columns, stokvel_details))  # Create a dictionary from column names and values
+            
+            print(f"Selected stokvel details: {stokvel_dict}")
+            return stokvel_dict  # Return the details
 
-
+    except sqlite3.Error as e:
+        print(f"Error retrieving stokvel details: {e}")
+        raise e
