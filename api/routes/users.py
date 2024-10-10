@@ -48,7 +48,7 @@ def get_all_users() -> str:
 @users_bp.route(f"{BASE_ROUTE}/user_total_interest", methods=["POST"])
 def user_total_interest() -> str:
     """
-    This endpoint returns the total for a user in a stokvel in the savings period.
+    This endpoint returns the total interest for a user in a stokvel in the savings period.
     """
     phone_number = request.json.get(
         "user_number"
