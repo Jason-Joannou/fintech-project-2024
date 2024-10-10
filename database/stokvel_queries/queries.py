@@ -915,4 +915,3 @@ def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
             transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
             return {}
-
