@@ -261,6 +261,7 @@ def create_state_management_table() -> None:
             )
         )
 
+
 def create_interest_table() -> None:
     """
     docstring
