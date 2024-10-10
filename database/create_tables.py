@@ -47,7 +47,7 @@ def create_stokvel_table_sqlite() -> None:
         conn.execute(
             text(
                 """
-            CREATE TABLE STOKVELS (
+            CREATE TABLE IF NOT EXISTS STOKVELS (
             stokvel_id INTEGER PRIMARY KEY, -- In SQLite, INTEGER PRIMARY KEY creates an alias for ROWID
             stokvel_name TEXT NOT NULL, -- Using TEXT for variable-length strings
             ILP_wallet TEXT NOT NULL, -- SQLite uses REAL for floating-point numbers
