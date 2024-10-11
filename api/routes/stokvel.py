@@ -30,7 +30,10 @@ from database.stokvel_queries.queries import (
     add_url_token,
     calculate_number_periods,
     double_number_periods_for_same_daterange,
-    get_stokvel_details
+    get_stokvel_details,
+    get_stokvel_member_details,
+    update_member_grantaccepted,
+    update_stokvel_grantaccepted
 )
 
 from database.user_queries.queries import (
@@ -42,8 +45,11 @@ from database.user_queries.queries import (
 
 from database.contribution_payout_queries import (
     insert_member_contribution_parameters,
-    insert_stokvel_payouts_parameters
+    insert_stokvel_payouts_parameters, 
+    update_stokvel_token_uri
 )
+
+
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 stokvel_bp = Blueprint("stokvel", __name__)
@@ -52,6 +58,8 @@ BASE_ROUTE = "/stokvel"
 
 node_server_initiate_grant = "http://localhost:3000/incoming-payment-setup"
 node_server_initiate_stokvelpayout_grant = "http://localhost:3000/incoming-payment-setup-stokvel-payout"
+
+node_server_create_initial_payment = "http://localhost:3000/create-initial-outgoing-payment"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -389,7 +397,11 @@ def onboard_stokvel() -> Response:
             "sender_walletAddressURL": find_wallet_by_userid( user_id= user_id),
             "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
             "payment_period_length": format_contribution_period_string(stokvel_data.contribution_period),
-            "length_between_periods": "T30" if format_contribution_period_string(stokvel_data.contribution_period) == 'S' else "1" }
+            "length_between_periods": "T30" if format_contribution_period_string(stokvel_data.contribution_period) == 'S' else "1",
+            "user_id":user_id,
+            "stokvel_id": stokvel_data.stokvel_id
+            
+            }
         print("REQUEST: ")
         print(payload)
 
@@ -418,7 +430,9 @@ def onboard_stokvel() -> Response:
             "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
             "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
             "payment_period_length": payment_period_duration_converted,
-            "number_of_periods": str(number_periods)
+            "number_of_periods": str(number_periods),
+            "user_id":user_id,
+            "stokvel_id": stokvel_data.stokvel_id
         }
 
         print("PAYOUT SET UP REQUEST: ")
@@ -684,7 +698,9 @@ def process_application():
                 "sender_walletAddressURL": find_wallet_by_userid(user_id=application_joiner_id),
                 "payment_periods": number_contribution_periods_between_start_end_date,  # How many contributions to make
                 "payment_period_length": format_contribution_period_string(stokvel_dict.get('contribution_period')),
-                "length_between_periods": "T30" if format_contribution_period_string(stokvel_dict.get('contribution_period')) == 'S' else "1"
+                "length_between_periods": "T30" if format_contribution_period_string(stokvel_dict.get('contribution_period')) == 'S' else "1",
+                "user_id":application_joiner_id,
+                "stokvel_id": application_stokvel_id
             }
             print("REQUEST: ")
             print(payload)
@@ -718,7 +734,9 @@ def process_application():
                 "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
                 "payment_periods": number_payout_periods_between_start_end_date * 2,  # Double the number of payout periods
                 "payment_period_length": payment_period_duration_converted,
-                "number_of_periods": str(number_periods)
+                "number_of_periods": str(number_periods),
+                "user_id":application_joiner_id,
+                "stokvel_id": application_stokvel_id
             }
 
             print("PAYOUT SET UP REQUEST: ")
@@ -736,88 +754,6 @@ def process_application():
             print("\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ", response_payout_grant.json()['recurring_grant']['interact']['redirect'])
 
     # endregion
-
-
-    #         stokvel_dict = get_stokvel_details(stokvel_id=application_stokvel_id)
-    #         print(stokvel_dict)
-
-    # #region USER CONTRIBUTION GRANT THINGS
-
-    #         print(get_iso_with_default_time(stokvel_data.get('start_date')), ' ', get_iso_with_default_time(stokvel_data.get('end_date')))
-
-    #         number_payout_periods_between_start_end_date = calculate_number_periods(stokvel_data.payout_frequency_duration, 
-    #                                                                      start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
-        
-    #         number_contribution_periods_between_start_end_date = calculate_number_periods(stokvel_data.contribution_period, 
-    #                                                                      start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
-
-    #         print(number_payout_periods_between_start_end_date)
-    #         print(number_contribution_periods_between_start_end_date)
-
-    #         print("USER CONTRIBUTION GRANT FUNCTIONALITY")
-
-    #         payload = {
-    #             "value": str(int(stokvel_data.get('contribution_amount')*100)), #multiply by 100 because the asset scale is 2?
-    #             "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-    #             "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-    #             "sender_walletAddressURL": find_wallet_by_userid( user_id= application_joiner_id),
-    #             "payment_periods": number_contribution_periods_between_start_end_date, #how many contributions are going to be made
-    #             "payment_period_length": format_contribution_period_string(stokvel_data.contribution_period),
-    #             "length_between_periods": "T30" if format_contribution_period_string(stokvel_data.contribution_period) == 'S' else "1" }
-    #         print("REQUEST: ")
-    #         print(payload)
-
-    #         response = requests.post(node_server_initiate_grant, json=payload)
-
-    #         print(response)
-
-    #         print("RESPONSE: \n", response.json())
-    #         print("REDIRECT USER FOR AUTH: ", response.json()['recurring_grant']['interact']['redirect'])
-
-    #         initial_continue_uri_contribution = response.json()['continue_uri']
-    #         initial_continue_token_contribution = response.json()['continue_token']['value']
-    #         initial_payment_quote_contribution = response.json()['quote_id']
-        
-    #     #endregion
-
-    #     #region WALLET PAYOUT GRANT THINGS
-
-
-    #         payment_period_duration_converted, number_periods = double_number_periods_for_same_daterange(period=stokvel_data.payout_frequency_duration)
-
-    #         payload_payout = {
-    #             "value": str(int(1)), #create an initial payment of 1c
-    #             "stokvel_contributions_start_date": get_iso_with_default_time(stokvel_data.start_date),
-    #             "walletAddressURL": find_wallet_by_userid( user_id= application_joiner_id),
-    #             "sender_walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
-    #             "payment_periods": number_payout_periods_between_start_end_date*2, #how many contributions are going to be made
-    #             "payment_period_length": payment_period_duration_converted,
-    #             "number_of_periods": str(number_periods)
-    #         }
-
-    #         print("PAYOUT SET UP REQUEST: ")
-    #         print(payload_payout)
-
-    #         response_payout_grant = requests.post(node_server_initiate_stokvelpayout_grant, json=payload_payout)
-    #         print(response_payout_grant)
-
-
-    #         # quote_json = ""
-            
-    #         initial_continue_uri_stokvel = response_payout_grant.json()['continue_uri']
-    #         initial_continue_token_stokvel = response_payout_grant.json()['continue_token']['value']
-    #         initial_quote_stokvel = response_payout_grant.json()['quote_id']
-
-
-    #         # # # update_token_things()
-
-
-    #         # print("RESPONSE: \n", response.json())
-    #         print("\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ", response_payout_grant.json()['recurring_grant']['interact']['redirect'])
-
-            # #On grant accept, redirect to the logic to: add status active and forward date payments
-
-        #endregion
 
         #region INSERTS USER IN TABLES
 
@@ -988,24 +924,119 @@ def failed_approval_sv_full() -> str:
     )
 
 
+from flask import request, render_template
+
+
 @stokvel_bp.route(
-    f"{BASE_ROUTE}/create_stokvel/success_contribution_grant_confirmed", methods=["GET"]
+    f"{BASE_ROUTE}/create_stokvel/user_interactive_grant_response", methods=["GET"]
 )
-def success_user_interactive_grant_accepted() -> str:
+def user_interactive_grant_handle() -> str:
     """
-    docstrings
+    Handle the success or rejection of stokvel contributions.
     """
-    action = "Stokvel contributions have been accepted"
-    success_message = "Your contributions will be processed at the specifed periods."
-    success_next_step_message = (
-        "Please navigate back to WhatsApp for further functions."
-    )
 
-    #add initial payment logic here
+    # Extract query parameters
+    result = request.args.get('result')  # For grant_rejected
+    hash_value = request.args.get('hash')  # For the confirmation hash
+    interact_ref = request.args.get('interact_ref')  # For the interact_ref when confirmed
+    user_id = request.args.get('user_id')
+    stokvel_id = request.args.get('stokvel_id')
 
-    return render_template(
+    action = "Stokvel contributions grant has been accepted"
+    success_message = "Your contributions will be processed at the specified periods."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+    if result == 'grant_rejected':
+        action = "Stokvel contributions grant has been rejected"
+        failed_message = "Unfortunately, your contributions were not accepted."
+        failed_next_step_message = "Please contact support or try again."
+
+
+        return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+        )
+
+    if hash_value and interact_ref:
+        print(f"Confirmed with interact_ref: {interact_ref}")
+        update_member_grantaccepted(user_id = user_id, stokvel_id = stokvel_id, active_status = 'active', user_interaction_ref = interact_ref)
+
+        return render_template(
         "action_success_template.html",
         action=action,
         success_message=success_message,
         success_next_step_message=success_next_step_message,
-    )
+        )
+
+
+@stokvel_bp.route(
+    f"{BASE_ROUTE}/create_stokvel/stokvel_interactive_grant_response", methods=["GET"]
+)
+def stokvel_interactive_grant_handle() -> str:
+    """
+    Handle the success or rejection of stokvel contributions.
+    """
+
+    # Extract query parameters
+    result = request.args.get('result')  # For grant_rejected
+    hash_value = request.args.get('hash')  # For the confirmation hash
+    interact_ref = request.args.get('interact_ref')  # For the interact_ref when confirmed
+    user_id = request.args.get('user_id')
+    stokvel_id = request.args.get('stokvel_id')
+
+    action = "Stokvel payout grant has been accepted"
+    success_message = "Your payout will be processed at the specified periods."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+    if result == 'grant_rejected':
+        action = "Stokvel payouts grant has been rejected"
+        failed_message = "Unfortunately, users payouts were not accepted."
+        failed_next_step_message = "Please contact support or try again."
+
+
+        return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+        )
+
+    if hash_value and interact_ref:
+        print(f"Confirmed with interact_ref: {interact_ref}")
+        update_stokvel_grantaccepted(user_id = user_id, stokvel_id = stokvel_id, stokvel_payout_active_status = 'active', stokvel_interaction_ref = interact_ref)
+
+        print("add initial payment")
+
+        stokvel_members_details = get_stokvel_member_details(stokvel_id, user_id)
+
+        
+        payload = {
+            "quote_id": stokvel_members_details.get('stokvel_quote_id'),                                    
+            "continueUri": stokvel_members_details.get('stokvel_payment_URI'),
+            "continueAccessToken": stokvel_members_details.get('stokvel_payment_token'),
+            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            "interact_ref":stokvel_members_details.get('stokvel_interaction_ref')
+        }
+
+        response = requests.post(node_server_create_initial_payment, json=payload)
+
+        print("RESPONSE: \n", response.json())
+  
+
+        new_token = response.json()['token']
+        new_uri = response.json()['manageurl']
+        
+        update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri)
+
+
+        return render_template(
+        "action_success_template.html",
+        action=action,
+        success_message=success_message,
+        success_next_step_message=success_next_step_message,
+        )
+
+
+

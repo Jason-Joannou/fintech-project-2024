@@ -1050,3 +1050,59 @@ def get_stokvel_member_details(stokvel_id, user_id):
         raise e
 
 
+def update_member_grantaccepted(stokvel_id: int, user_id: int, active_status: str, user_interaction_ref: str):
+    update_query = """
+    UPDATE STOKVEL_MEMBERS
+    SET active_status = :active_status, user_interaction_ref = :user_interaction_ref
+    WHERE stokvel_id = :stokvel_id AND user_id = :user_id
+    """
+    
+    parameters = {
+        "stokvel_id": stokvel_id,
+        "user_id": user_id,
+        "active_status": active_status,
+        "user_interaction_ref": user_interaction_ref
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            result =  conn.execute(text(update_query), parameters)
+            conn.commit()
+            
+            if result.rowcount > 0:
+                print(f"Successfully updated active_status to '{active_status}' and user_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}")
+            else:
+                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                
+    except sqlite3.Error as e:
+        print(f"Error updating stokvel member: {e}")
+        raise e
+    
+
+def update_stokvel_grantaccepted(stokvel_id: int, user_id: int, stokvel_payout_active_status: str, stokvel_interaction_ref: str):
+    update_query = """
+    UPDATE STOKVEL_MEMBERS
+    SET stokvel_payout_active_status = :stokvel_payout_active_status, stokvel_interaction_ref = :stokvel_interaction_ref
+    WHERE stokvel_id = :stokvel_id AND user_id = :user_id
+    """
+    
+    parameters = {
+        "stokvel_id": stokvel_id,
+        "user_id": user_id,
+        "stokvel_payout_active_status": stokvel_payout_active_status,
+        "stokvel_interaction_ref": stokvel_interaction_ref
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            result =  conn.execute(text(update_query), parameters)
+            conn.commit()
+            
+            if result.rowcount > 0:
+                print(f"Successfully updated stokvel_payout_active_status to '{stokvel_payout_active_status}' and stokvel_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}")
+            else:
+                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                
+    except sqlite3.Error as e:
+        print(f"Error updating stokvel payout: {e}")
+        raise e

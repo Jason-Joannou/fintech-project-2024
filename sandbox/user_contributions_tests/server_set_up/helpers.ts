@@ -224,7 +224,9 @@ export async function getOutgoingPaymentAuthorization(
   length_between_periods:string,
   quote_id: string,
   debitAmount:Amount,
-  receiveAmount:Amount
+  receiveAmount:Amount,
+  user_id: number,
+  stokvel_id:number
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
   console.log(dateNow)
@@ -256,11 +258,11 @@ export async function getOutgoingPaymentAuthorization(
       },
       interact: {
         start: ["redirect"],
-        // finish: {
-        //   method: "redirect",
-        //   uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
-        //   nonce: randomUUID(),
-        // },
+        finish: {
+          method: "redirect",
+          uri: `http://localhost:5000/stokvel/create_stokvel/user_interactive_grant_response?user_id=${user_id}&stokvel_id=${stokvel_id}`,
+          nonce: randomUUID(),
+        },
       },
     }
   );
@@ -271,6 +273,10 @@ export async function getOutgoingPaymentAuthorization(
 
   // console.log(pending_recurring_grant.continue.)
   console.log('GRANT STUFFS - GRANT CREATIONS')
+
+  console.log('PENDING GRANT WITH REDIRECT: ', pending_recurring_grant)
+
+
   console.log(pending_recurring_grant.continue.uri) // save this to the database
   console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
   console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
@@ -287,6 +293,7 @@ export async function createInitialOutgoingPayment(
   continueUri: string,
   continueAccessToken: string,
   sender_wallet_address: string,
+  interact_ref:string
 ) {
   let walletAddress = sender_wallet_address
   if (walletAddress.startsWith("$"))
@@ -301,7 +308,11 @@ export async function createInitialOutgoingPayment(
   const finalizedOutgoingPaymentGrant = (await client.grant.continue({ //check which key/token pair should be used here
     accessToken: continueAccessToken,
     url: continueUri
+  },
+  {
+    interact_ref:interact_ref
   }
+
   )) as Grant;
 
   console.log('GRANT CONTINUED')
@@ -446,7 +457,9 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
   quote_id: string,
   debitAmount:Amount,
   receiveAmount:Amount,
-  number_of_periods:string
+  number_of_periods:string,
+  user_id:number,
+  stokvel_id:number
 ): Promise<PendingGrant> {
   const dateNow = new Date().toISOString();
   console.log(dateNow)
@@ -456,8 +469,8 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
  
   console.log(debitAmount, '\n', receiveAmount)
 
-  debitAmount.value = "100000000000000"
-  receiveAmount.value = "100000000000000"
+  debitAmount.value = "1000000"
+  receiveAmount.value = "1000000"
 
 
 
@@ -482,6 +495,11 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
       },
       interact: {
         start: ["redirect"],
+        finish: {
+          method: "redirect",
+          uri: `http://localhost:5000/stokvel/create_stokvel/stokvel_interactive_grant_response?user_id=${user_id}&stokvel_id=${stokvel_id}`,
+          nonce: randomUUID(),
+        },
           // finish: {
           // method: "redirect",
           // uri: "http://localhost:5000/stokvel/create_stokvel/success_contribution_grant_confirmed",
@@ -495,6 +513,8 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
       },
     }
   );
+
+  console.log('PENDING GRANT WITH REDIRECT: ', pending_recurring_grant)
 
   if (!isPendingGrant(pending_recurring_grant)) {
     throw new Error("Expected interactive grant");
