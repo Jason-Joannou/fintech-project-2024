@@ -94,7 +94,7 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                         },
                         timeout=10,
                     )
-                    response.raise_for_status
+                    response.raise_for_status()
 
                     response = requests.post(
                         BASE_WRITE_ROUTE,
