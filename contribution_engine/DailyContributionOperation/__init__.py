@@ -1,124 +1,151 @@
 import logging
 from datetime import datetime, timezone
-import requests
 
+import requests
 from azure.functions import TimerRequest
 
-BASE_ROUTE = 'http://127.0.0.1:5000/database/query_db'
+BASE_READ_ROUTE = "http://127.0.0.1:5000/database/query_db"
+BASE_WRITE_ROUTE = "http://127.0.0.1:5000/database/write_db"
+
 
 def main(DailyContributionOperation: TimerRequest) -> None:
-    # Logic for azure function
-    query = 'select * from USERS where user_id = :user_id'
-    parameters = {'user_id': 1}
-    results = requests.post(BASE_ROUTE, json={'query': query, 'parameters': parameters}).json()
-    print(results) 
-
-def contribution_trigger():
     """
-    Check if the contribution process should be kicked off based on the NextDate in the database.
+    docstring
     """
 
-    input_date = datetime.now().date().strftime('%Y-%m-%d')  # Only compare the date part
-    tx_date = datetime.now()
+    input_date = datetime.now(timezone.utc).date().strftime("%Y-%m-%d")  # Use UTC
+    tx_date = datetime.now(timezone.utc)  # Use UTC
 
     try:
-        # Query to check if the NextDate matches the input date
-            contribution_triggers = requests.post(BASE_ROUTE,
-                json={'query':(
+        # Step 1: Check if the contribution process should be kicked off
+        contribution_trigger_date = requests.post(
+            BASE_READ_ROUTE,
+            json={
+                "query": (
                     """
-                    SELECT stokvel_id 
-                    FROM CONTRIBUTIONS 
+                    SELECT stokvel_id
+                    FROM CONTRIBUTIONS
                     WHERE DATE(NextDate) = :input_date  -- Compare only the date part
                     """
                 ),
-                'parameter':{'input_date': input_date}
-            }).json() # Use fetchall() to get all stokvel_ids
+                "parameter": {"input_date": input_date},
+            },
+            timeout=10,
+        )
 
-            # If results are found, kick off the contribution process
-            if contribution_triggers:
-                for trigger in contribution_triggers:
-                    stokvel_id = trigger[0]
+        contribution_trigger_date.raise_for_status()
+        contribution_trigger_date = contribution_trigger_date.json()
 
-                    all_members = requests.post(BASE_ROUTE,
-                        json={'query':("""
-                            SELECT * 
-                            FROM STOKVEL_MEMBERS 
+        if not contribution_trigger_date:
+            logging.info("No contribution triggers found. Exiting.")
+            return
+
+        # Step 2: Trigger the contribution process
+        logging.info("Triggering contribution process...")
+
+        for trigger_date in contribution_trigger_date:
+            stokvel_id = trigger_date["stokvel_id"]
+
+            stokvel_members = requests.post(
+                BASE_READ_ROUTE,
+                json={
+                    "query": (
+                        """
+                            SELECT *
+                            FROM STOKVEL_MEMBERS
                             WHERE stokvel_id = :stokvel_id
-                            """)
-                        ,
-                        'parameters':{'stokvel_id': stokvel_id}
-                    }).json()  # Fetch all members
+                            """
+                    ),
+                    "parameters": {"stokvel_id": stokvel_id},
+                },
+                timeout=10,
+            )  # Fetch all members
 
-                    for member in all_members:
-                        try:
-                            user_id = member[2]
-                            amount = member[5]
-                            user_quote_id = member[9]
-                            tx_type = "DEPOSIT"
-                            tx_date = tx_date
-                            manageUrl = member[7]
-                            previousToken = member[8]
+            stokvel_members.raise_for_status()
+            stokvel_members = stokvel_members.json()
 
-                            sender_wallet_address = requests.post(BASE_ROUTE,
-                                json={'query':(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM USERS 
-                                    WHERE user_id = :user_id
-                                    """
-                                ),
-                                'parameters':{'user_id': user_id}
-                            }).json()
+            if not stokvel_members:
+                logging.info("No members found. Exiting.")
+                return
 
-                            receiving_wallet_address = requests.post(BASE_ROUTE,
-                                json={'query':(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM STOKVELS 
-                                    WHERE stokvel_id = :stokvel_id
-                                    """
-                                ),
-                                'parameters':{'stokvel_id': stokvel_id}
-                            }).json()
+            for member in stokvel_members:
+                user_id = member["user_id"]
+                amount = member["amount"]
+                user_quote_id = member["user_quote_id"]
+                tx_type = "DEPOSIT"
+                tx_date = tx_date
+                manageUrl = member["manageUrl"]
+                previousToken = member["previousToken"]
 
+                if user_quote_id is not None:
+                    # Create initial payment (ILP API)
+                    # create_inital_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, user_quote_id)
+                    response = requests.post(
+                        BASE_WRITE_ROUTE,
+                        json={
+                            "query": (
+                                """
+                                UPDATE STOKVEL_MEMBERS
+                                SET user_quote_id = NULL
+                                WHERE user_id = :user_id
+                                """
+                            ),
+                            "parameters": {"user_id": user_id},
+                        },
+                        timeout=10,
+                    )
+                    response.raise_for_status
 
-                            # Check if a payment is needed based on user_quote_id
-                            if user_quote_id is not None:
-                                # Create initial payment
-                                # create_inital_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, user_quote_id)
+                    response = requests.post(
+                        BASE_WRITE_ROUTE,
+                        json={
+                            "query": """
+                            INSERT INTO TRANSACTIONS (id, user_id, stokvel_id, amount, tx_type, tx_date, created_at, updated_at)
+                            VALUES (:id, :user_id, :stokvel_id, :amount, :tx_type, :tx_date, :created_at, :updated_at)""",
+                            "parameters": {
+                                "user_id": user_id,
+                                "stokvel_id": stokvel_id,
+                                "amount": amount,
+                                "tx_type": tx_type,
+                                "tx_date": tx_date,
+                                "created_at": datetime.now(),
+                                "updated_at": datetime.now(),
+                            },
+                        },
+                        timeout=10,
+                    )
+                    response.raise_for_status()
 
-                                requests.post(BASE_ROUTE,
-                                    json={'query':(
-                                        """
-                                        UPDATE STOKVEL_MEMBERS
-                                        SET user_quote_id = NULL
-                                        WHERE user_id = :user_id
-                                        """
-                                    ),
-                                    'parameters':{'user_id': user_id}
-                                }).json
+                else:
 
-                                insert_transaction(conn,user_id, stokvel_id, amount, tx_type, tx_date)
+                    # Create contribution payment (ILP API)
+                    # create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
 
-                            else: 
-                                # Create contribution payment
-                                # create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
-
-                                insert_transaction(conn,user_id, stokvel_id, amount, tx_type, tx_date) 
-                                
-                                print(f"Ran the recurring payment")                     
-
-                        except Exception as e:
-                            print(f"Error attempting to make contribution for user {user_id}: {str(e)}")
-                            return False
-
-            else:
-                print("No contributions scheduled for today.")
-                return True  # Indicate no contributions found but process is complete
-
+                    response = requests.post(
+                        BASE_WRITE_ROUTE,
+                        json={
+                            "query": """
+                                INSERT INTO TRANSACTIONS (id, user_id, stokvel_id, amount, tx_type, tx_date, created_at, updated_at)
+                                VALUES (:id, :user_id, :stokvel_id, :amount, :tx_type, :tx_date, :created_at, :updated_at)""",
+                            "parameters": {
+                                "user_id": user_id,
+                                "stokvel_id": stokvel_id,
+                                "amount": amount,
+                                "tx_type": tx_type,
+                                "tx_date": tx_date,
+                                "created_at": datetime.now(),
+                                "updated_at": datetime.now(),
+                            },
+                        },
+                        timeout=10,
+                    )
+                    response.raise_for_status()
+        logging.info("Contribution process triggered.")
+        return
     except Exception as e:
-        print(f"Error checking contribution trigger: {str(e)}")
-        return False
+        print(f"Error in {main.__name__}: {e}")
+        raise
+
 
 if __name__ == "__main__":
-    contribution_trigger()
+    main(None)
