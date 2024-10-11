@@ -84,8 +84,8 @@ const checkGrantStatus = async (
           start: ["redirect"],
           finish: {
             method: "redirect",
-            uri: "<REDIRECT_URI>", // Replace with your redirect URI
-            nonce: randomUUID(), // Replace with a secure nonce
+            uri: "<REDIRECT_URI>", // Replace with our redirect URI
+            nonce: randomUUID(),
           },
         },
       }
@@ -93,9 +93,9 @@ const checkGrantStatus = async (
 
     // Handle the pending state
     if (isPendingGrant(grant)) {
-      const pendingGrant = grant as PendingGrant; // Cast to PendingGrant if needed
+      const pendingGrant = grant as PendingGrant; // Cast to PendingGrant
       console.log("Grant is pending. User interaction required.");
-      console.log("Interact with the user at:", pendingGrant.interact.redirect); // Example field
+      console.log("Interact with the user at:", pendingGrant.interact.redirect);
       return {
         isPending: true,
         isRejected: false,
