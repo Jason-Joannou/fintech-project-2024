@@ -10,9 +10,12 @@ theme:
 
 nav:
   - Home: index.md
-  - API:
-      - Overview: api/overview.md
-      - Endpoints: api/endpoints.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Terraform: architecture/terraform.md
+      - Docker: architecture/docker.md
+      - Components: architecture/components.md
+      - Testing: architecture/testing.md
 
 markdown_extensions:
   - admonition
