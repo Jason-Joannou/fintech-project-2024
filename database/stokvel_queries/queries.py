@@ -184,15 +184,6 @@ def get_stokvel_constitution(phone_number: str, stokvel_name: str):
         }
 
 
-def get_next_unique_id(conn, table_name, id_column):
-    """
-    Get the next unique id for the given table and id column.
-    """
-    result = conn.execute(text(f"SELECT MAX({id_column}) FROM {table_name}")).fetchone()
-    # If no result exists (table is empty), return 1, otherwise increment the max id
-    return (result[0] or 0) + 1
-
-
 def get_stokvel_id_by_name(stokvel_name) -> Optional[str]:
     """
     docstring
@@ -1626,8 +1617,8 @@ if __name__ == "__main__":
     tx_date3 = datetime.now() - timedelta(days=30)
     num_records = 1
     conn = sqlite_conn.connect()
-    #contribution_trigger()
-    #payout_trigger()
+    # contribution_trigger()
+    # payout_trigger()
     # insert_test_data_payouts(num_records)
     # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
     # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
