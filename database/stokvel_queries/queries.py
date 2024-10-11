@@ -1626,8 +1626,8 @@ if __name__ == "__main__":
     tx_date3 = datetime.now() - timedelta(days=30)
     num_records = 1
     conn = sqlite_conn.connect()
-    # contribution_trigger()
-    payout_trigger()
+    #contribution_trigger()
+    #payout_trigger()
     # insert_test_data_payouts(num_records)
     # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
     # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
@@ -1635,7 +1635,7 @@ if __name__ == "__main__":
 
     # insert_test_user_into_stokvel_members()
     # insert_test_user()
-    # insert_test_data_contributions(num_records)
+    insert_test_data_contributions(num_records)
     # clear_contributions_table()
     # insert_test_stokvel()
     # insert_test_interest_data()
