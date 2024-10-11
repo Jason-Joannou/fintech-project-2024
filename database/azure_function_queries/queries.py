@@ -24,7 +24,7 @@ def dynamic_query(query: str, params: Dict) -> List[Dict]:
             result = conn.execute(text(query), params)
             rows = result.fetchall()
             # Convert each row to a dictionary using column names
-            data = [dict(row) for row in rows]
+            data = [dict(row._mapping) for row in rows]
             return data
     except SQLAlchemyError as e:
         print(f"An error occurred during database query execution: {e}")
