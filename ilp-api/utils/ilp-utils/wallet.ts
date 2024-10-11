@@ -19,10 +19,12 @@ const validateWalletAddress = async (
   walletAddress: string
 ): Promise<IWalletAddressResponse> => {
   try {
+    if (walletAddress.startsWith("$")) {
+      walletAddress = walletAddress.replace("$", "https://");
+    }
     const response = await client.walletAddress.get({
       url: walletAddress,
     });
-
     return response as IWalletAddressResponse; // This should be the wallet address information
   } catch (error: unknown) {
     if (error instanceof OpenPaymentsClientError) {
