@@ -1106,3 +1106,32 @@ def update_stokvel_grantaccepted(stokvel_id: int, user_id: int, stokvel_payout_a
     except sqlite3.Error as e:
         print(f"Error updating stokvel payout: {e}")
         raise e
+    
+
+def update_adhoc_contribution_parms(stokvel_id: int, user_id: int, url: str, token: str):
+    update_query = """
+    UPDATE STOKVEL_MEMBERS
+    SET adhoc_contribution_uri = :adhoc_contribution_uri, adhoc_contribution_token = :adhoc_contribution_token
+    WHERE stokvel_id = :stokvel_id AND user_id = :user_id
+    """
+    
+    parameters = {
+        "stokvel_id": stokvel_id,
+        "user_id": user_id,
+        "adhoc_contribution_uri": url,
+        "adhoc_contribution_token": token
+    }
+
+    try:
+        with sqlite_conn.connect() as conn:
+            result =  conn.execute(text(update_query), parameters)
+            conn.commit()
+            
+            if result.rowcount > 0:
+                print(f"Successfully updated adhoc paymnet params for stokvel_id: {stokvel_id}, user_id: {user_id}")
+            else:
+                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                
+    except sqlite3.Error as e:
+        print(f"Error updating stokvel payout: {e}")
+        raise e

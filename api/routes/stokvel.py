@@ -33,7 +33,8 @@ from database.stokvel_queries.queries import (
     get_stokvel_details,
     get_stokvel_member_details,
     update_member_grantaccepted,
-    update_stokvel_grantaccepted
+    update_stokvel_grantaccepted,
+    update_adhoc_contribution_parms
 )
 
 from database.user_queries.queries import (
@@ -971,6 +972,7 @@ def user_interactive_grant_handle() -> str:
         )
 
 
+
 @stokvel_bp.route(
     f"{BASE_ROUTE}/create_stokvel/stokvel_interactive_grant_response", methods=["GET"]
 )
@@ -1037,6 +1039,133 @@ def stokvel_interactive_grant_handle() -> str:
         success_message=success_message,
         success_next_step_message=success_next_step_message,
         )
+
+
+@stokvel_bp.route(
+    f"{BASE_ROUTE}/adhoc_payment_grant_accept", methods=["GET"]
+)
+def adhoc_payment_grant_handle() -> str:
+    """
+    Handle the success or rejection of stokvel contributions.
+    """
+    # Extract query parameters
+    result = request.args.get('result')  # For grant_rejected
+    hash_value = request.args.get('hash')  # For the confirmation hash
+    interact_ref = request.args.get('interact_ref')  # For the interact_ref when confirmed
+    user_id = request.args.get('user_id')
+    stokvel_id = request.args.get('stokvel_id')
+    quote_id = request.args.get('quote_id')
+
+    action = "Stokvel adhoc payment has been accepted and will be processed."
+    success_message = "Your payout will be processed at the specified periods."
+    success_next_step_message = "Please navigate back to WhatsApp for further functions."
+
+    if result == 'grant_rejected':
+        action = "Stokvel payouts grant has been rejected"
+        failed_message = "Unfortunately, users payouts were not accepted."
+        failed_next_step_message = "Please contact support or try again."
+
+
+        return render_template(
+        "action_failed_template.html",
+        action=action,
+        failed_message=failed_message,
+        failed_next_step_message=failed_next_step_message,
+        )
+
+    if hash_value and interact_ref:
+        print(f"Confirmed with interact_ref: {interact_ref}") 
+        print("add adhoc payment")
+
+        stokvel_members_details = get_stokvel_member_details(stokvel_id, user_id) #use here to get the details
+
+        try:
+            payload = {
+                "quote_id": quote_id,                                    
+                "continueUri": stokvel_members_details.get('adhoc_contribution_uri'),
+                "continueAccessToken": stokvel_members_details.get('adhoc_contribution_token'),
+                "walletAddressURL": find_wallet_by_userid(user_id=user_id),
+                "interact_ref":interact_ref
+            }
+
+            response = requests.post(node_server_create_initial_payment, json=payload)
+
+            print("RESPONSE: \n", response.json())
+
+            if response.json()['payment']['failed'] == False:
+                #TO DO: ADD PAYMENT TO TRANSACION TABLE
+                print('payment was successful')
+                pass
+
+            return render_template(
+            "action_success_template.html",
+            action=action,
+            success_message=success_message,
+            success_next_step_message=success_next_step_message,
+            )
+        except Exception as e:
+            print(e)
+            action = "Adhoc paymnet has failed"
+            failed_message = "Unfortunately, we could not process payment"
+            failed_next_step_message = "Please contact support or try again."
+
+
+            return render_template(
+            "action_failed_template.html",
+            action=action,
+            failed_message=failed_message,
+            failed_next_step_message=failed_next_step_message,
+            )
+
+@stokvel_bp.route(f"{BASE_ROUTE}/create_adhoc_payment", methods=["POST"]) #would need to change this to take in actual parameters...
+def adhoc_payment_test():
+    node_end_point = "http://localhost:3000/adhoc-payment-setup"  # Fixed URL
+    user_id = 980618  # Fixed user_id
+    stokvel_id = 18   # Fixed stokvel_id
+
+    try:
+        payload = {
+            "value": "500",
+            "stokvel_contributions_start_date": "2024-10-09T16:52:30.123Z",
+            "walletAddressURL": "https://ilp.rafiki.money/alices_stokvel",
+            "sender_walletAddressURL": "https://ilp.rafiki.money/bob_account",
+            "user_id": user_id,
+            "stokvel_id": stokvel_id
+        }
+
+        response = requests.post(node_end_point, json=payload)
+        
+        # Check for response status
+        response.raise_for_status()  # Raises an error for 4xx/5xx responses
+
+        # Ensure keys exist in the response
+        response_data = response.json()
+        adhoc_continue_uri = response_data.get('continue_uri')
+        adhoc_continue_token = response_data.get('continue_token', {}).get('value')
+
+        print("RESPONSE: \n", response_data)
+
+        # Ensure both URI and token are valid before proceeding
+        if adhoc_continue_uri and adhoc_continue_token:
+            update_adhoc_contribution_parms(
+                stokvel_id=stokvel_id,
+                user_id=user_id,
+                url=adhoc_continue_uri,
+                token=adhoc_continue_token
+            )
+            return {"message": "Success", "data": response_data}, 200
+        else:
+            return {"error": "Missing continue_uri or continue_token"}, 400
+
+    except requests.exceptions.RequestException as req_error:
+        print("Request error occurred:", req_error)
+        return {"error": str(req_error)}, 500  # Return a JSON response with request error
+
+    except Exception as e:
+        print("Error occurred:", e)  # Print the error for debugging
+        return {"error": str(e)}, 500  # Return a JSON response with an error message
+    
+
 
 
 

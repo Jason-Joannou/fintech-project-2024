@@ -10,6 +10,7 @@ import {
   getWalletAddressInfo,
   processInterestAddedRecurringPayments,
   getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout,
+  getOutgoingPaymentAuthorization_AdhocPayment,
 } from "./helpers";
 
 import {
@@ -75,6 +76,7 @@ app.post('/incoming-payment-setup', async (req: Request, res: Response) => {
   }}
 });
 
+
 //create incoming payment
 app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Response) => {
   try {
@@ -101,6 +103,46 @@ app.post('/incoming-payment-setup-stokvel-payout', async (req: Request, res: Res
     const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
     const recurring_grant = await getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(client, sender_walletFullDetails, stokvel_contributions_start_date, payment_periods,
        payment_period_length, quote.id, quote.debitAmount, quote.receiveAmount, number_of_periods, user_id, stokvel_id)
+
+    // Send back the information about the grant as a JSON response
+    res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token, quote_id: quote.id}); //{all information stored here should be returned}
+    
+} catch (error: unknown) {  // Specify that error can be of type unknown
+  console.error(error);
+
+  // Handle the error safely
+  if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+  } else {
+      res.status(500).json({ error: "An unknown error occurred" });
+  }}
+});
+
+
+app.post('/adhoc-payment-setup', async (req: Request, res: Response) => {
+  try {
+    const { value, stokvel_contributions_start_date, walletAddressURL, sender_walletAddressURL, user_id, stokvel_id } = req.body; // Get data from request body
+
+    console.log(value)
+    console.log(walletAddressURL)
+
+    const client = await getAuthenticatedClient()
+    
+    const walletFullDetails = await client.walletAddress.get({ //receiver
+      url: walletAddressURL,
+    });
+
+    
+    const sender_walletFullDetails = await client.walletAddress.get({ //sender
+      url: sender_walletAddressURL,
+    });
+    
+    // Call the createStandardIncomingPayment function
+
+    const paydate = new Date().toISOString();
+    const incomingPayment = await createInitialIncomingPayment(client, value ,walletFullDetails, paydate);
+    const quote = await createQuote(client, incomingPayment.id, sender_walletFullDetails)
+    const recurring_grant = await getOutgoingPaymentAuthorization_AdhocPayment(client, sender_walletFullDetails, quote.debitAmount, quote.receiveAmount, user_id, stokvel_id, quote.id)
 
     // Send back the information about the grant as a JSON response
     res.json({recurring_grant: recurring_grant, continue_uri: recurring_grant.continue.uri, continue_token: recurring_grant.continue.access_token, quote_id: quote.id}); //{all information stored here should be returned}

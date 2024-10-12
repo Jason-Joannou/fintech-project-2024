@@ -287,6 +287,69 @@ export async function getOutgoingPaymentAuthorization(
   return pending_recurring_grant;
 }
 
+export async function getOutgoingPaymentAuthorization_AdhocPayment(
+  client: AuthenticatedClient,
+  walletAddressDetails: WalletAddress,
+  debitAmount:Amount,
+  receiveAmount:Amount,
+  user_id: number,
+  stokvel_id:number,
+  quote_id: string,
+): Promise<PendingGrant> {
+  const dateNow = new Date().toISOString();
+  console.log(dateNow)
+  console.log(debitAmount, '\n', receiveAmount)
+
+  const pending_recurring_grant = await client.grant.request(
+    {
+      url: walletAddressDetails.authServer,
+    },
+    {
+      access_token: {
+        access: [
+          {
+            identifier: walletAddressDetails.id,
+            type: "outgoing-payment",
+            actions: ["list", "list-all", "read", "read-all", "create"],
+            limits: {
+              debitAmount: debitAmount,
+              receiveAmount: receiveAmount,
+            },
+          },
+        ],
+      },
+      interact: {
+        start: ["redirect"],
+        finish: {
+          method: "redirect",
+          uri: `http://localhost:5000/stokvel/adhoc_payment_grant_accept?user_id=${user_id}&stokvel_id=${stokvel_id}&quote_id=${quote_id}`,
+          nonce: randomUUID(),
+        },
+      },
+    }
+  );
+
+  if (!isPendingGrant(pending_recurring_grant)) {
+    throw new Error("Expected interactive grant");
+  }
+
+  // console.log(pending_recurring_grant.continue.)
+  console.log('GRANT STUFFS - GRANT CREATIONS')
+
+  console.log('PENDING GRANT WITH REDIRECT: ', pending_recurring_grant)
+
+
+  console.log(pending_recurring_grant.continue.uri) // save this to the database
+  console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
+  console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
+
+  console.log('printing the grant:')
+  console.log(pending_recurring_grant)
+
+  return pending_recurring_grant;
+}
+
+
 export async function createInitialOutgoingPayment(
   client: AuthenticatedClient,
   quote_id: string,
@@ -532,6 +595,83 @@ export async function getOutgoingPaymentAuthorization_HugeLimit_StokvelPayout(
   return pending_recurring_grant;
 }
 
+export async function getOutgoingPaymentAuthorization_VariableContribution(
+  client: AuthenticatedClient,
+  walletAddressDetails: WalletAddress,
+  stokvel_contributions_start_date: string,
+  payment_periods: number,
+  payment_period_length: string, //this needs to come in as either (Y, M, D, T30S),
+  quote_id: string,
+  debitAmount:Amount,
+  receiveAmount:Amount,
+  number_of_periods:string,
+  user_id:number,
+  stokvel_id:number,
+  max_debit:string,
+  max_receive:string,
+): Promise<PendingGrant> {
+  const dateNow = new Date().toISOString();
+  console.log(dateNow)
+  const stokvel_contributions_start_date_converted = new Date(stokvel_contributions_start_date).toISOString();  // Example date
+
+  console.log(stokvel_contributions_start_date)
+ 
+  console.log(debitAmount, '\n', receiveAmount)
+
+  debitAmount.value = max_debit
+  receiveAmount.value = max_receive
+
+
+
+  const pending_recurring_grant = await client.grant.request(
+    {
+      url: walletAddressDetails.authServer,
+    },
+    {
+      access_token: {
+        access: [
+          {
+            identifier: walletAddressDetails.id,
+            type: "outgoing-payment",
+            actions: ["list", "list-all", "read", "read-all", "create"],
+            limits: {
+              debitAmount: debitAmount,
+              receiveAmount: receiveAmount,
+              interval: `R${payment_periods}/${stokvel_contributions_start_date_converted}/P${number_of_periods}${payment_period_length}` //will need to change this to start date of the stokvel
+            },
+          },
+        ],
+      },
+      interact: {
+        start: ["redirect"],
+        finish: {
+          method: "redirect",
+          uri: `http://localhost:5000/stokvel/create_stokvel/stokvel_interactive_grant_response?user_id=${user_id}&stokvel_id=${stokvel_id}`,
+          nonce: randomUUID(),
+        },
+      },
+    }
+  );
+
+  console.log('PENDING GRANT WITH REDIRECT: ', pending_recurring_grant)
+
+  if (!isPendingGrant(pending_recurring_grant)) {
+    throw new Error("Expected interactive grant");
+  }
+
+  // console.log(pending_recurring_grant.continue.)
+  console.log('GRANT STUFFS - GRANT CREATIONS')
+  console.log(pending_recurring_grant.continue.uri) // save this to the database
+  console.log(pending_recurring_grant.continue.access_token.value)  // save this to the database as the current quote (until a payment is made, this will be the token to use)
+  console.log(pending_recurring_grant.interact.redirect) //save this to the database as well this is where the user is going to go to authorize the grant
+
+  console.log('printing the grant:')
+  console.log(pending_recurring_grant)
+
+  return pending_recurring_grant;
+}
+
+
 
 
 export async function processInterestAddedRecurringPayments(
@@ -632,6 +772,111 @@ export async function processInterestAddedRecurringPayments(
     } as OutgoingPaymentWithSpentAmounts;
   }
 }
+
+
+export async function processVariableRecurringPayments(
+  client: AuthenticatedClient,
+  sender_wallet_address: string,
+  receiving_wallet_address: string,
+  // quoteId: string, // the previous quote
+  manageUrl: string, //manage url from the 
+  previousToken: string,
+  contriubtion_amount: string
+
+) {
+  // rotate the token
+  const token = await client.token.rotate({
+    url: manageUrl,
+    accessToken: previousToken,
+  });
+
+  console.log('ROTATED THE TOKEN')
+
+  console.log(token.access_token.manage) // update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
+  console.log(token.access_token.value) //update this in the DB AND USE IN THE NEXT PAYMNET CYCLE TO ROTATE THE TOKEN
+
+  const manageurl = token.access_token.manage;
+  const used_token = token.access_token.value
+
+  if (!token.access_token) {
+    console.error("** Failed to rotate token.");
+  }
+
+  console.log("** Rotated Token ");
+  console.log(token.access_token);
+
+  const tokenAccessDetails = token.access_token.access as {
+    type: "outgoing-payment";
+    actions: ("create" | "read" | "read-all" | "list" | "list-all")[];
+    identifier: string;
+    limits?: components["schemas"]["limits-outgoing"];
+  }[];
+
+
+  let receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
+  if (contriubtion_amount != null){
+    receiveAmount = contriubtion_amount;
+  }
+  
+  const [receiverWalletAddress, receiverWalletAddressDetails] =
+    await getWalletAddressInfo(client, receiving_wallet_address);
+
+  const [senderWalletAddress, senderWalletAddressDetails] =
+    await getWalletAddressInfo(client, sender_wallet_address);
+
+  // create incoming payment
+  const incomingPayment = await createStandardIncomingPayment(
+    client,
+    receiveAmount!,
+    receiverWalletAddressDetails,
+  );
+
+  console.log('recurring payment with interest: \n', incomingPayment)
+
+  // create qoute
+  const quote = await createQuote(
+    client,
+    incomingPayment.id,
+    senderWalletAddressDetails,
+  );
+
+  // create outgoing payment
+  try {
+    const outgoingPayment = await client.outgoingPayment.create(
+      {
+        url: new URL(senderWalletAddress).origin,
+        accessToken: token.access_token.value, //OUTGOING_PAYMENT_ACCESS_TOKEN -- using the new token
+      },
+      {
+        walletAddress: senderWalletAddress,
+        quoteId: quote.id, //QUOTE_URL,
+      },
+    );
+
+    //update the stuffs (token details) in the database now
+
+    return {outgoingPayment: outgoingPayment, manageurl: manageurl, token: used_token};
+  } catch (error) {
+    console.log(error);
+    return {
+      id: "",
+      walletAddress: senderWalletAddress,
+      quoteId: quote.id,
+      failed: true,
+      receiver: "",
+      // receiveAmount: tokenAccessDetails[0]?.limits?.receiveAmount,
+      // debitAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      // sentAmount: tokenAccessDetails[0]?.limits?.debitAmount,
+      createdAt: "",
+      updatedAt: "",
+    } as OutgoingPaymentWithSpentAmounts;
+  }
+}
+
+// standard payment
+
+
+
 
 
 
