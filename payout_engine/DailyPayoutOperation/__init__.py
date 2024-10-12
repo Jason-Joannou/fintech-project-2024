@@ -128,7 +128,6 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
                 else:
                     print("No deposits found or error in the query response.")
 
-                ###################################################################################
                 # Step 3: Calculate accumulated interest for the stokvel after the most recent payout
                 interest_response = requests.post(
                     BASE_READ_ROUTE,
@@ -239,8 +238,6 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
                 # add interest to total_deposits to reach the correct value for amount variable
                 amount = total_deposits + user_total_interest
 
-            
-
                 logging.info(f"Processing member: user_id={user_id}, amount={amount}, tx_type={tx_type}")
                 print(f"Processing member: user_id={user_id}, amount={amount}, tx_type={tx_type}")
                 # Step 3: Get the next unique transaction ID
@@ -316,8 +313,6 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
                 }
 
                 print(f"Inserting transaction with parameters: {(parameters)}")
-
-
 
                 # Step 5: Update STOKVEL_MEMBERS if user_quote_id is not None
                 if stokvel_quote_id is not None:
