@@ -385,7 +385,10 @@ def onboard_stokvel() -> Response:
         
         number_contribution_periods_between_start_end_date = calculate_number_periods(stokvel_data.contribution_period, 
                                                                          start_date= stokvel_data.start_date, end_date= stokvel_data.end_date)
-
+        print('contrib payout params')
+        print(stokvel_data.contribution_period)
+        print(stokvel_data.payout_frequency_duration)
+        
         print(number_payout_periods_between_start_end_date)
         print(number_contribution_periods_between_start_end_date)
 
