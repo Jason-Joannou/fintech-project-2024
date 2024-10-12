@@ -6,34 +6,11 @@ import {
 import { client } from "./client";
 import { validateWalletAddress } from "./wallet";
 import { randomUUID } from "crypto";
-
-export enum GrantType {
-  IncomingPayment = "incoming-payment",
-  OutgoingPayment = "outgoing-payment",
-  Quote = "quote",
-}
-
-type AccessRequest =
-  | {
-      type: "incoming-payment";
-      actions: (
-        | "read"
-        | "create"
-        | "complete"
-        | "read-all"
-        | "list"
-        | "list-all"
-      )[];
-    }
-  | {
-      type: "outgoing-payment";
-      actions: ("read" | "create" | "read-all" | "list" | "list-all")[];
-      identifier: string;
-    }
-  | {
-      type: "quote";
-      actions: ("read" | "create" | "read-all")[];
-    };
+import {
+  GrantType,
+  AccessRequest,
+  GrantStatusResult,
+} from "../types/validation";
 
 const buildAccessRequest = (
   grantType: GrantType,
@@ -65,7 +42,7 @@ const checkGrantStatus = async (
   walletAddress: string,
   grantType: GrantType,
   interactionUri?: string // New parameter to track a specific grant by URI
-) => {
+): Promise<GrantStatusResult> => {
   try {
     const validatedWalletAddress = await validateWalletAddress(walletAddress);
     const accessRequest = buildAccessRequest(
