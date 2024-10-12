@@ -14,6 +14,8 @@ nav:
       - Overview: architecture/overview.md
       - Terraform: architecture/terraform.md
       - Docker: architecture/docker.md
+      - Flask Templates: architecture/flask_templates.md
+
       - Components: architecture/components.md
       - Testing: architecture/testing.md
 
@@ -22,5 +24,8 @@ markdown_extensions:
   - codehilite
   - pymdownx.superfences
 
+
 extra_css:
   - stylesheets/extra.css
+
+
