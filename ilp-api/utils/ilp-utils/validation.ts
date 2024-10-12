@@ -63,7 +63,8 @@ const buildAccessRequest = (
 
 const checkGrantStatus = async (
   walletAddress: string,
-  grantType: GrantType
+  grantType: GrantType,
+  interactionUri?: string // New parameter to track a specific grant by URI
 ) => {
   try {
     const validatedWalletAddress = await validateWalletAddress(walletAddress);
@@ -93,17 +94,25 @@ const checkGrantStatus = async (
 
     // Handle the pending state
     if (isPendingGrant(grant)) {
-      const pendingGrant = grant as PendingGrant; // Cast to PendingGrant
-      console.log("Grant is pending. User interaction required.");
+      const pendingGrant = grant as PendingGrant;
+
+      // Check if the pending grant's continue URI matches the provided interaction URI
+      if (interactionUri && pendingGrant.continue.uri === interactionUri) {
+        console.log(`Grant with continue URI ${interactionUri} is pending.`);
+      } else {
+        console.log("Grant is pending but no specific URI was matched.");
+      }
+
       console.log("Interact with the user at:", pendingGrant.interact.redirect);
       return {
         isPending: true,
         isRejected: false,
         isAccepted: false,
+        continueUri: pendingGrant.continue.uri, // Returning continue URI for reference
       };
     }
 
-    // At this point, the grant must be of type `Grant`, so we can safely access `access_token`
+    // If the grant is not pending, we check if it's accepted or rejected
     const isAccepted = !!(grant as Grant).access_token;
     return {
       isPending: false,
