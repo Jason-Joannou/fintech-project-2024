@@ -8,6 +8,11 @@ from azure.functions import TimerRequest
 BASE_READ_ROUTE = "http://127.0.0.1:5000/database/query_db"
 BASE_WRITE_ROUTE = "http://127.0.0.1:5000/database/write_db"
 
+node_server_create_initial_payment = "http://localhost:3000/create-initial-outgoing-payment"
+
+node_server_recurring_payment = "http://localhost:3000/process-recurring-payment"
+node_server_recurring_payment_with_interest = "http://localhost:3000/process-recurring-winterest-payment"
+
 
 def main(DailyPayoutOperation: TimerRequest) -> None:
     """
@@ -333,6 +338,9 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
                     )
 
                     #ILP Payment function for initial payment
+
+                    
+
                 
                     # Raise an exception for HTTP error responses
                     update_response.raise_for_status()
@@ -341,9 +349,40 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
 
                 else: 
 
-                    #ILP Payment function for recurring payments
+                #ILP Payment function for recurring payments
+                    stokvel_members_details = get_stokvel_member_details(stokvel_id, user_id) #change this to a join to get MEMBERS member wallet and STOKVELS
 
-                    logging.info("payout process completed successfully.")
+                    payload = {
+                        "sender_wallet_address":"https://ilp.rafiki.money/alices_stokvel",
+                        "receiving_wallet_address":wallet,
+                        "manageUrl":stokvel_members_details.get('stokvel_payment_URI'),
+                        "previousToken":stokvel_members_details.get('stokvel_payment_token'),
+                        "payout_value": amount
+                    }
+
+                    recurring_payment_response = requests.post(node_server_recurring_payment_with_interest, json=payload)
+                    print("RESPONSE: \n", recurring_payment_response.json())
+    
+                    new_token = recurring_payment_response.json()['token']
+                    new_uri = recurring_payment_response.json()['manageurl']
+            
+                    update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri)
+                    current_next_date = update_next_contributions_dates(current_next_date, stokvel_id, "Months")
+    
+
+                                            # Raise an exception for HTTP error responses
+                    payout_trigger_date_response.raise_for_status()
+
+                    # Parse the JSON response
+                    payout_trigger_date = payout_trigger_date_response.json()
+
+                    logging.info(f"payout triggers: {payout_trigger_date}")
+
+                    if not payout_trigger_date:
+                        logging.info("No payout triggers found. Exiting.")
+                        return
+
+                    logging.info("recurring payout process completed successfully.")
         return
 
     except Exception as e:
