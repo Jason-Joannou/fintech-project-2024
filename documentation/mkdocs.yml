@@ -1,0 +1,26 @@
+site_name: DigiStokvel
+
+theme:
+  name: material
+  features:
+    - search.highlight
+    - search.exact_match
+    - navigation.tabs
+    - toc.integrate
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Terraform: architecture/terraform.md
+      - Docker: architecture/docker.md
+      - Components: architecture/components.md
+      - Testing: architecture/testing.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+
+extra_css:
+  - stylesheets/extra.css

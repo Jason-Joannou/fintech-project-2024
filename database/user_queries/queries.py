@@ -1,15 +1,14 @@
-# from .sql_connection import sql_connection
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
+from database.stokvel_queries.queries import get_stokvel_monthly_interest
 from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
-# sql_conn = sql_connection()
 
 
 def get_total_number_of_users() -> int:
@@ -258,8 +257,8 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise e
-    
+        raise e    
+
 def find_wallet_by_userid(user_id: str) -> Optional[str]:
     """
     docstring
@@ -277,266 +276,211 @@ def find_wallet_by_userid(user_id: str) -> Optional[str]:
 
 
 
-############### FIND NEEDED METHODS BELOW:
+def get_user_interest(user_id: int, stokvel_id: int) -> float:
+    """
+    Get the accumulated interest for a user in the current savings period.
 
-# # from .sql_connection import sql_connection
-# import sqlite3
-# from datetime import datetime
-# from typing import Optional
+    :param user_id: the ID of the user to check interest for.
+    :param stokvel_id: The ID of the stokvel to check interest for.
+    :return: Total user interest for the savings period.
+    """
 
-# from sqlalchemy import text
+    stokvel_interest = get_stokvel_monthly_interest(stokvel_id)
 
-# from .sqlite_connection import SQLiteConnection
-# from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    start_date = next(iter(stokvel_interest))
 
+    start_date = start_date[:7]
 
-# from datetime import datetime
+    # Convert start_date to a datetime object and calculate the date one month before
+    start_date_dt = datetime.strptime(start_date, "%Y-%m")
+    previous_month_date = (
+        (start_date_dt - timedelta(days=1)).replace(day=1).strftime("%Y-%m")
+    )
 
-# sqlite_conn = SQLiteConnection(database="./database/test_db.db")
-# # sql_conn = sql_connection()
+    engine = sqlite_conn.get_engine()
+    with engine.connect() as conn:
+        transaction = conn.begin()
+        try:
+            # SQL query to get monthly sums of users deposits after the start_date
+            user_deposit_query = text(
+                """
+                SELECT
+                    strftime('%Y-%m', tx_date) AS month,  -- Get the year-month part of the date
+                    SUM(amount) AS total_deposit
+                FROM TRANSACTIONS
+                WHERE user_id = :user_id
+                AND stokvel_id = :stokvel_id
+                AND tx_type = 'DEPOSIT'
+                AND tx_date > :previous_month_date  -- Start from the month before the interest period
+                GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
+            """
+            )
 
+            user_deposit_result = conn.execute(
+                user_deposit_query,
+                {
+                    "user_id": user_id,
+                    "stokvel_id": stokvel_id,
+                    "previous_month_date": previous_month_date,
+                },
+            )
 
-# def get_next_unique_id(conn, table_name, id_column):
-#     """
-#     Get the next unique id for the given table and id column.
-#     """
-#     result = conn.execute(
-#         text(f"SELECT MAX({id_column}) FROM {table_name}")
-#     ).fetchone()
-#     # If no result exists (table is empty), return 1, otherwise increment the max id
-#     return (result[0] or 0) + 1
+            # Store the deposit sums in a dictionary (keyed by year-month)
+            user_monthly_deposits = {row[0]: row[1] for row in user_deposit_result}
 
+            # SQL query to get monthly total deposits into stokvel after the start_date
+            stokvel_deposits_query = text(
+                """
+                SELECT strftime('%Y-%m', tx_date) AS month,  -- Get the year-month part of the date
+                    SUM(amount) AS total_deposit_stokvel
+                FROM TRANSACTIONS
+                WHERE stokvel_id = :stokvel_id
+                AND tx_type = 'DEPOSIT'
+                AND tx_date > :previous_month_date  -- Start from the month before the interest period
+                GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
+            """
+            )
 
-# def check_if_number_exists_sqlite(from_number: str) -> bool:
-#     """
-#     docstring
-#     """
-#     from_number = from_number.split(":")[1]
-#     query = "SELECT * FROM USERS WHERE user_number = :from_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"from_number": from_number})
-#         result = cursor.fetchone()[0]
-#         print(result)
-#         if result:
-#             return True
+            stokvel_deposits_result = conn.execute(
+                stokvel_deposits_query,
+                {"stokvel_id": stokvel_id, "previous_month_date": previous_month_date},
+            )
 
-#         return False
-    
-# def find_user_by_number(from_number: str) -> bool:
-#     """
-#     docstring UNCOMMENT LATER
-#     """
-#     from_number = from_number.split(":")[1]
-#     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"from_number": from_number})
-#         result = cursor.fetchone()
-#         print(result)
-#         if result:
-#             return result
+            # Store stokvel contributions in a dictionary keyed by year-month
+            stokvel_monthly_deposits = {
+                row[0]: row[1] for row in stokvel_deposits_result
+            }
 
-#         return None
+            # Calculate the user's total interest for the savings period
+            user_total_interest = 0.00
+            user_deposit = 0
+            stokvel_deposit = 0
+            for month, interest_value in stokvel_interest.items():
+                # Calculate the previous month (shift the deposits back by one month)
+                previous_month = (
+                    (datetime.strptime(month[:7], "%Y-%m") - timedelta(days=1))
+                    .replace(day=1)
+                    .strftime("%Y-%m")
+                )
 
+                # If the previous month's deposits are available
+                if (
+                    previous_month in user_monthly_deposits
+                    and previous_month in stokvel_monthly_deposits
+                ):
+                    user_deposit += user_monthly_deposits[previous_month]
+                    stokvel_deposit += stokvel_monthly_deposits[previous_month]
 
-# def find_user_by_number2(from_number: str) -> Optional[str]:
-#     """
-#     docstring
-#     """
-#     # from_number = "0"+str(from_number)
-#     # print(from_number)
-#     print(from_number)
-#     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"from_number": from_number})
-#         result = cursor.fetchone()[0]
-#         print(result)
-#         if result:
-#             return result
+                    # Calculate the user's share of the interest for the current month
+                    user_interest = (user_deposit / stokvel_deposit) * interest_value
+                    user_total_interest += user_interest
 
-#         return None
+            user_total_interest = round(user_total_interest, 2)
 
-# def find_number_by_userid(user_id: str) -> Optional[str]:
-#     """
-#     docstring
-#     """
-#     # from_number = "0"+str(from_number)
-#     # print(from_number)
-#     print(user_id)
-#     query = "SELECT user_number FROM USERS WHERE user_id = :user_id"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchone()[0]
-#         print(result)
-#         if result:
-#             return result
+            transaction.commit()
 
-#         return None
+            return user_total_interest
 
-# def find_wallet_by_userid(user_id: str) -> Optional[str]:
-#     """
-#     docstring
-#     """
-#     # from_number = "0"+str(from_number)
-#     # print(from_number)
-#     print(user_id)
-#     query = "SELECT ILP_wallet FROM USERS WHERE user_id = :user_id"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchone()[0]
-#         print(result)
-#         if result:
-#             return result
-
-#         return None
-
-# def check_if_id_number_exists_sqlite(user_id: str) -> bool:
-#     """
-#     Check if a given user_id exists in the USERS table.
-
-#     Parameters
-#     ----------
-#     user_id : str
-#         The user_id to check.
-
-#     Returns
-#     -------
-#     bool
-#         True if the user_id exists, False otherwise.
-#     """
-#     user_id = user_id.split(":")[1]
-#     query = "SELECT * FROM USERS WHERE id_number = :id_number"
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchone()
-#         print(result)
-#         if result:
-#             return True
-
-#         return False
-
-# def insert_user(
-#     user_id: str,
-#     user_number: str,
-#     user_name: str,
-#     user_surname: str,
-#     ilp_wallet: str,
-#     momo_wallet: str = "test",
-#     verified_kyc: int = 1,
-#     created_at: Optional[str] = None,
-#     updated_at: Optional[str] = None,
-# ) -> None:
-#     # Need to look at refactoring this
-
-#     """
-#     Inserts a new user into the USERS table.
-
-#     Args:
-#         user_id (int): The user's ID.
-#         user_number (str): The user's number.
-#         user_name (str): The user's name.
-#         user_surname (str): The user's surname.
-#         ILP_wallet (str): The user's ILP wallet.
-#         MOMO_wallet (str): The user's MOMO wallet.
-#         verified_KYC (int): KYC verification status (0 or 1).
-#         created_at (str, optional): The timestamp when the user was created. Defaults to current time if not provided.
-#         updated_at (str, optional): The timestamp when the user was last updated. Defaults to current time if not provided.
-#     """
-#     if created_at is None:
-#         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     if updated_at is None:
-#         updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-#     insert_query = """
-#     INSERT INTO USERS (
-#         user_id, user_number, user_name, user_surname, ILP_wallet,
-#         MOMO_wallet, verified_KYC, created_at, updated_at
-#     ) VALUES (
-#         :user_id, :user_number, :user_name, :user_surname, :ILP_wallet,
-#         :MOMO_wallet, :verified_KYC, :created_at, :updated_at
-#     )
-#     """
-
-#     parameters = {
-#         "user_id": user_id,
-#         "user_number": user_number,
-#         "user_name": user_name,
-#         "user_surname": user_surname,
-#         "ILP_wallet": ilp_wallet,
-#         "MOMO_wallet": momo_wallet,
-#         "verified_KYC": verified_kyc,
-#         "created_at": created_at,
-#         "updated_at": updated_at,
-#     }
-
-#     try:
-#         with sqlite_conn.connect() as conn:
-#             print("Connected in user insert")
-#             result = conn.execute(text(insert_query), parameters)
-#             conn.commit()
-
-#             if result.rowcount > 0:
-#                 print(f"Insert successful, {result.rowcount} row(s) affected.")
-#             else:
-#                 print("Insert failed.")
-    
-#     except sqlite3.IntegrityError as integrity_error:
-#         # Catch integrity errors such as unique constraint violations
-#         print(f"IntegrityError during insert: {integrity_error}")
-#         raise sqlite3.IntegrityError(f"IntegrityError during insert: {integrity_error}")
-    
-#     except sqlite3.Error as e:
-#         # print(f"Error occurred during insert: {e}")
-#         raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
-
-#     except Exception as e:
-#         # print(f"Error occurred during insert: {e}")
-#         raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
+        except Exception as e:
+            transaction.rollback()
+            print(f"There was an error retrieving the SQL data: {e}")
+            return 0.00
 
 
+def get_account_details(phone_number: str):
+    """
+    Retrieve account details for a user based on their phone number.
+    """
+    from_number = extract_whatsapp_number(from_number=phone_number)
+    print(f"Extracted phone number: {from_number}")
 
-# def insert_wallet(
-#         user_id: str,
-#         user_wallet: str,
-#         user_balance: float) -> None:
-#     """
-#     Inserts a new user wallet into the USER_WALLET table.
+    query = """
+    SELECT
+        u.user_id,
+        u.user_number,
+        u.user_name,
+        u.user_surname,
+        uw.user_wallet,
+        uw.UserBalance,
+        u.created_at
+    FROM
+        USERS u
+    JOIN
+        USER_WALLET uw ON u.user_id = uw.user_id
+    WHERE
+        u.user_number = :user_number;
+    """
 
-#     Args:
-#         user_id (int): The user's ID.
-#         user_wallet (str): The user's wallet address.
-#         userbalance (float): The user's balance in the wallet.
-#     """
+    with sqlite_conn.connect() as conn:
+        cursor = conn.execute(text(query), {"user_number": from_number})
+        result = cursor.fetchone()
+        print(f"Query result: {result}")
 
-#     insert_query = """
-#     INSERT INTO USER_WALLET (
-#         user_id, user_wallet, UserBalance
-#     ) VALUES (
-#         :user_id, :user_wallet, :UserBalance
-#     )
-#     """
+        if result is None:
+            print("No user found for this phone number.")
+            return None
 
-#     parameters = {
-#         "user_id": user_id,
-#         "user_wallet": user_wallet,
-#         "UserBalance": user_balance,
-#     }
+        print(f"Number of fields returned: {len(result)}")
 
-#     try:
-#         with sqlite_conn.connect() as conn:
-#             print("Connected in wallet insert")
-#             result = conn.execute(text(insert_query), parameters)
-#             conn.commit()
-#             if result.rowcount > 0:
-#                 print(f"Insert successful, {result.rowcount} row(s) affected.")
-#             else:
-#                 print("Insert failed.")
-#     except sqlite3.Error as e:
-#         print(f"Error occurred during insert: {e}")
-#         raise Exception(f"SQLiteError occurred during inserting a wallet: {e}")  # Stops execution by raising the error
+        # Create a dictionary with column names as keys and the corresponding values
+        user_details = {
+            "u.user_id": result[0],
+            "u.user_number": result[1],
+            "u.user_name": result[2],
+            "u.user_surname": result[3],
+            "uw.user_wallet": result[4],
+            "uw.UserBalance": result[5],
+            "u.created_at": result[6],
+        }
 
-#     except Exception as e:
-#         print(f"Error occurred during insert: {e}")
-#         raise Exception(f"Exception occurred during inserting a wallet: {e}")  # Stops execution by raising the error
-    
+        # print(f"User details: {user_details}")
+        return user_details  # Return the complete user details
 
+
+def update_user_name(phone_number: str, new_name: str):
+    """
+    Update the user's name based on their phone number.
+
+    Args:
+        phone_number (str): The user's phone number.
+        new_name (str): The new name to update.
+
+    Returns:
+        str: Success or failure message.
+    """
+    formatted_number = extract_whatsapp_number(from_number=phone_number)
+
+    # SQL query to update user name
+    update_query = """
+    UPDATE USERS
+    SET user_name = :new_name
+    WHERE user_number = :user_number;
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(update_query), {"new_name": new_name, "user_number": formatted_number}
+        )
+        conn.commit()
+
+
+def update_user_surname(phone_number: str, new_surname: str):
+    formatted_number = extract_whatsapp_number(from_number=phone_number)
+
+    update_query = """
+    UPDATE USERS
+    SET user_surname = :new_surname
+    WHERE user_number = :user_number;
+    """
+
+    try:
+        with sqlite_conn.connect() as conn:
+            conn.execute(
+                text(update_query),
+                {"new_surname": new_surname, "user_number": formatted_number},
+            )
+            conn.commit()
+
+    except Exception as e:
+        print(f"Error updating surname: {e}")
 
