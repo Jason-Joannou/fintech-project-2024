@@ -468,4 +468,3 @@ def update_user_surname(phone_number: str, new_surname: str):
     except Exception as e:
         print(f"Error updating surname: {e}")
 
-print(get_user_interest(user_id=1,stokvel_id=1))
