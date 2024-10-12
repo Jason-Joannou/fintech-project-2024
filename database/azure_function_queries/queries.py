@@ -51,6 +51,8 @@ def dynamic_write_operation(query: str, params: Dict) -> None:
     try:
         with db_conn.connect() as conn:
             conn.execute(text(query), params)
+            conn.commit()
     except SQLAlchemyError as e:
         print(f"An error occurred during database query execution: {e}")
+        conn.rollback()
         raise e

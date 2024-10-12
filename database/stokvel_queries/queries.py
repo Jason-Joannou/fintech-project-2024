@@ -1367,11 +1367,11 @@ def insert_test_data_contributions(num_records: int) -> None:
 
 def clear_contributions_table() -> None:
     """
-    Clear all records from the TRANSACTIONS table.
+    Clear all records from the PAYOUTS table.
     """
     try:
         with sqlite_conn.connect() as conn:
-            conn.execute(text("DELETE FROM STOKVELS"))
+            conn.execute(text("DELETE FROM TRANSACTIONS"))
             conn.commit()  # Commit the transaction to the database
         print("All records have been cleared from the CONTRIBUTIONS table.")
     except Exception as e:
@@ -1610,6 +1610,27 @@ def insert_test_interest_data() -> None:
         )
         conn.commit()
 
+def delete_transaction_by_id(transaction_id: int) -> None:
+    """
+    Delete a transaction from the TRANSACTIONS table based on the given transaction ID.
+    
+    Parameters:
+    transaction_id (int): The ID of the transaction to be deleted.
+    """
+    delete_query = """
+    DELETE FROM TRANSACTIONS
+    WHERE id = :transaction_id
+    """
+    
+    try:
+        with sqlite_conn.connect() as conn:
+            conn.execute(text(delete_query), {"transaction_id": transaction_id})
+            conn.commit()
+            print(f"Transaction with ID {transaction_id} has been deleted.")
+    
+    except sqlite3.Error as e:
+        print(f"Error occurred while deleting transaction: {e}")
+
 
 if __name__ == "__main__":
     tx_date = datetime.now() - timedelta(days=90)
@@ -1619,15 +1640,19 @@ if __name__ == "__main__":
     conn = sqlite_conn.connect()
     # contribution_trigger()
     # payout_trigger()
-    # insert_test_data_payouts(num_records)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
-
+    #insert_test_data_payouts(num_records)
+    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date)
+    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    delete_transaction_by_id(7)
+    delete_transaction_by_id(8)
     # insert_test_user_into_stokvel_members()
     # insert_test_user()
-    insert_test_data_contributions(num_records)
-    # clear_contributions_table()
+    #insert_test_data_contributions(num_records)
+    #clear_contributions_table()
     # insert_test_stokvel()
     # insert_test_interest_data()
     # print(get_user_interest(user_id=1,stokvel_id=1))
