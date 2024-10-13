@@ -8,8 +8,13 @@ import {
   createRecurringGrant,
   createRecurringGrantWithStokvelLimits,
 } from "../../utils/ilp-utils/paymentTypes";
-import { GrantType, recurringGrantType } from "../../utils/types/validation";
+import {
+  GrantType,
+  recurringGrantType,
+  recurringGrantPayments,
+} from "../../utils/types/validation";
 import { Grant } from "@interledger/open-payments";
+import { executeRecurringPayments } from "../../utils/ilp-utils/payments";
 
 const router = express.Router();
 
@@ -157,5 +162,36 @@ router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
       .json({ error: "An unexpected error occurred during grant creation." });
   }
 });
+
+router.post(
+  "/process_recurring_payments",
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        sender_wallet_address,
+        receiving_wallet_address,
+        manageUrl,
+        previousToken,
+      } = req.body; // Get data from request body
+
+      const recurringPaymentParameters: recurringGrantPayments = {
+        senderWalletAddress: sender_wallet_address,
+        receiverWalletAddress: receiving_wallet_address,
+        manageURL: manageUrl,
+        previousToken: previousToken,
+      };
+      const recurringPayment = executeRecurringPayments(
+        recurringPaymentParameters
+      );
+
+      res.json(recurringPayment);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error: "An unexpected error occurred during grant creation." });
+    }
+  }
+);
 
 export default router;

@@ -4,8 +4,8 @@ import { GrantType, recurringGrantPayments } from "../types/validation";
 import { type components } from "@interledger/open-payments/dist/openapi/generated/auth-server-types";
 import {
   createGrant,
-  createIncomingPaymentGrant,
-  createOutgoingPaymentGrant,
+  createIncomingPayment,
+  createOutgoingPayment,
   createQuote,
 } from "./paymentTypes";
 import { outgoingPaymentType } from "../types/validation";
@@ -40,7 +40,7 @@ export const executeRecurringPayments = async (
       parameters.receiverWalletAddress
     );
     const senderWallet = await validateWalletAddress(
-      parameters.senderWalletAddress
+      tokenAccessDetails[0]?.identifier ?? ""
     );
 
     const grant = await createGrant(
@@ -54,7 +54,7 @@ export const executeRecurringPayments = async (
       throw new Error("Expected non-interactive grant");
     }
 
-    const incomingPayment = await createIncomingPaymentGrant(
+    const incomingPayment = await createIncomingPayment(
       receiverWallet,
       receiveAmount!,
       grant,
@@ -67,8 +67,9 @@ export const executeRecurringPayments = async (
       quote_id: quote.id,
       continueAccessToken: grant.continue.access_token.value,
       continueUri: grant.continue.uri,
+      tokenValue: token.access_token.value,
     };
-    const outgoingPayment = await createOutgoingPaymentGrant(authParameters);
+    const outgoingPayment = await createOutgoingPayment(authParameters);
 
     return {
       outgoingPayment: outgoingPayment,

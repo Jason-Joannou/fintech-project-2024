@@ -70,7 +70,7 @@ export const createGrant = async (
   }
 };
 
-export const createIncomingPaymentGrant = async (
+export const createIncomingPayment = async (
   walletAddress: IWalletAddressResponse,
   value: string,
   grant: Grant,
@@ -161,7 +161,7 @@ export const createRecurringGrant = async (
   }
 };
 
-export const createOutgoingPaymentGrant = async (
+export const createInitialOutgoingPayment = async (
   authParameters: outgoingPaymentType
 ) => {
   try {
@@ -194,6 +194,34 @@ export const createOutgoingPaymentGrant = async (
       payment: outgoingPayment,
       token: outgoingPaymentGrant.access_token.value,
       manageurl: outgoingPaymentGrant.access_token.manage,
+    };
+  } catch (error) {
+    console.error(error);
+    throw new Error("An unexpected error occurred during authorization.");
+  }
+};
+
+export const createOutgoingPayment = async (
+  authParameters: outgoingPaymentType
+) => {
+  try {
+    const senderWalletAddress = await validateWalletAddress(
+      authParameters.senderWalletAddress
+    );
+
+    const outgoingPayment = await client.outgoingPayment.create(
+      {
+        url: new URL(senderWalletAddress.id).origin,
+        accessToken: authParameters?.tokenValue as string,
+      },
+      {
+        walletAddress: senderWalletAddress.id,
+        quoteId: authParameters.quote_id,
+      }
+    );
+
+    return {
+      payment: outgoingPayment,
     };
   } catch (error) {
     console.error(error);
