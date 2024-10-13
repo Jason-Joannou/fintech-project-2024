@@ -26,6 +26,16 @@ export type AccessRequest =
       actions: ("read" | "create" | "read-all")[];
     };
 
+export type incomingPaymentAccessRequest = {
+  walletAddress: string;
+  incomingAmount: {
+    value: string;
+    assetCode: string;
+    assetScale: number;
+  };
+  expiresAt: string;
+};
+
 export type Limits = {
   debitAmount?: {
     value: string;
