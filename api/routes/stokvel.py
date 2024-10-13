@@ -337,15 +337,15 @@ def apply_to_join_stokvel() -> Response:
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{joiner_data.requesting_number}",
-        #     body=joiner_notification_message,
-        # )
+        send_notification_message(
+            to=f"whatsapp:{joiner_data.requesting_number}",
+            body=joiner_notification_message,
+        )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
-        # )
+        send_notification_message(
+            to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
+        )
         return redirect(url_for("stokvel.success_stokvel_join_application"))
 
     except SQLAlchemyError as sql_error:
@@ -668,9 +668,9 @@ def onboard_stokvel() -> Response:
         )
 
         # Send the notification message UNCOMMENT LATER!!
-        # send_notification_message(
-        #     to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
-        # )
+        send_notification_message(
+            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
+        )
         return redirect(url_for("stokvel.success_stokvel_creation"))
 
     except SQLAlchemyError as sql_error:
@@ -965,11 +965,11 @@ def process_application():
                 )
 
                 for number in declined_applications_list:
-                    pass
+
                     # Send the notification message
-                    # send_notification_message(
-                    #     to=f"whatsapp:{number}", body=app_declined_notification_message
-                    # )
+                    send_notification_message(
+                        to=f"whatsapp:{number}", body=app_declined_notification_message
+                    )
 
                 return redirect(
                     url_for(
@@ -985,10 +985,10 @@ def process_application():
             )
 
             # Send the notification message
-            # send_notification_message(
-            #         to=f"whatsapp:{applicant_cell_number}",
-            #         body=app_accepted_notification_message,
-            #     )
+            send_notification_message(
+                to=f"whatsapp:{applicant_cell_number}",
+                body=app_accepted_notification_message,
+            )
 
         except Exception as e:
             print(f"General Error occurred during insert operations: {e}")
@@ -1017,10 +1017,10 @@ def process_application():
         )
 
         # Send the notification message
-        # send_notification_message(
-        #     to=f"whatsapp:{applicant_cell_number}",
-        #     body=app_declined_notification_message,
-        # )
+        send_notification_message(
+            to=f"whatsapp:{applicant_cell_number}",
+            body=app_declined_notification_message,
+        )
 
     # Redirect to a route that fetches the latest applications with the requesting_number
     return redirect(
@@ -1123,7 +1123,7 @@ def stokvel_total_interest() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error: {e}")
         return msg
-    
+
 
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel/admin/change_member_number", methods=["POST"])
 def change_max_nr_of_contrributors() -> str:

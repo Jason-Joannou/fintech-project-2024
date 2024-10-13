@@ -25,19 +25,18 @@ def create_stokvel_members_table_sqlite() -> None:
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
                 contribution_amount NUMBER,
-                active_status TEXT,
                 user_payment_token TEXT,
                 user_payment_URI TEXT,
-                user_quote_id TEXT, 
+                user_quote_id TEXT,
                 stokvel_payment_token TEXT,
                 stokvel_payment_URI TEXT,
                 stokvel_quote_id TEXT,
                 stokvel_initial_payment_needed INTEGER,
                 stokvel_interaction_ref TEXT,
-                user_interaction_ref TEXT, 
+                user_interaction_ref TEXT,
                 stokvel_payout_active_status TEXT, -- need to have one for users so that we can know that they are also active and have accepted the payment grant
                 adhoc_contribution_uri TEXT,
-                adhoc_contribution_token TEXT, 
+                adhoc_contribution_token TEXT,
                 UNIQUE (stokvel_id, user_id)  -- Ensure stokvel_id and user_id combination is unique
             )
         """
@@ -187,6 +186,7 @@ def create_contributions_table_sqlite() -> None:
             )
         )
 
+
 def create_payouts_table_sqlite() -> None:
     """
     Create PAYOUTS table.
@@ -310,7 +310,6 @@ def create_interest_table() -> None:
         """
             )
         )
-
 
 
 if __name__ == "__main__":
