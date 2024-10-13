@@ -6,6 +6,7 @@ import {
   createIncomingPayment,
   createQuote,
   createRecurringGrant,
+  createRecurringGrantWithStokvelLimits,
 } from "../../utils/ilp-utils/paymentTypes";
 import { GrantType, recurringGrantType } from "../../utils/types/validation";
 import { Grant } from "@interledger/open-payments";
@@ -18,7 +19,7 @@ router.get("/", (req: Request, res: Response) => {
   });
 });
 
-router.post("/initiate_payment_setup", async (req: Request, res: Response) => {
+router.post("/user_payment_setup", async (req: Request, res: Response) => {
   try {
     const {
       value,
@@ -72,6 +73,76 @@ router.post("/initiate_payment_setup", async (req: Request, res: Response) => {
       stokvel_id: stokvel_id,
     };
     const recurringGrant = await createRecurringGrant(authParameters);
+
+    res.json({
+      recurring_grant: recurringGrant,
+      continue_uri: recurringGrant.continue.uri,
+      continue_token: recurringGrant.continue.access_token,
+      quote_id: quote.id,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "An unexpected error occurred during grant creation." });
+  }
+});
+
+router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
+  try {
+    const {
+      value,
+      stokvel_contributions_start_date,
+      walletAddressURL,
+      sender_walletAddressURL,
+      payment_periods,
+      length_between_periods,
+      payment_period_length,
+      user_id,
+      stokvel_id,
+    } = req.body; // Get data from request body
+
+    const recieverWallet = await validateWalletAddress(walletAddressURL);
+    const senderWallet = await validateWalletAddress(sender_walletAddressURL);
+
+    const grant = await createGrant(
+      walletAddressURL,
+      GrantType.IncomingPayment,
+      false,
+      {}
+    );
+
+    const incomingPayment = await createIncomingPayment(
+      recieverWallet,
+      value,
+      grant as Grant,
+      stokvel_contributions_start_date
+    );
+
+    const quote = await createQuote(senderWallet, incomingPayment.id);
+
+    const authParameters: recurringGrantType = {
+      senderWalletAddress: senderWallet,
+      stokvelContributionStartDate: stokvel_contributions_start_date,
+      payment_periods: payment_periods,
+      payment_period_length: payment_period_length,
+      length_between_periods: length_between_periods,
+      quote_id: quote.id,
+      debitAmount: {
+        value: quote.debitAmount.value,
+        assetCode: quote.debitAmount.assetCode,
+        assetScale: quote.debitAmount.assetScale,
+      },
+      receiveAmount: {
+        value: quote.receiveAmount.value,
+        assetCode: quote.receiveAmount.assetCode,
+        assetScale: quote.receiveAmount.assetScale,
+      },
+      user_id: user_id,
+      stokvel_id: stokvel_id,
+    };
+    const recurringGrant =
+      await createRecurringGrantWithStokvelLimits(authParameters);
 
     res.json({
       recurring_grant: recurringGrant,

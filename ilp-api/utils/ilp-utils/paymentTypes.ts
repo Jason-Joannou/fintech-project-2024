@@ -200,3 +200,36 @@ export const createOutgoingPayment = async (
     throw new Error("An unexpected error occurred during authorization.");
   }
 };
+
+export const createRecurringGrantWithStokvelLimits = async (
+  authParameters: recurringGrantType
+): Promise<PendingGrant> => {
+  try {
+    const stokvel_contributions_start_date_converted = new Date(
+      authParameters.stokvelContributionStartDate
+    ).toISOString(); // Example date
+
+    authParameters.debitAmount.value = "1000000000";
+    authParameters.receiveAmount.value = "1000000000";
+
+    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.length_between_periods}${authParameters.payment_period_length}`;
+
+    const paymentLimits = {
+      debitAmount: authParameters.debitAmount,
+      receiveAmount: authParameters.receiveAmount,
+      interval: interval,
+    };
+
+    const pending_recurring_grant = await createGrant(
+      authParameters.senderWalletAddress,
+      GrantType.OutgoingPayment,
+      true,
+      paymentLimits
+    );
+
+    return pending_recurring_grant as PendingGrant;
+  } catch (error) {
+    console.error(error);
+    throw new Error("An unexpected error occurred during authorization.");
+  }
+};
