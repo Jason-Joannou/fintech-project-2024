@@ -70,7 +70,7 @@ export const createGrant = async (
   }
 };
 
-export const createIncomingPayment = async (
+export const createIncomingPaymentGrant = async (
   walletAddress: IWalletAddressResponse,
   value: string,
   grant: Grant,
@@ -161,7 +161,7 @@ export const createRecurringGrant = async (
   }
 };
 
-export const createOutgoingPayment = async (
+export const createOutgoingPaymentGrant = async (
   authParameters: outgoingPaymentType
 ) => {
   try {
@@ -175,7 +175,7 @@ export const createOutgoingPayment = async (
         url: authParameters.continueUri,
       },
       {
-        interact_ref: authParameters.interactRef,
+        interact_ref: authParameters?.interactRef,
       }
     )) as Grant;
 
