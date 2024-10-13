@@ -1,10 +1,8 @@
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
-from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
-
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
@@ -57,7 +55,7 @@ def get_user_deposits_and_payouts_per_stokvel(phone_number: str, stokvel_name: s
         # Building the result dictionary from the query response
         return {
             "total_deposits": result[0],  # The total deposit amount for the user
-            "total_payouts": result[1],   # The total payout amount for the user
+            "total_payouts": result[1],  # The total payout amount for the user
         }
 
 
@@ -224,7 +222,7 @@ def get_admin_by_stokvel(stokvel_id):
         if result:
             return result
         return None
-    
+
 
 def get_iso_with_default_time(date_string: str) -> str:
     try:
@@ -232,10 +230,11 @@ def get_iso_with_default_time(date_string: str) -> str:
         date_object = datetime.fromisoformat(date_string)
     except ValueError:
         # If no time is provided, append 12:00 AM (00:00:00) and parse again
-        date_object = datetime.fromisoformat(date_string + 'T00:00:00')
-    
+        date_object = datetime.fromisoformat(date_string + "T00:00:00")
+
     # Return the date in ISO format with Z for UTC timezone
-    return date_object.isoformat() + 'Z'
+    return date_object.isoformat() + "Z"
+
 
 def format_contribution_period_string(contribution_period: str):
     if contribution_period == "Days":
@@ -249,7 +248,7 @@ def format_contribution_period_string(contribution_period: str):
     elif contribution_period == "30 Seconds":
         contribution_period = "S"
     return contribution_period
-    
+
 
 # def get_all_applications(user_id):
 #     """
@@ -343,7 +342,6 @@ def get_all_applications(user_id):
         ]
 
         return applications
-
 
 
 def insert_stokvel(
@@ -618,7 +616,7 @@ def insert_stokvel_member(
     stokvel_token: Optional[str],
     stokvel_url: Optional[str],
     stokvel_quote_id: Optional[str],
-    stokvel_initial_payment_needed:Optional[int],
+    stokvel_initial_payment_needed: Optional[int],
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> List:
@@ -638,10 +636,10 @@ def insert_stokvel_member(
     # Updated insert query with actual database column names
     insert_query = """
         INSERT INTO STOKVEL_MEMBERS (
-            stokvel_id, user_id, contribution_amount, user_payment_token, user_payment_URI, user_quote_id, 
+            stokvel_id, user_id, contribution_amount, user_payment_token, user_payment_URI, user_quote_id,
             stokvel_payment_token, stokvel_payment_URI, stokvel_quote_id, stokvel_initial_payment_needed, created_at, updated_at
         ) VALUES (
-            :stokvel_id, :user_id, :contribution_amount, :user_payment_token, :user_payment_URI, :user_quote_id, 
+            :stokvel_id, :user_id, :contribution_amount, :user_payment_token, :user_payment_URI, :user_quote_id,
             :stokvel_payment_token, :stokvel_payment_URI, :stokvel_quote_id, :stokvel_initial_payment_needed, :created_at, :updated_at
         )
     """
@@ -657,7 +655,7 @@ def insert_stokvel_member(
         "stokvel_payment_token": stokvel_token,
         "stokvel_payment_URI": stokvel_url,
         "stokvel_quote_id": stokvel_quote_id,
-        "stokvel_initial_payment_needed":1,
+        "stokvel_initial_payment_needed": 1,
         "created_at": created_at,
         "updated_at": updated_at,
     }
@@ -669,7 +667,9 @@ def insert_stokvel_member(
             print("Connected in stokvel_members insert")
             if check_available_space_in_stokvel(stokvel_id):
                 if not check_if_stokvel_member(user_id, stokvel_id):
-                    update_application_status(application_id, "Approved") #what is going on here lol - issue: members are applying to be in their own stokvel and there is an error?
+                    update_application_status(
+                        application_id, "Approved"
+                    )  # what is going on here lol - issue: members are applying to be in their own stokvel and there is an error?
                     conn.execute(text(insert_query), parameters)
                     conn.commit()
                 else:
@@ -690,17 +690,15 @@ def insert_stokvel_member(
     except Exception as e:
         print(f"Error occurred during insert: {e}")
         raise e
-    
+
+
 def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
     query = """
-    SELECT stokvel_initial_payout_required 
-    FROM STOKVEL_MEMBERS 
+    SELECT stokvel_initial_payout_required
+    FROM STOKVEL_MEMBERS
     WHERE user_id = :user_id AND stokvel_id = :stokvel_id
     """
-    parameters = {
-        "user_id": user_id,
-        "stokvel_id": stokvel_id
-    }
+    parameters = {"user_id": user_id, "stokvel_id": stokvel_id}
 
     try:
         with sqlite_conn.connect() as conn:
@@ -708,15 +706,20 @@ def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
             payout_required = result.fetchone()  # Fetch one record
 
             if payout_required is None:
-                print(f"No record found for stokvel_id: {stokvel_id} and user_id: {user_id}")
+                print(
+                    f"No record found for stokvel_id: {stokvel_id} and user_id: {user_id}"
+                )
                 return None
 
             print(f"Initial payout required: {payout_required[0]}")
-            return payout_required[0]  # Return the value of `stokvel_initial_payout_required`
+            return payout_required[
+                0
+            ]  # Return the value of `stokvel_initial_payout_required`
 
     except sqlite3.Error as e:
         print(f"Error retrieving stokvel initial payout: {e}")
         raise e
+
 
 def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
     update_query = """
@@ -724,25 +727,25 @@ def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
     SET stokvel_initial_payout_required = 0
     WHERE stokvel_id = :stokvel_id AND user_id = :user_id
     """
-    parameters = {
-        "stokvel_id": stokvel_id,
-        "user_id": user_id
-    }
+    parameters = {"stokvel_id": stokvel_id, "user_id": user_id}
 
     try:
         with sqlite_conn.connect() as conn:
             result = conn.execute(text(update_query), parameters)
             conn.commit()
-            
+
             if result.rowcount > 0:
-                print(f"Successfully updated stokvel_initial_payout_required to 0 for stokvel_id: {stokvel_id} and user_id: {user_id}")
+                print(
+                    f"Successfully updated stokvel_initial_payout_required to 0 for stokvel_id: {stokvel_id} and user_id: {user_id}"
+                )
             else:
-                print(f"No records found to update for stokvel_id: {stokvel_id} and user_id: {user_id}")
-                
+                print(
+                    f"No records found to update for stokvel_id: {stokvel_id} and user_id: {user_id}"
+                )
+
     except sqlite3.Error as e:
         print(f"Error updating stokvel initial payout required: {e}")
         raise e
-
 
 
 def get_all_stokvels():
@@ -969,7 +972,7 @@ def insert_stokvel_join_application(
         "id": None,
         "stokvel_id": stokvel_id,
         "user_id": user_id,
-        "user_contribution":user_contribution,
+        "user_contribution": user_contribution,
         "AppStatus": app_status,
         "AppDate": app_date,
     }
@@ -1043,67 +1046,82 @@ def update_application_status(app_id: Optional[int], app_status: str):
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a application: {e}")  # Stops execution by raising the error
+        raise Exception(
+            f"Exception occurred during inserting a application: {e}"
+        )  # Stops execution by raising the error
+
 
 def add_url_token(userid, stokvel_id, url, token):
     try:
         with sqlite_conn.connect() as conn:
             print("Connected to the database for stokvel members update TOKEN details")
-            
+
             update_query = "UPDATE STOKVEL_MEMBERS SET url = :url, token = :token WHERE stokvel_id = :stokvel_id AND user_id = :user_id;"
             update_parameters = {
                 "stokvel_id": stokvel_id,
                 "user_id": userid,
-                "url":url,
-                "token":token
+                "url": url,
+                "token": token,
             }
-            
+
             conn.execute(text(update_query), update_parameters)
-            conn.commit() 
-            
-            print(f"Updated token for stokvel_id {stokvel_id} and usser_id {userid} to {token}")
-            
+            conn.commit()
+
+            print(
+                f"Updated token for stokvel_id {stokvel_id} and usser_id {userid} to {token}"
+            )
+
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+
+
 def calculate_number_periods(payout_period, start_date, end_date):
-        # Parse the start and end dates as datetime objects using the correct format
-    start_date = datetime.strptime(start_date, "%Y-%m-%d")  # Include seconds in the format
-    end_date = datetime.strptime(end_date, "%Y-%m-%d")      # Include seconds in the format
+    # Parse the start and end dates as datetime objects using the correct format
+    start_date = datetime.strptime(
+        start_date, "%Y-%m-%d"
+    )  # Include seconds in the format
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")  # Include seconds in the format
 
     # Calculate the difference based on the payout period
     date_difference = (end_date - start_date).days  # Get the total days difference
     no_periods = 0
+    payout_period = payout_period.strip()
+    print(payout_period, " PAYOUTPERIOD ")
+    print(payout_period == "Days")
+    print(payout_period == "Weeks")
 
-    if payout_period == 'Days':
+    if payout_period == "Days":
         no_periods = date_difference  # Total days
         period_delta = timedelta(days=1)  # Increment by 1 day
-    elif payout_period == 'Weeks':
+    elif payout_period == "Weeks":
         no_periods = date_difference // 7  # Total weeks
         period_delta = timedelta(weeks=1)  # Increment by 1 week
-    elif payout_period == 'Months':
+    elif payout_period == "Months":
         diff = relativedelta(end_date, start_date)
         no_periods = diff.years * 12 + diff.months  # Total months
         period_delta = relativedelta(months=1)  # Increment by 1 month
-    elif payout_period == 'Years':
+    elif payout_period == "Years":
         diff = relativedelta(end_date, start_date)
         no_periods = diff.years  # Total years
         period_delta = relativedelta(years=1)  # Increment by 1 year
-    elif payout_period == '30 Seconds':
+    elif payout_period == "30 Seconds":
         # Calculate the total number of seconds in the period
         total_seconds = (end_date - start_date).total_seconds()
-        print('TOTAL SECONDS ', total_seconds)
+        print("TOTAL SECONDS ", total_seconds)
         no_periods = int(total_seconds // 30)  # Total number of 30-second periods
         period_delta = timedelta(seconds=30)  # Increment by 30 seconds
     else:
-        raise ValueError("Invalid payout period specified.")
-    
+        raise ValueError(
+            f"Invalid payout period specified. Payout period {payout_period}"
+        )
+
     return no_periods
 
+
 def double_number_periods_for_same_daterange(period):
-    period_duration =  ""
+    period_duration = ""
     number_of_periods_coverted = ""
-    if period == 'Years':
+    if period == "Years":
         period_duration = "M"
         number_of_periods_coverted = 6
     elif period == "Months":
@@ -1118,8 +1136,9 @@ def double_number_periods_for_same_daterange(period):
     elif period == "30 Seconds":
         period_duration = "S"
         number_of_periods_coverted = "T15"
-    print(period, ' ',period_duration, ' ', number_of_periods_coverted)
+    print(period, " ", period_duration, " ", number_of_periods_coverted)
     return period_duration, number_of_periods_coverted
+
 
 def update_user_active_status(userid, stokvelid, grantaccepted):
     """
@@ -1155,7 +1174,9 @@ def update_user_active_status(userid, stokvelid, grantaccepted):
         with sqlite_conn.connect() as conn:
             conn.execute(text(query), params)
             conn.commit()
-            print(f"Updated user {userid} status to {params['status']} for stokvel {stokvelid}.")
+            print(
+                f"Updated user {userid} status to {params['status']} for stokvel {stokvelid}."
+            )
     except sqlite3.Error as e:
         print(f"Error updating user status: {e}")
         raise e
@@ -1218,6 +1239,7 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
     except Exception as e:
         print(f"Failed to insert transaction. Error: {str(e)}")
 
+
 def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: float):
     """
     Update the max number of contributors
@@ -1239,9 +1261,14 @@ def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: flo
 
     with sqlite_conn.connect() as conn:
         conn.execute(
-            text(update_query), {"stokvel_name": stokvel_name, "max_nr_of_contributors": max_nr_of_contributors}
+            text(update_query),
+            {
+                "stokvel_name": stokvel_name,
+                "max_nr_of_contributors": max_nr_of_contributors,
+            },
         )
         conn.commit()
+
 
 def update_stokvel_name(stokvel_name: str, new_stokvelname: float):
     """
@@ -1263,10 +1290,11 @@ def update_stokvel_name(stokvel_name: str, new_stokvelname: float):
     """
 
     with sqlite_conn.connect() as conn:
-            conn.execute(
-                text(update_query), {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname}
-            )
-            conn.commit()
+        conn.execute(
+            text(update_query),
+            {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname},
+        )
+        conn.commit()
 
 
 def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
@@ -2002,10 +2030,11 @@ def insert_test_interest_data() -> None:
         )
         conn.commit()
 
+
 def delete_transaction_by_id(transaction_id: int) -> None:
     """
     Delete a transaction from the TRANSACTIONS table based on the given transaction ID.
-    
+
     Parameters:
     transaction_id (int): The ID of the transaction to be deleted.
     """
@@ -2013,13 +2042,13 @@ def delete_transaction_by_id(transaction_id: int) -> None:
     DELETE FROM TRANSACTIONS
     WHERE id = :transaction_id
     """
-    
+
     try:
         with sqlite_conn.connect() as conn:
             conn.execute(text(delete_query), {"transaction_id": transaction_id})
             conn.commit()
             print(f"Transaction with ID {transaction_id} has been deleted.")
-    
+
     except sqlite3.Error as e:
         print(f"Error occurred while deleting transaction: {e}")
 
@@ -2032,44 +2061,45 @@ if __name__ == "__main__":
     conn = sqlite_conn.connect()
     # contribution_trigger()
     # payout_trigger()
-    #insert_test_data_payouts(num_records)
-    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date)
-    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date2)
-    #insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date3)
-    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
-    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
-    #insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    # insert_test_data_payouts(num_records)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
     delete_transaction_by_id(7)
     delete_transaction_by_id(8)
     # insert_test_user_into_stokvel_members()
     # insert_test_user()
-    #insert_test_data_contributions(num_records)
-    #clear_contributions_table()
+    # insert_test_data_contributions(num_records)
+    # clear_contributions_table()
     # insert_test_stokvel()
     # insert_test_interest_data()
     # print(get_user_interest(user_id=1,stokvel_id=1))
     # print(get_user_interest(user_id=2,stokvel_id=1))
     # print(get_stokvel_monthly_interest(stokvel_id = 1))
 
+
 def get_stokvel_details(stokvel_id):
-    select_query = 'SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id'
-    parameters = {
-        "stokvel_id": stokvel_id
-    }
-    
+    select_query = "SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id"
+    parameters = {"stokvel_id": stokvel_id}
+
     try:
         with sqlite_conn.connect() as conn:
             result = conn.execute(text(select_query), parameters)
             stokvel_details = result.fetchone()  # Fetch one record
-            
+
             if stokvel_details is None:
                 print(f"No stokvel found with id: {stokvel_id}")
                 return None  # Return None if no record is found
-            
+
             # Convert the result to a dictionary if necessary
             columns = result.keys()  # Extract column names from the result
-            stokvel_dict = dict(zip(columns, stokvel_details))  # Create a dictionary from column names and values
-            
+            stokvel_dict = dict(
+                zip(columns, stokvel_details)
+            )  # Create a dictionary from column names and values
+
             print(f"Selected stokvel details: {stokvel_dict}")
             return stokvel_dict  # Return the details
 
@@ -2079,25 +2109,24 @@ def get_stokvel_details(stokvel_id):
 
 
 def get_stokvel_member_details(stokvel_id, user_id):
-    select_query = 'SELECT * FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id'
-    parameters = {
-        "stokvel_id": stokvel_id,
-        "user_id": user_id
-    }
-    
+    select_query = "SELECT * FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id"
+    parameters = {"stokvel_id": stokvel_id, "user_id": user_id}
+
     try:
         with sqlite_conn.connect() as conn:
             result = conn.execute(text(select_query), parameters)
             stokvel_members_details = result.fetchone()  # Fetch one record
-            
+
             if stokvel_members_details is None:
                 print(f"No stokvel found with id: {stokvel_id}")
                 return None  # Return None if no record is found
-            
+
             # Convert the result to a dictionary if necessary
             columns = result.keys()  # Extract column names from the result
-            stokvel_members_dict = dict(zip(columns, stokvel_members_details))  # Create a dictionary from column names and values
-            
+            stokvel_members_dict = dict(
+                zip(columns, stokvel_members_details)
+            )  # Create a dictionary from column names and values
+
             print(f"Selected stokvel details: {stokvel_members_dict}")
             return stokvel_members_dict  # Return the details
 
@@ -2106,88 +2135,109 @@ def get_stokvel_member_details(stokvel_id, user_id):
         raise e
 
 
-def update_member_grantaccepted(stokvel_id: int, user_id: int, active_status: str, user_interaction_ref: str):
+def update_member_grantaccepted(
+    stokvel_id: int, user_id: int, active_status: str, user_interaction_ref: str
+):
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET active_status = :active_status, user_interaction_ref = :user_interaction_ref
     WHERE stokvel_id = :stokvel_id AND user_id = :user_id
     """
-    
+
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id,
         "active_status": active_status,
-        "user_interaction_ref": user_interaction_ref
+        "user_interaction_ref": user_interaction_ref,
     }
 
     try:
         with sqlite_conn.connect() as conn:
-            result =  conn.execute(text(update_query), parameters)
+            result = conn.execute(text(update_query), parameters)
             conn.commit()
-            
+
             if result.rowcount > 0:
-                print(f"Successfully updated active_status to '{active_status}' and user_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                print(
+                    f"Successfully updated active_status to '{active_status}' and user_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
             else:
-                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
-                
+                print(
+                    f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
+
     except sqlite3.Error as e:
         print(f"Error updating stokvel member: {e}")
         raise e
-    
 
-def update_stokvel_grantaccepted(stokvel_id: int, user_id: int, stokvel_payout_active_status: str, stokvel_interaction_ref: str):
+
+def update_stokvel_grantaccepted(
+    stokvel_id: int,
+    user_id: int,
+    stokvel_payout_active_status: str,
+    stokvel_interaction_ref: str,
+):
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET stokvel_payout_active_status = :stokvel_payout_active_status, stokvel_interaction_ref = :stokvel_interaction_ref
     WHERE stokvel_id = :stokvel_id AND user_id = :user_id
     """
-    
+
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id,
         "stokvel_payout_active_status": stokvel_payout_active_status,
-        "stokvel_interaction_ref": stokvel_interaction_ref
+        "stokvel_interaction_ref": stokvel_interaction_ref,
     }
 
     try:
         with sqlite_conn.connect() as conn:
-            result =  conn.execute(text(update_query), parameters)
+            result = conn.execute(text(update_query), parameters)
             conn.commit()
-            
+
             if result.rowcount > 0:
-                print(f"Successfully updated stokvel_payout_active_status to '{stokvel_payout_active_status}' and stokvel_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                print(
+                    f"Successfully updated stokvel_payout_active_status to '{stokvel_payout_active_status}' and stokvel_interaction_ref for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
             else:
-                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
-                
+                print(
+                    f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
+
     except sqlite3.Error as e:
         print(f"Error updating stokvel payout: {e}")
         raise e
-    
 
-def update_adhoc_contribution_parms(stokvel_id: int, user_id: int, url: str, token: str):
+
+def update_adhoc_contribution_parms(
+    stokvel_id: int, user_id: int, url: str, token: str
+):
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET adhoc_contribution_uri = :adhoc_contribution_uri, adhoc_contribution_token = :adhoc_contribution_token
     WHERE stokvel_id = :stokvel_id AND user_id = :user_id
     """
-    
+
     parameters = {
         "stokvel_id": stokvel_id,
         "user_id": user_id,
         "adhoc_contribution_uri": url,
-        "adhoc_contribution_token": token
+        "adhoc_contribution_token": token,
     }
 
     try:
         with sqlite_conn.connect() as conn:
-            result =  conn.execute(text(update_query), parameters)
+            result = conn.execute(text(update_query), parameters)
             conn.commit()
-            
+
             if result.rowcount > 0:
-                print(f"Successfully updated adhoc paymnet params for stokvel_id: {stokvel_id}, user_id: {user_id}")
+                print(
+                    f"Successfully updated adhoc paymnet params for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
             else:
-                print(f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}")
-                
+                print(
+                    f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
+                )
+
     except sqlite3.Error as e:
         print(f"Error updating stokvel payout: {e}")
         raise e

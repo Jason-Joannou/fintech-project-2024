@@ -47,10 +47,12 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
     const senderWallet = await validateWalletAddress(sender_walletAddressURL);
 
     const grant = await createGrant(
-      walletAddressURL,
+      recieverWallet,
       GrantType.IncomingPayment,
       false,
-      {}
+      {},
+      user_id,
+      stokvel_id
     );
 
     const incomingPayment = await createIncomingPayment(
@@ -116,10 +118,12 @@ router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
     const senderWallet = await validateWalletAddress(sender_walletAddressURL);
 
     const grant = await createGrant(
-      walletAddressURL,
+      recieverWallet,
       GrantType.IncomingPayment,
       false,
-      {}
+      {},
+      user_id,
+      stokvel_id
     );
 
     const incomingPayment = await createIncomingPayment(

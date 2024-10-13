@@ -10,14 +10,20 @@ import {
   buildIncomingPaymentAccessRequest,
   buildQuoteAccessRequest,
 } from "./accessRequests";
-import { recurringGrantType, outgoingPaymentType } from "../types/validation";
+import {
+  recurringGrantType,
+  outgoingPaymentType,
+  interactType,
+} from "../types/validation";
 import { validateWalletAddress } from "./wallet";
 
 export const createGrant = async (
   walletAddress: IWalletAddressResponse,
   grantType: GrantType,
   withInteraction: boolean,
-  paymentLimits?: Limits
+  paymentLimits?: Limits,
+  userId?: string,
+  stokvelId?: string
 ): Promise<Grant | PendingGrant> => {
   try {
     let accessRequest: grantAccessRequest;
@@ -36,24 +42,26 @@ export const createGrant = async (
     }
 
     const interact = withInteraction
-      ? {
+      ? ({
           interact: {
             start: ["redirect"],
             finish: {
               method: "redirect",
-              uri: "<REDIRECT_URI>",
+              uri: `http://localhost:5000/stokvel/create_stokvel/user_interactive_grant_response?user_id=${userId}&stokvel_id=${stokvelId}`,
               nonce: randomUUID(),
             },
           },
-        }
+        } as interactType)
       : {};
 
     const grantPayload = {
       access_token: {
         access: [accessRequest],
-        ...interact,
       },
+      ...interact,
     };
+
+    console.log(grantPayload);
 
     const grant = await client.grant.request(
       {
@@ -151,7 +159,9 @@ export const createRecurringGrant = async (
       authParameters.senderWalletAddress,
       GrantType.OutgoingPayment,
       true,
-      paymentLimits
+      paymentLimits,
+      authParameters.user_id,
+      authParameters.stokvel_id
     );
 
     return pending_recurring_grant as PendingGrant;

@@ -62,8 +62,8 @@ export type recurringGrantType = {
     assetCode: string;
     assetScale: number;
   };
-  user_id: number;
-  stokvel_id: number;
+  user_id: string;
+  stokvel_id: string;
 };
 
 export type outgoingPaymentType = {
@@ -84,4 +84,15 @@ export type recurringGrantPayments = {
 
 export type recurringGrantPaymentsWithInterest = recurringGrantPayments & {
   payoutValue: string;
+};
+
+export type interactType = {
+  interact: {
+    start: ["redirect"];
+    finish: {
+      method: string;
+      uri: string;
+      nonce: string;
+    };
+  };
 };

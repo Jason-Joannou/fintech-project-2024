@@ -434,7 +434,7 @@ def onboard_stokvel() -> Response:
         inserted_stokvel_id = insert_stokvel(
             stokvel_id=None,
             stokvel_name=stokvel_data.stokvel_name,  # unique constraint here
-            ILP_wallet="ILP_TEST",
+            ILP_wallet="https://ilp.rafiki.money/alices_stokvel",  # MASTER WALLET
             MOMO_wallet="MOMO_TEST",
             total_members=stokvel_data.total_members,
             min_contributing_amount=stokvel_data.min_contributing_amount,
@@ -493,7 +493,6 @@ def onboard_stokvel() -> Response:
             start_date=stokvel_data.start_date,
             end_date=stokvel_data.end_date,
         )
-
         number_contribution_periods_between_start_end_date = calculate_number_periods(
             stokvel_data.contribution_period,
             start_date=stokvel_data.start_date,
@@ -533,7 +532,7 @@ def onboard_stokvel() -> Response:
         print("REQUEST: ")
         print(payload)
 
-        response = requests.post(node_server_initiate_grant, json=payload)
+        response = requests.post(node_server_initiate_grant, json=payload, timeout=10)
 
         print(response)
 
@@ -541,6 +540,16 @@ def onboard_stokvel() -> Response:
         print(
             "REDIRECT USER FOR AUTH: ",
             response.json()["recurring_grant"]["interact"]["redirect"],
+        )
+
+        auth_link = response.json()["recurring_grant"]["interact"]["redirect"]
+        notification_message = (
+            f"Please Authorize the recurring grant using this link: {auth_link}"
+        )
+
+        # Send the notification message UNCOMMENT LATER!!
+        send_notification_message(
+            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
         )
 
         initial_continue_uri_contribution = response.json()["continue_uri"]
@@ -576,7 +585,7 @@ def onboard_stokvel() -> Response:
         print(payload_payout)
 
         response_payout_grant = requests.post(
-            node_server_initiate_stokvelpayout_grant, json=payload_payout
+            node_server_initiate_stokvelpayout_grant, json=payload_payout, timeout=10
         )
         print(response_payout_grant)
 
@@ -865,13 +874,25 @@ def process_application():
             print(payload)
 
             # Send POST request for contribution grant
-            response = requests.post(node_server_initiate_grant, json=payload)
+            response = requests.post(
+                node_server_initiate_grant, json=payload, timeout=10
+            )
             print(response)
 
             print("RESPONSE: \n", response.json())
             print(
                 "REDIRECT USER FOR AUTH: ",
                 response.json()["recurring_grant"]["interact"]["redirect"],
+            )
+
+            auth_link = response.json()["recurring_grant"]["interact"]["redirect"]
+            notification_message = (
+                f"Please Authorize the recurring grant using this link: {auth_link}"
+            )
+
+            send_notification_message(
+                to=f"whatsapp:{applicant_cell_number}",
+                body=notification_message,
             )
 
             # Extract initial continue URI and token for contributions
@@ -915,7 +936,9 @@ def process_application():
 
             # Send POST request for payout grant
             response_payout_grant = requests.post(
-                node_server_initiate_stokvelpayout_grant, json=payload_payout
+                node_server_initiate_stokvelpayout_grant,
+                json=payload_payout,
+                timeout=10,
             )
             print(response_payout_grant)
 
@@ -931,12 +954,20 @@ def process_application():
                 response_payout_grant.json()["recurring_grant"]["interact"]["redirect"],
             )
 
+            auth_link = response.json()["recurring_grant"]["interact"]["redirect"]
+            notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {auth_link}"
+
+            send_notification_message(
+                to="whatsapp:+27798782441",  # Need to change
+                body=notification_message,
+            )
+
             # endregion
 
             # region INSERTS USER IN TABLES
 
             declined_applications_list = insert_stokvel_member(
-                application_id=application_joiner_id,
+                application_id=application_id,
                 stokvel_id=application_stokvel_id,
                 user_id=application_joiner_id,
                 user_contribution=user_contribution,
