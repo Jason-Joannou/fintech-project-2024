@@ -71,5 +71,12 @@ export type outgoingPaymentType = {
   continueUri: string;
   continueAccessToken: string;
   senderWalletAddress: string;
-  interactRef: string;
+  interactRef?: string;
+};
+
+export type recurringGrantPayments = {
+  senderWalletAddress: string;
+  receiverWalletAddress: string;
+  manageURL: string;
+  previousToken: string;
 };
