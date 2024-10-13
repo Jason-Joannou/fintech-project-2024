@@ -1,11 +1,17 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 
 import requests
 from azure.functions import TimerRequest
 
 BASE_READ_ROUTE = "http://127.0.0.1:5000/database/query_db"
 BASE_WRITE_ROUTE = "http://127.0.0.1:5000/database/write_db"
+
+node_server_create_initial_payment = "http://localhost:3000/create-initial-outgoing-payment"
+
+node_server_recurring_payment = "http://localhost:3000/process-recurring-payment"
+node_server_recurring_payment_with_interest = "http://localhost:3000/process-recurring-winterest-payment"
 
 
 def main(DailyContributionOperation: TimerRequest) -> None:
@@ -163,10 +169,135 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                     print(f"Inserting transaction with parameters: {(parameters)}")
 
 
-
                     # Step 4: Update STOKVEL_MEMBERS if user_quote_id is not None
                     if user_quote_id is not None:
                         # Update user_quote_id to NULL
+                        #region ILP INITIAL PAYMENT
+
+                        current_next_date = input_date
+                        query = '''
+                        SELECT STOKVEL_MEMBERS.*,
+                        USERS.ILP_Wallet,
+                            STOKVELS.payout_frequency_duration,
+                            STOKVELS.contribution_period
+                            FROM STOKVEL_MEMBERS 
+                            
+                            JOIN USERS ON STOKVEL_MEMBERS.user_id = USERS.user_id
+                            JOIN STOKVELS ON STOKVEL_MEMBERS.stokvel_id = STOKVELS.stokvel_id WHERE STOKVEL_MEMBERS.stokvel_id = :stokvel_id 
+                            AND STOKVEL_MEMBERS.user_id = :user_id
+                        '''
+                        parameters = {
+                            "stokvel_id": stokvel_id,
+                            "user_id": user_id
+                        }
+                        
+                        # Send the POST request to the API
+                        stokvel_members_details_response = requests.post(
+                            BASE_READ_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": query,
+                                "parameters": parameters,
+                            },
+                            timeout=10
+                        )
+                        
+                        # Check for HTTP errors
+                        stokvel_members_details_response.raise_for_status()
+                        
+                        # Parse the JSON response
+                        stokvel_members_result = stokvel_members_details_response.json()
+                        
+                        # If result is found, return it
+                        stokvel_members_details = stokvel_members_result[0]  # Assuming it's the first record
+                        
+                        
+                        payload = {
+                            "quote_id": stokvel_members_details['user_quote_id'],                                    
+                            "continueUri": stokvel_members_details['user_payment_URI'],
+                            "continueAccessToken": stokvel_members_details['user_payment_token'],
+                            "walletAddressURL": stokvel_members_details['ILP_wallet'],
+                            "interact_ref":stokvel_members_details['user_interaction_ref']
+                        }
+
+                        initial_payment_response = requests.post(node_server_create_initial_payment, json=payload)
+
+                        print("RESPONSE: \n", initial_payment_response.json())
+
+                        new_token = initial_payment_response.json()['token']
+                        new_uri = initial_payment_response.json()['manageurl']
+                
+                        # update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri)
+
+                        update_token_url_query = """
+                            UPDATE STOKVEL_MEMBERS
+                            SET user_payment_token = :new_token, 
+                                user_payment_URI = :new_uri, 
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE stokvel_id = :stokvel_id and user_id = :user_id
+                        """
+
+                        update_token_url_parameters = {
+                            "new_token": new_token,
+                            "new_uri": new_uri,
+                            "stokvel_id": stokvel_id,
+                            "user_id": user_id
+                        }
+                        
+                        # Send the POST request to the API
+                        stokvel_members_token_url_update_response = requests.post(
+                            BASE_WRITE_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": update_token_url_query,
+                                "parameters": update_token_url_parameters,
+                            },
+                            timeout=10
+                        )
+                        # Check for HTTP errors
+                        stokvel_members_token_url_update_response.raise_for_status()
+                        
+                        #update to the next contribution date
+
+                        if stokvel_members_details['contribution_period'] == 'Days':
+                            period_delta = timedelta(days=1)  # Increment by 1 day
+                        elif stokvel_members_details['contribution_period'] == 'Week':
+                            period_delta = timedelta(weeks=1)  # Increment by 1 week
+                        elif stokvel_members_details['contribution_period'] == 'Months':
+                            period_delta = relativedelta(months=1)  # Increment by 1 month
+                        elif stokvel_members_details['contribution_period'] == 'Years':
+                            period_delta = relativedelta(years=1)  # Increment by 1 year
+                        else:
+                            raise ValueError("Invalid contribution period specified.")
+
+                        # Calculate the next contribution date
+                        next_date = current_next_date + period_delta
+
+                        update_next_contribution_query = """
+                            UPDATE CONTRIBUTIONS
+                            SET PreviousDate = :PreviousDate, NextDate = :NextDate
+                            WHERE stokvel_id = :stokvel_id
+                        """
+
+                        date_update_parameters = {
+                        "PreviousDate": current_next_date,  # Set the current NextDate as PreviousDate
+                        "NextDate": next_date,# Set the new calculated NextDate
+                        "stokvel_id": stokvel_id
+                        }
+
+                        # Send the POST request to the API
+                        member_contributions_update_response = requests.post(
+                            BASE_WRITE_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": update_next_contribution_query,
+                                "parameters": date_update_parameters,
+                            },
+                            timeout=10
+                        )
+                        # Check for HTTP errors
+                        member_contributions_update_response.raise_for_status()             
+
+
+                        #endregion
+
                         update_response = requests.post(
                             BASE_WRITE_ROUTE,
                             json={
@@ -184,8 +315,136 @@ def main(DailyContributionOperation: TimerRequest) -> None:
 
                         # Raise an exception for HTTP error responses
                         update_response.raise_for_status()
-
                         logging.info(f"Updated user_quote_id for user_id: {user_id}")
+
+                    
+                    else:
+                        #region ILP RECURRING CONTRIBUTION PAYMENT
+                        current_next_date = input_date
+                        query = '''
+                        SELECT STOKVEL_MEMBERS.*,
+                        USERS.ILP_Wallet,
+                            STOKVELS.payout_frequency_duration,
+                            STOKVELS.contribution_period
+                            FROM STOKVEL_MEMBERS 
+                            
+                            JOIN USERS ON STOKVEL_MEMBERS.user_id = USERS.user_id
+                            JOIN STOKVELS ON STOKVEL_MEMBERS.stokvel_id = STOKVELS.stokvel_id WHERE STOKVEL_MEMBERS.stokvel_id = :stokvel_id 
+                            AND STOKVEL_MEMBERS.user_id = :user_id
+                        '''
+                        parameters = {
+                            "stokvel_id": stokvel_id,
+                            "user_id": user_id
+                        }
+                        
+                        # Send the POST request to the API
+                        stokvel_members_details_response = requests.post(
+                            BASE_READ_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": query,
+                                "parameters": parameters,
+                            },
+                            timeout=10
+                        )
+                        
+                        # Check for HTTP errors
+                        stokvel_members_details_response.raise_for_status()
+                        
+                        # Parse the JSON response
+                        stokvel_members_result = stokvel_members_details_response.json()
+                        
+                        # If result is found, return it
+                        stokvel_members_details = stokvel_members_result[0]  # Assuming it's the first record
+                        
+                        print("add recurring payment")
+                        payload = {
+                            "sender_wallet_address":stokvel_members_details['ILP_wallet'],
+                            "receiving_wallet_address":"https://ilp.rafiki.money/alices_stokvel",
+                            "manageUrl":stokvel_members_details['user_payment_URI'],
+                            "previousToken":stokvel_members_details['user_payment_token'],
+                        }
+
+                        recurring_payment_response = requests.post(node_server_recurring_payment, json=payload)
+                        print("RESPONSE: \n", recurring_payment_response.json())
+
+                        recurring_payment_response.raise_for_status() #raise error making payment with node server
+
+        
+                        new_token = recurring_payment_response.json()['token']
+                        new_uri = recurring_payment_response.json()['manageurl']
+                
+                        # update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri)
+
+                        update_token_url_query = """
+                            UPDATE STOKVEL_MEMBERS
+                            SET user_payment_token = :new_token, 
+                                user_payment_URI = :new_uri, 
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE stokvel_id = :stokvel_id and user_id = :user_id
+                        """
+
+                        update_token_url_parameters = {
+                            "new_token": new_token,
+                            "new_uri": new_uri,
+                            "stokvel_id": stokvel_id,
+                            "user_id": user_id
+                        }
+                        
+                        # Send the POST request to the API
+                        stokvel_members_token_url_update_response = requests.post(
+                            BASE_WRITE_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": update_token_url_query,
+                                "parameters": update_token_url_parameters,
+                            },
+                            timeout=10
+                        )
+                        # Check for HTTP errors
+                        stokvel_members_token_url_update_response.raise_for_status()
+                        
+                        
+                        #update to the next contribution date
+
+                        if stokvel_members_details['contribution_period'] == 'Days':
+                            period_delta = timedelta(days=1)  # Increment by 1 day
+                        elif stokvel_members_details['contribution_period'] == 'Week':
+                            period_delta = timedelta(weeks=1)  # Increment by 1 week
+                        elif stokvel_members_details['contribution_period'] == 'Months':
+                            period_delta = relativedelta(months=1)  # Increment by 1 month
+                        elif stokvel_members_details['contribution_period'] == 'Years':
+                            period_delta = relativedelta(years=1)  # Increment by 1 year
+                        else:
+                            raise ValueError("Invalid contribution period specified.")
+
+                        # Calculate the next contribution date
+                        next_date = current_next_date + period_delta
+
+                        update_next_contribution_query = """
+                            UPDATE CONTRIBUTIONS
+                            SET PreviousDate = :PreviousDate, NextDate = :NextDate
+                            WHERE stokvel_id = :stokvel_id
+                        """
+
+                        date_update_parameters = {
+                        "PreviousDate": current_next_date,  # Set the current NextDate as PreviousDate
+                        "NextDate": next_date,# Set the new calculated NextDate
+                        "stokvel_id": stokvel_id
+                        }
+
+                        # Send the POST request to the API
+                        member_contributions_update_response = requests.post(
+                            BASE_WRITE_ROUTE,  # Assuming you're using a different route for reads
+                            json={
+                                "query": update_next_contribution_query,
+                                "parameters": date_update_parameters,
+                            },
+                            timeout=10
+                        )
+                        # Check for HTTP errors
+                        member_contributions_update_response.raise_for_status()
+
+                        # endregion
+
 
                 except Exception as e:
                     logging.error(f"Error attempting to make contribution for user {user_id}: {str(e)}")

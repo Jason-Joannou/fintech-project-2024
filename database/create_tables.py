@@ -31,7 +31,13 @@ def create_stokvel_members_table_sqlite() -> None:
                 user_quote_id TEXT, 
                 stokvel_payment_token TEXT,
                 stokvel_payment_URI TEXT,
-                stokvel_quote_id TEXT, 
+                stokvel_quote_id TEXT,
+                stokvel_initial_payment_needed INTEGER,
+                stokvel_interaction_ref TEXT,
+                user_interaction_ref TEXT, 
+                stokvel_payout_active_status TEXT, -- need to have one for users so that we can know that they are also active and have accepted the payment grant
+                adhoc_contribution_uri TEXT,
+                adhoc_contribution_token TEXT, 
                 UNIQUE (stokvel_id, user_id)  -- Ensure stokvel_id and user_id combination is unique
             )
         """
@@ -55,11 +61,11 @@ def create_stokvel_table_sqlite() -> None:
             total_members INTEGER,
             min_contributing_amount REAL,
             max_number_of_contributors INTEGER,
-            total_contributions REAL,
+            Total_contributions REAL,
             start_date TEXT, -- Dates often stored as text in ISO8601 format or as numbers
             end_date TEXT,
-            payout_frequency_int INTEGER,
-            payout_frequency_period TEXT,
+            payout_frequency_duration TEXT,
+            contribution_period TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Set current timestamp by default
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
@@ -257,7 +263,9 @@ def create_applications_table_sqlite() -> None:
                 stokvel_id INTEGER,
                 user_id INTEGER,
                 AppStatus TEXT,
-                AppDate DATETIME            );
+                AppDate DATETIME,
+                user_contribution NUMERIC
+                            );
         """
             )
         )
