@@ -1,9 +1,9 @@
 import express, { Response, Request } from "express";
-import { client } from "../../utils/ilp-utils/client";
 import { validateWalletAddress } from "../../utils/ilp-utils/wallet";
 import {
   createGrant,
   createIncomingPayment,
+  createInitialOutgoingPayment,
   createQuote,
   createRecurringGrant,
   createRecurringGrantWithStokvelLimits,
@@ -13,6 +13,7 @@ import {
   recurringGrantType,
   recurringGrantPayments,
   recurringGrantPaymentsWithInterest,
+  outgoingPaymentType,
 } from "../../utils/types/validation";
 import { Grant } from "@interledger/open-payments";
 import {
@@ -221,6 +222,39 @@ router.post(
         await executeRecurringPaymentsWithInterest(parameters);
 
       res.json(recurringPaymentWithInterest);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error: "An unexpected error occurred during grant creation." });
+    }
+  }
+);
+
+router.post(
+  "/initial_outgoing_payment",
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        quote_id,
+        continueUri,
+        continueAccessToken,
+        walletAddressURL,
+        interact_ref,
+      } = req.body;
+
+      const authParameters: outgoingPaymentType = {
+        quote_id: quote_id,
+        continueUri: continueUri,
+        continueAccessToken: continueAccessToken,
+        senderWalletAddress: walletAddressURL,
+        interactRef: interact_ref,
+      };
+
+      const { payment, token, manageurl } =
+        await createInitialOutgoingPayment(authParameters);
+
+      return res.json({ payment: payment, token: token, manageurl: manageurl });
     } catch (error) {
       console.log(error);
       return res
