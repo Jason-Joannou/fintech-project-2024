@@ -200,7 +200,7 @@ router.post(
 );
 
 router.post(
-  "/process-recurring-winterest-payment",
+  "/process_recurring_winterest_payment",
   async (req: Request, res: Response) => {
     try {
       const {

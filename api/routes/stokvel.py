@@ -59,13 +59,13 @@ stokvel_bp = Blueprint("stokvel", __name__)
 
 BASE_ROUTE = "/stokvel"
 
-node_server_initiate_grant = "http://localhost:3000/incoming-payment-setup"
+node_server_initiate_grant = "http://localhost:3001/payments/user_payment_setup"
 node_server_initiate_stokvelpayout_grant = (
-    "http://localhost:3000/incoming-payment-setup-stokvel-payout"
+    "http://localhost:3001/payments/stokvel_payment_setup"
 )
 
 node_server_create_initial_payment = (
-    "http://localhost:3000/create-initial-outgoing-payment"
+    "http://localhost:3001/payments/initial_outgoing_payment"
 )
 
 
