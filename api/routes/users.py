@@ -2,7 +2,7 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
-from database.stokvel_queries.queries import get_all_applications
+from database.stokvel_queries.queries import get_all_applications, get_user_deposits_and_payouts_per_stokvel
 from database.user_queries.queries import (
     find_user_by_number,
     get_account_details,
@@ -70,6 +70,49 @@ def get_account_details_endpoint() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_account_details_endpoint.__name__}: {e}")
         return msg
+    
+@users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
+def get_account_details_endpoint() -> str:
+    """
+    This endpoint returns account details of a user based on their phone number
+    and displays their contributions and payouts for a specific stokvel.
+    The phone number and stokvel name should be provided in the request body.
+    """
+    phone_number = request.json.get("user_number")  # Get the phone number from the JSON body
+    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from the JSON body
+
+    try:
+        # Fetch user details
+        user_details = get_account_details(phone_number)
+
+        # Fetch user deposit and payout details by calling the relevant function
+        contributions_payouts = get_user_deposits_and_payouts_per_stokvel(phone_number, stokvel_name)
+
+        # Check if contributions and payouts data were found
+        if not contributions_payouts:
+            contributions = 0
+            payouts = 0
+        else:
+            contributions = contributions_payouts.get("total_deposits", 0)
+            payouts = contributions_payouts.get("total_payouts", 0)
+
+        # Prepare the notification message with user details and contributions/payouts
+        notification_message = (
+            f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
+            f"Your user ID: {user_details['u.user_id']}\n"
+            f"Your wallet ID: {user_details['uw.user_wallet']}\n"
+            f"Total contributions for '{stokvel_name}': {contributions} ZAR\n"
+            f"Total payouts for '{stokvel_name}': {payouts} ZAR\n"
+        )
+
+        return notification_message
+
+    except Exception as e:
+        # Handle exceptions and return a user-friendly error message
+        msg = "There was an error retrieving your account details, please try again."
+        print(f"Error in {get_account_details_endpoint.__name__}: {e}")
+        return msg
+
 
 
 @users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=["POST"])
