@@ -55,6 +55,7 @@ def main(DailyContributionOperation: TimerRequest) -> None:
 
         if not contribution_trigger_date:
             logging.info("No contribution triggers found. Exiting.")
+            print("No contribution triggers found. Exiting.")
             return
 
         # Step 2: Trigger the contribution process
@@ -87,12 +88,13 @@ def main(DailyContributionOperation: TimerRequest) -> None:
             stokvel_members = stokvel_members_response.json()
 
             logging.info(f"Members for stokvel_id {stokvel_id}: {stokvel_members}")
+            print(f"Members for stokvel_id {stokvel_id}: {stokvel_members}")
 
             if not stokvel_members:
                 logging.info(
                     f"No members found for stokvel_id {stokvel_id}. Continuing to next stokvel."
                 )
-                continue  # Continue with the next stokvel_id
+                return  # Continue with the next stokvel_id
 
             for member in stokvel_members:
                 try:
@@ -235,13 +237,13 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                                 "user_payment_token"
                             ],
                             "walletAddressURL": stokvel_members_details["ILP_wallet"],
-                            "interact_ref": stokvel_members_details[
-                                "user_interaction_ref"
-                            ],
+                            "interact_ref": str(
+                                stokvel_members_details["user_interaction_ref"]
+                            ),
                         }
 
                         initial_payment_response = requests.post(
-                            node_server_create_initial_payment, json=payload
+                            node_server_create_initial_payment, json=payload, timeout=10
                         )
 
                         print("RESPONSE: \n", initial_payment_response.json())
@@ -391,7 +393,7 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                         }
 
                         recurring_payment_response = requests.post(
-                            node_server_recurring_payment, json=payload
+                            node_server_recurring_payment, json=payload, timeout=10
                         )
                         print("RESPONSE: \n", recurring_payment_response.json())
 
