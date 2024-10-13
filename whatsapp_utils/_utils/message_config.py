@@ -151,19 +151,14 @@ VIEW_PROFILE = {
     "message": """
     Please select what you would view to see on your profile:
     1. View Account Details
-    2. View my wallet balance
-    3. My transactions
-    4. Back""",
-    "valid_actions": ["1", "2", "3", "4"],
+    2. Back""",
+    "valid_actions": ["1", "2"],
     "action_requests": {
         "1": "/users/view_account_details",
-        "2": "/accounting/view_wallet_balances",
-        "3": "/accounting/view_transactions",
     },
-    "state_selection": {"4": "back_state"},
+    "state_selection": {"2": "back_state"},
     "state": 2,
 }
-
 
 UPDATE_PROFILE = {
     "tag": "update_profile",

@@ -29,6 +29,8 @@ from database.stokvel_queries.queries import (
     insert_stokvel_member,
     update_application_status,
     update_stokvel_members_count,
+    update_max_nr_of_contributors,
+    update_stokvel_name
     get_iso_with_default_time,
     format_contribution_period_string,
     add_url_token,
@@ -182,24 +184,31 @@ def update_stokvel_contribution() -> str:
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/admin/change_stokvel_name", methods=["POST"])
-def change_stokvel_name() -> str:
+def change_stokvel_name_endpoint() -> str:
     """
-    This is an example endpoint on how we would manage post requests from the state manager.
+    Endpoint to change the stokvel name.
     """
     try:
         user_number = request.json.get("user_number")
-        user_input = request.json.get("user_input")
-        # stokvel_name = request.json.get("stokvel_selection")
+        new_stokvel_name = request.json.get("user_input")  # This will be the new stokvel name
+        stokvel_name = request.json.get("stokvel_selection")  # The current stokvel name
+
+        if not user_number or not new_stokvel_name or not stokvel_name:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Call the update function
+        update_stokvel_name(stokvel_name=stokvel_name, new_stokvelname=new_stokvel_name)
+
+        # Send notification to the user
         send_notification_message(
             to=user_number,
-            body="Thank you, we are currently processing your request...",
+            body=f"Your stokvel name has been successfully updated to {new_stokvel_name}.",
         )
-        msg = f"Your stokvel name has been succesfully updated to {user_input}."
-        return msg
+
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
-        print(f"Error in {update_stokvel_contribution.__name__}: {e}")
-        return msg
+        print(f"Error in {change_stokvel_name_endpoint.__name__}: {e}")
+        return jsonify({"error": msg}), 500
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/my_stokvels", methods=["POST"])
@@ -1016,6 +1025,32 @@ def failed_approval_sv_full() -> str:
         failed_next_step_message=failed_next_step_message,
     )
 
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/admin/change_member_number", methods=["POST"])
+def change_max_nr_of_contrributors() -> str:
+    """
+    Endpoint to change the maximum number of contributors for a stokvel.
+    """
+    try:
+        user_number = request.json.get("user_number")
+        max_nr_of_contributors = request.json.get("user_input")  # Renamed for clarity
+        stokvel_name = request.json.get("stokvel_selection")
+
+        if not user_number or not max_nr_of_contributors or not stokvel_name:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Update the max number of contributors
+        update_max_nr_of_contributors(stokvel_name=stokvel_name, max_nr_of_contributors=max_nr_of_contributors)
+
+        # Send notification to the user
+        send_notification_message(
+            to=user_number,
+            body=f"Max number of contributors has been updated to {max_nr_of_contributors}.",
+        )
+
+    except Exception as e:
+        msg = "There was an error performing that action, please try again."
+        print(f"Error in {update_max_nr_of_contributors.__name__}: {e}")
+        return jsonify({"error": msg}), 500
 
 from flask import request, render_template
 

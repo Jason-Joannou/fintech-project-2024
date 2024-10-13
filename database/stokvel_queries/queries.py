@@ -14,23 +14,24 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
 
 
-def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
+def get_user_deposits_and_payouts_per_stokvel(phone_number: str, stokvel_name: str):
     """
-    Retrieve total deposit details for a specific user and stokvel based on stokvel name.
+    Retrieve total deposit and payout details for a specific user and stokvel based on stokvel name.
 
     Args:
         phone_number (str): The user's phone number.
         stokvel_name (str): The name of the stokvel to filter by.
 
     Returns:
-        dict: A dictionary containing the user's details and total deposit amount.
+        dict: A dictionary containing the user's total deposit and payout amounts.
     """
     from_number = extract_whatsapp_number(from_number=phone_number)
 
-    # Updated query to find total deposits using `stokvel_name`
+    # Updated query to find total deposits and payouts for a specific user and stokvel
     query = """
     SELECT
-        SUM(t.amount) AS total_deposits
+        SUM(CASE WHEN t.tx_type = 'DEPOSIT' THEN t.amount ELSE 0 END) AS total_deposits,
+        SUM(CASE WHEN t.tx_type = 'PAYOUT' THEN t.amount ELSE 0 END) AS total_payouts
     FROM
         USERS u
     JOIN
@@ -38,7 +39,6 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
     WHERE
         u.user_number = :user_number
         AND t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
-        AND t.tx_type = 'DEPOSIT'
     GROUP BY
         u.user_id;
     """
@@ -56,7 +56,8 @@ def get_user_deposit_per_stokvel(phone_number: str, stokvel_name: str):
 
         # Building the result dictionary from the query response
         return {
-            "total_deposits": result[0],
+            "total_deposits": result[0],  # The total deposit amount for the user
+            "total_payouts": result[1],   # The total payout amount for the user
         }
 
 
@@ -78,7 +79,7 @@ def get_deposits_per_stokvel(stokvel_name: str):
         TRANSACTIONS t
     WHERE
         t.stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
-        AND t.tx_type = 'deposit'
+        AND t.tx_type = 'DEPOSIT'
     GROUP BY
         t.stokvel_id;
     """
@@ -1216,6 +1217,56 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
 
     except Exception as e:
         print(f"Failed to insert transaction. Error: {str(e)}")
+
+def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: float):
+    """
+    Update the max number of contributors
+
+    Args:
+        stokvel_name
+        user_input
+
+    Returns:
+        str: Success or failure message.
+    """
+
+    # SQL query to update user name
+    update_query = """
+    UPDATE STOKVELS
+    SET max_number_of_contributors = :max_nr_of_contributors
+    WHERE stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name);
+    """
+
+    with sqlite_conn.connect() as conn:
+        conn.execute(
+            text(update_query), {"stokvel_name": stokvel_name, "max_nr_of_contributors": max_nr_of_contributors}
+        )
+        conn.commit()
+
+def update_stokvel_name(stokvel_name: str, new_stokvelname: float):
+    """
+    Update the max number of contributors
+
+    Args:
+        stokvel_name
+        user_input
+
+    Returns:
+        str: Success or failure message.
+    """
+
+    # SQL query to update user name
+    update_query = """
+    UPDATE STOKVELS
+    SET stokvel_name = :new_stokvelname
+    WHERE stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name);
+    """
+
+    with sqlite_conn.connect() as conn:
+            conn.execute(
+                text(update_query), {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname}
+            )
+            conn.commit()
 
 
 def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
