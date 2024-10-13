@@ -77,7 +77,7 @@ def stokvel() -> str:
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
 
-@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/stokvel_summary", methods=["POST"])
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel_summary", methods=["POST"])
 def get_user_total_deposit():
     """
     This endpoint returns the total deposits of a user for a given stokvel.
@@ -99,7 +99,7 @@ def get_user_total_deposit():
         total_deposit_details = result["total_payouts"]
         active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
 
-        if "error" in deposit_details:
+        if "error" in result:
             raise ValueError(deposit_details["error"])
 
         # Return an error if no data is found
@@ -109,9 +109,9 @@ def get_user_total_deposit():
         # Prepare the notification message
         notification_message = (
             f"📊 Stokvel Summary\n\n"
-            f"Stokvel Name: {total_deposit_details['stokvel_name']}\n"
-            f"Total Deposits in Stokvel: R{total_deposit_details['total_deposits']:.2f}\n"
-            f"Your Total Deposits: R{deposit_details['total_deposits']:.2f}\n"
+            f"Stokvel Name: {active_users_count['stokvel_name']}\n"
+            f"Total Deposits in Stokvel: R{deposit_details:.2f}\n"
+            f"Your Total Payouts in Stokvel: R{total_deposit_details:.2f}\n"
             f"Number of Active Users in Stokvel: {active_users_count['nr_of_active_users']}\n\n"
             "Thank you for being a part of our community!\n"
         )
@@ -127,7 +127,7 @@ def get_user_total_deposit():
         return jsonify({"error": msg}), 500  # Return internal server error
 
 
-@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/view_constitution", methods=["POST"])
+@stokvel_bp.route(f"{BASE_ROUTE}/view_constitution", methods=["POST"])
 def get_stokvels_constitution_handler():
     """
     This endpoint returns the stokvels constitution
@@ -142,6 +142,7 @@ def get_stokvels_constitution_handler():
     try:
         # Fetch total deposits for the user and stokvel
         stokvel_constitution = get_stokvel_constitution(phone_number, stokvel_name)
+        print(stokvel_constitution)
 
         if "error" in stokvel_constitution:
             raise ValueError(stokvel_constitution["error"])
@@ -204,11 +205,7 @@ def change_stokvel_name_endpoint() -> str:
         # Call the update function
         update_stokvel_name(stokvel_name=stokvel_name, new_stokvelname=new_stokvel_name)
 
-        # Send notification to the user
-        send_notification_message(
-            to=user_number,
-            body=f"Your stokvel name has been successfully updated to {new_stokvel_name}.",
-        )
+        return f"Your stokvel name has been successfully updated to {new_stokvel_name}."
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
@@ -1156,7 +1153,7 @@ def stokvel_total_interest() -> str:
         return msg
 
 
-@stokvel_bp.route(f"{BASE_ROUTE}/stokvel/admin/change_member_number", methods=["POST"])
+@stokvel_bp.route(f"{BASE_ROUTE}/admin/change_member_number", methods=["POST"])
 def change_max_nr_of_contrributors() -> str:
     """
     Endpoint to change the maximum number of contributors for a stokvel.
@@ -1165,6 +1162,7 @@ def change_max_nr_of_contrributors() -> str:
         user_number = request.json.get("user_number")
         max_nr_of_contributors = request.json.get("user_input")  # Renamed for clarity
         stokvel_name = request.json.get("stokvel_selection")
+        max_nr_of_contributors = int(max_nr_of_contributors)
 
         if not user_number or not max_nr_of_contributors or not stokvel_name:
             return jsonify({"error": "Missing required fields"}), 400
@@ -1174,10 +1172,12 @@ def change_max_nr_of_contrributors() -> str:
             stokvel_name=stokvel_name, max_nr_of_contributors=max_nr_of_contributors
         )
 
-        # Send notification to the user
-        send_notification_message(
-            to=user_number,
-            body=f"Max number of contributors has been updated to {max_nr_of_contributors}.",
+        print(user_number)
+        print(max_nr_of_contributors)
+        print(stokvel_name)
+
+        return (
+            f"Max number of contributors has been updated to {max_nr_of_contributors}."
         )
 
     except Exception as e:
