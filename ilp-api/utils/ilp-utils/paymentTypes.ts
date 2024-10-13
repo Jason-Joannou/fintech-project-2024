@@ -2,20 +2,31 @@ import { client } from "./client";
 import { IWalletAddressResponse } from "../types/wallet";
 import { GrantType } from "../types/validation";
 import {
-  AccessRequest,
+  grantAccessRequest,
   Limits,
   incomingPaymentAccessRequest,
+  quoteAccessRequest,
 } from "../types/accounting";
 import { isPendingGrant } from "@interledger/open-payments";
 import { randomUUID } from "crypto";
 import { Grant, PendingGrant } from "@interledger/open-payments";
-import { promises } from "dns";
+
+const buildQuoteAccessRequest = async (
+  walletID: string,
+  incomingPaymentUrl: string
+): Promise<quoteAccessRequest> => {
+  return {
+    method: "ilp",
+    walletAddress: walletID,
+    receiver: incomingPaymentUrl,
+  };
+};
 
 const buildGrantAccessRequest = async (
   grantType: GrantType,
   walletId: string,
   paymentLimits?: Limits
-): Promise<AccessRequest> => {
+): Promise<grantAccessRequest> => {
   switch (grantType) {
     case GrantType.IncomingPayment:
       return {
@@ -32,7 +43,7 @@ const buildGrantAccessRequest = async (
     case GrantType.Quote:
       return {
         type: "quote",
-        actions: ["read"],
+        actions: ["create", "read", "read-all"],
       };
     default:
       throw new Error("Invalid grant type provided.");
@@ -64,7 +75,7 @@ export const createGrant = async (
   paymentLimits?: Limits
 ): Promise<Grant | PendingGrant> => {
   try {
-    let accessRequest: AccessRequest;
+    let accessRequest: grantAccessRequest;
 
     if (paymentLimits) {
       accessRequest = await buildGrantAccessRequest(
@@ -143,5 +154,34 @@ export const createIncomingPayment = async (
     // Log or handle the error accordingly
     console.error("Error creating IncomingPayment:", error);
     throw new Error("Failed to create IncomingPayment.");
+  }
+};
+
+export const createQuote = async (
+  walletAddress: IWalletAddressResponse,
+  incomingPaymentUrl: string
+) => {
+  try {
+    const grant_quote = (await createGrant(
+      walletAddress,
+      GrantType.Quote,
+      false
+    )) as Grant;
+    const quotePayload = await buildQuoteAccessRequest(
+      walletAddress.id,
+      incomingPaymentUrl
+    );
+    const quote = await client.quote.create(
+      {
+        url: new URL(walletAddress.id).origin,
+        accessToken: grant_quote.access_token.value,
+      },
+      quotePayload
+    );
+    return quote;
+  } catch (error) {
+    // Log or handle the error accordingly
+    console.error("Error creating quote:", error);
+    throw new Error("Failed to create quote.");
   }
 };

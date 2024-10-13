@@ -1,4 +1,4 @@
-export type AccessRequest =
+export type grantAccessRequest =
   | {
       type: "incoming-payment";
       actions: ("read" | "create" | "complete")[];
@@ -34,6 +34,12 @@ export type incomingPaymentAccessRequest = {
     assetScale: number;
   };
   expiresAt: string;
+};
+
+export type quoteAccessRequest = {
+  method: "ilp";
+  walletAddress: string;
+  receiver: string;
 };
 
 export type Limits = {
