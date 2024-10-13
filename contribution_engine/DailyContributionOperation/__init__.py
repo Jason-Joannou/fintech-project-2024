@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timezone
-
 import requests
 from azure.functions import TimerRequest
 
@@ -187,12 +186,18 @@ def main(DailyContributionOperation: TimerRequest) -> None:
 
                         logging.info(f"Updated user_quote_id for user_id: {user_id}")
 
+                    #ILP Payment function for initial payment
+                    
+                    else: 
+                        pass
+                    #ILP Payment function for recurring payments
+
                 except Exception as e:
                     logging.error(f"Error attempting to make contribution for user {user_id}: {str(e)}")
                     # Depending on your needs, you might want to continue processing other members or halt
                     continue  # Continue with the next member
 
-        logging.info("Contribution process completed successfully.")
+                    logging.info("Contribution process completed successfully.")
         return
 
     except Exception as e:

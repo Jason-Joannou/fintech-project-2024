@@ -12,6 +12,7 @@ nav:
   - Home: index.md
   - Architecture:
       - Overview: architecture/overview.md
+      - Database design: architecture/database.md
       - Terraform: architecture/terraform.md
       - Docker: architecture/docker.md
       - Components: architecture/components.md
