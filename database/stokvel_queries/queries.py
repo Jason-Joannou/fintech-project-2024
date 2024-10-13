@@ -864,7 +864,7 @@ def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
         print(f"Failed to insert transaction. Error: {str(e)}")
 
 
-def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
+def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
     """
     Get the accumulated interest for a stokvel in the current savings period.
 
@@ -877,7 +877,7 @@ def get_stokvel_monthly_interest(stokvel_id: int) -> Dict[str, float]:
         try:
             # Get most recent payout date from STOKVELS table
             query = text(
-                "SELECT prev_payout FROM STOKVELS WHERE stokvel_id = :stokvel_id"
+                "SELECT MAX(tx_date) FROM TRANSACTIONS WHERE tx_type='PAYOUT' AND stokvel_id = :stokvel_id"
             )
             result = conn.execute(query, {"stokvel_id": stokvel_id})
             prev_payout = result.scalar()

@@ -32,6 +32,7 @@ from database.user_queries.queries import (
     find_number_by_userid,
     find_user_by_number,
     get_linked_stokvels,
+    get_stokvel_monthly_interest,
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -729,3 +730,27 @@ def failed_approval_sv_full() -> str:
         failed_message=failed_message,
         failed_next_step_message=failed_next_step_message,
     )
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/stokvel_total_interest", methods=["POST"])
+def stokvel_total_interest() -> str:
+    """
+    This enpoint returns the total stokvel interest in the savings period.
+    """
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
+    try:
+        # fetch stokvel id
+        stokvel_id = get_stokvel_id_by_name(stokvel_name)
+        # get monthly interest values
+        interest_dict = get_stokvel_monthly_interest(stokvel_id)
+        # get total accumulated interest for the period
+        stkvl_interest = sum(interest_dict.values())
+        msg = f"The total interest for this Stokvel is: R{stkvl_interest}"
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error: {e}")
+        return msg

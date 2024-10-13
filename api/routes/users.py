@@ -2,11 +2,15 @@ from flask import Blueprint, Response, redirect, render_template, request, url_f
 from sqlalchemy.exc import SQLAlchemyError
 
 from database.sqlite_connection import SQLiteConnection
-from database.stokvel_queries.queries import get_all_applications
+from database.stokvel_queries.queries import (
+    get_all_applications,
+    get_stokvel_id_by_name,
+)
 from database.user_queries.queries import (
     find_user_by_number,
     get_account_details,
     get_total_number_of_users,
+    get_user_interest,
     update_user_name,
     update_user_surname,
 )
@@ -34,6 +38,32 @@ def get_all_users() -> str:
     try:
         user_count = get_total_number_of_users()
         msg = f"The total number of users registered and participating in the stokvel system are {user_count}"
+        return msg
+    except Exception as e:
+        msg = "There was an error performing that action, please try the action again."
+        print(f"Error in {get_all_users.__name__}: {e}")
+        return msg
+
+
+@users_bp.route(f"{BASE_ROUTE}/user_total_interest", methods=["POST"])
+def user_total_interest() -> str:
+    """
+    This endpoint returns the total interest for a user in a stokvel in the savings period.
+    """
+    phone_number = request.json.get(
+        "user_number"
+    )  # Get the phone number from the query parameters
+    stokvel_name = request.json.get(
+        "stokvel_selection"
+    )  # Get the stokvel name from query parameters
+
+    try:
+        # get stokvel_id an user_id
+        stokvel_id = get_stokvel_id_by_name(stokvel_name)
+        user_id = find_user_by_number(phone_number)
+        # get total interest for the user relating to the selected stokvel
+        interest = get_user_interest(user_id, stokvel_id)
+        msg = f"Your total interest in this Stokvel is: R{interest}"
         return msg
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."

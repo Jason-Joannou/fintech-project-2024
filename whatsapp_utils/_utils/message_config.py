@@ -54,14 +54,18 @@ STOKVEL_ACTIONS_USER = {
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
     2. View stokvel constitution
-    3. Leave stokvel
-    4. Back""",
-    "valid_actions": ["1", "2", "3", "4"],
+    3. View your interest
+    4. View stokvel interest
+    5. Leave stokvel
+    6. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
         "2": "/stokvel/view_constitution",
+        "3": "/stokvel/user_total_interest",
+        "4": "/stokvel/stokvel_total_interest",
     },
-    "state_selection": {"3": "leave_stokvel", "4": "back_state"},
+    "state_selection": {"5": "leave_stokvel", "6": "back_state"},
     "state": 1,
 }
 
@@ -72,15 +76,17 @@ STOKVEL_ACTIONS_ADMIN = {
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
     2. View stokvel constitution
-    3. Leave stokvel
-    4. Administrative actions
-    5. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5"],
+    3. View stokvel interest
+    4. Leave stokvel
+    5. Administrative actions
+    6. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", 6],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
         "2": "/stokvel/view_constitution",
+        "3": "/stokvel/stokvel_total_interest",
     },
-    "state_selection": {"3": "leave_stokvel", "4": "admin_services", "5": "back_state"},
+    "state_selection": {"4": "leave_stokvel", "5": "admin_services", "6": "back_state"},
     "state": 1,
 }
 
