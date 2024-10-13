@@ -1,3 +1,4 @@
+import { IWalletAddressResponse } from "./wallet";
 export type GrantStatusResult =
   | {
       isPending: true;
@@ -43,3 +44,24 @@ export enum GrantType {
   OutgoingPayment = "outgoing-payment",
   Quote = "quote",
 }
+
+export type recurringGrantType = {
+  senderWalletAddress: IWalletAddressResponse;
+  stokvelContributionStartDate: string;
+  payment_periods: number;
+  payment_period_length: string;
+  length_between_periods: string;
+  quote_id: string;
+  debitAmount: {
+    value: string;
+    assetCode: string;
+    assetScale: number;
+  };
+  receiveAmount: {
+    value: string;
+    assetCode: string;
+    assetScale: number;
+  };
+  user_id: number;
+  stokvel_id: number;
+};

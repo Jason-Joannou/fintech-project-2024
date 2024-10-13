@@ -10,6 +10,7 @@ import {
   buildIncomingPaymentAccessRequest,
   buildQuoteAccessRequest,
 } from "./accessRequests";
+import { recurringGrantType } from "../types/validation";
 
 export const createGrant = async (
   walletAddress: IWalletAddressResponse,
@@ -126,5 +127,35 @@ export const createQuote = async (
     // Log or handle the error accordingly
     console.error("Error creating quote:", error);
     throw new Error("Failed to create quote.");
+  }
+};
+
+export const createRecurringGrant = async (
+  authParameters: recurringGrantType
+): Promise<PendingGrant> => {
+  try {
+    const stokvel_contributions_start_date_converted = new Date(
+      authParameters.stokvelContributionStartDate
+    ).toISOString(); // Example date
+
+    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.length_between_periods}${authParameters.payment_period_length}`;
+
+    const paymentLimits = {
+      debitAmount: authParameters.debitAmount,
+      receiveAmount: authParameters.receiveAmount,
+      interval: interval,
+    };
+
+    const pending_recurring_grant = await createGrant(
+      authParameters.senderWalletAddress,
+      GrantType.OutgoingPayment,
+      true,
+      paymentLimits
+    );
+
+    return pending_recurring_grant as PendingGrant;
+  } catch (error) {
+    console.error(error);
+    throw new Error("An unexpected error occurred during authorization.");
   }
 };
