@@ -81,3 +81,7 @@ export type recurringGrantPayments = {
   manageURL: string;
   previousToken: string;
 };
+
+export type recurringGrantPaymentsWithInterest = recurringGrantPayments & {
+  payoutValue: string;
+};

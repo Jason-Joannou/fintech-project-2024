@@ -12,9 +12,13 @@ import {
   GrantType,
   recurringGrantType,
   recurringGrantPayments,
+  recurringGrantPaymentsWithInterest,
 } from "../../utils/types/validation";
 import { Grant } from "@interledger/open-payments";
-import { executeRecurringPayments } from "../../utils/ilp-utils/payments";
+import {
+  executeRecurringPayments,
+  executeRecurringPaymentsWithInterest,
+} from "../../utils/ilp-utils/payments";
 
 const router = express.Router();
 
@@ -180,11 +184,43 @@ router.post(
         manageURL: manageUrl,
         previousToken: previousToken,
       };
-      const recurringPayment = executeRecurringPayments(
+      const recurringPayment = await executeRecurringPayments(
         recurringPaymentParameters
       );
 
       res.json(recurringPayment);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error: "An unexpected error occurred during grant creation." });
+    }
+  }
+);
+
+router.post(
+  "/process-recurring-winterest-payment",
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        sender_wallet_address,
+        receiving_wallet_address,
+        manageUrl,
+        previousToken,
+        payout_value,
+      } = req.body; // Get data from request body
+
+      const parameters: recurringGrantPaymentsWithInterest = {
+        senderWalletAddress: sender_wallet_address,
+        receiverWalletAddress: receiving_wallet_address,
+        manageURL: manageUrl,
+        previousToken: previousToken,
+        payoutValue: payout_value,
+      };
+      const recurringPaymentWithInterest =
+        await executeRecurringPaymentsWithInterest(parameters);
+
+      res.json(recurringPaymentWithInterest);
     } catch (error) {
       console.log(error);
       return res
