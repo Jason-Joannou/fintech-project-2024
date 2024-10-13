@@ -1,72 +1,15 @@
 import { client } from "./client";
 import { IWalletAddressResponse } from "../types/wallet";
 import { GrantType } from "../types/validation";
-import {
-  grantAccessRequest,
-  Limits,
-  incomingPaymentAccessRequest,
-  quoteAccessRequest,
-} from "../types/accounting";
 import { isPendingGrant } from "@interledger/open-payments";
 import { randomUUID } from "crypto";
 import { Grant, PendingGrant } from "@interledger/open-payments";
-
-const buildQuoteAccessRequest = async (
-  walletID: string,
-  incomingPaymentUrl: string
-): Promise<quoteAccessRequest> => {
-  return {
-    method: "ilp",
-    walletAddress: walletID,
-    receiver: incomingPaymentUrl,
-  };
-};
-
-const buildGrantAccessRequest = async (
-  grantType: GrantType,
-  walletId: string,
-  paymentLimits?: Limits
-): Promise<grantAccessRequest> => {
-  switch (grantType) {
-    case GrantType.IncomingPayment:
-      return {
-        type: "incoming-payment",
-        actions: ["read", "create", "complete"],
-      };
-    case GrantType.OutgoingPayment:
-      return {
-        type: "outgoing-payment",
-        actions: ["read", "create", "read-all", "list", "list-all"],
-        identifier: walletId,
-        limits: paymentLimits ? { ...paymentLimits } : undefined,
-      };
-    case GrantType.Quote:
-      return {
-        type: "quote",
-        actions: ["create", "read", "read-all"],
-      };
-    default:
-      throw new Error("Invalid grant type provided.");
-  }
-};
-
-const buildIncomingPaymentAccessRequest = async (
-  walletId: string,
-  walletAssetCode: string,
-  walletAssetScale: number,
-  expiryDate: number,
-  value: string
-): Promise<incomingPaymentAccessRequest> => {
-  return {
-    walletAddress: walletId,
-    incomingAmount: {
-      value: value,
-      assetCode: walletAssetCode,
-      assetScale: walletAssetScale,
-    },
-    expiresAt: new Date(expiryDate + 48 * 60 * 60 * 1000).toISOString(),
-  };
-};
+import { Limits, grantAccessRequest } from "../types/accounting";
+import {
+  buildGrantAccessRequest,
+  buildIncomingPaymentAccessRequest,
+  buildQuoteAccessRequest,
+} from "./accessRequests";
 
 export const createGrant = async (
   walletAddress: IWalletAddressResponse,
