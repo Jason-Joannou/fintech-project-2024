@@ -65,3 +65,11 @@ export type recurringGrantType = {
   user_id: number;
   stokvel_id: number;
 };
+
+export type outgoingPaymentType = {
+  quote_id: string;
+  continueUri: string;
+  continueAccessToken: string;
+  senderWalletAddress: string;
+  interactRef: string;
+};

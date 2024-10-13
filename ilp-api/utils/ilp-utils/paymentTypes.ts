@@ -10,7 +10,8 @@ import {
   buildIncomingPaymentAccessRequest,
   buildQuoteAccessRequest,
 } from "./accessRequests";
-import { recurringGrantType } from "../types/validation";
+import { recurringGrantType, outgoingPaymentType } from "../types/validation";
+import { validateWalletAddress } from "./wallet";
 
 export const createGrant = async (
   walletAddress: IWalletAddressResponse,
@@ -154,6 +155,46 @@ export const createRecurringGrant = async (
     );
 
     return pending_recurring_grant as PendingGrant;
+  } catch (error) {
+    console.error(error);
+    throw new Error("An unexpected error occurred during authorization.");
+  }
+};
+
+export const createOutgoingPayment = async (
+  authParameters: outgoingPaymentType
+) => {
+  try {
+    const senderWalletAddress = await validateWalletAddress(
+      authParameters.senderWalletAddress
+    );
+
+    const outgoingPaymentGrant = (await client.grant.continue(
+      {
+        accessToken: authParameters.continueAccessToken,
+        url: authParameters.continueUri,
+      },
+      {
+        interact_ref: authParameters.interactRef,
+      }
+    )) as Grant;
+
+    const outgoingPayment = await client.outgoingPayment.create(
+      {
+        url: new URL(senderWalletAddress.id).origin,
+        accessToken: outgoingPaymentGrant.access_token.value,
+      },
+      {
+        walletAddress: senderWalletAddress.id,
+        quoteId: authParameters.quote_id,
+      }
+    );
+
+    return {
+      payment: outgoingPayment,
+      token: outgoingPaymentGrant.access_token.value,
+      manageurl: outgoingPaymentGrant.access_token.manage,
+    };
   } catch (error) {
     console.error(error);
     throw new Error("An unexpected error occurred during authorization.");
