@@ -78,7 +78,7 @@ STOKVEL_ACTIONS_ADMIN = {
     4. Leave stokvel
     5. Administrative actions
     6. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5", 6],
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
         "2": "/stokvel/view_constitution",
