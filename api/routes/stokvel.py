@@ -20,7 +20,7 @@ from database.stokvel_queries.queries import (
     get_nr_of_active_users_per_stokvel,
     get_stokvel_constitution,
     get_stokvel_id_by_name,
-    get_user_deposit_per_stokvel,
+    get_user_deposits_and_payouts_per_stokvel,
     insert_admin,
     insert_stokvel,
     insert_stokvel_join_application,
@@ -65,9 +65,14 @@ def get_user_total_deposit():
 
     try:
         # Fetch total deposits for the user and stokvel
-        deposit_details = get_user_deposit_per_stokvel(phone_number, stokvel_name)
+        deposit_details = get_user_deposits_and_payouts_per_stokvel(phone_number, stokvel_name)
         total_deposit_details = get_deposits_per_stokvel(stokvel_name)
         active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
+
+        # If there is an error or no data for deposits or payouts, set them to zero
+        user_total_deposits = deposit_details.get('total_deposits', 0)
+        user_total_payouts = deposit_details.get('total_payouts', 0)
+        stokvel_total_deposits = total_deposit_details.get('total_deposits', 0)
 
         if "error" in deposit_details:
             raise ValueError(deposit_details["error"])
@@ -79,10 +84,11 @@ def get_user_total_deposit():
         # Prepare the notification message
         notification_message = (
             f"📊 Stokvel Summary\n\n"
-            f"Stokvel Name: {total_deposit_details['stokvel_name']}\n"
-            f"Total Deposits in Stokvel: R{total_deposit_details['total_deposits']:.2f}\n"
-            f"Your Total Deposits: R{deposit_details['total_deposits']:.2f}\n"
-            f"Number of Active Users in Stokvel: {active_users_count['nr_of_active_users']}\n\n"
+            f"Stokvel Name: {total_deposit_details.get('stokvel_name', 'Unknown')}\n"
+            f"Total Deposits in Stokvel: R{stokvel_total_deposits:.2f}\n"
+            f"Your Total Deposits: R{user_total_deposits:.2f}\n"
+            f"Your Total Payouts: R{user_total_payouts:.2f}\n"
+            f"Number of Active Users in Stokvel: {active_users_count.get('nr_of_active_users', 0)}\n\n"
             "Thank you for being a part of our community!\n"
         )
 
@@ -91,7 +97,7 @@ def get_user_total_deposit():
 
     except Exception as e:
         msg = "There was an error performing that action, please try the action again."
-        print(f"Error in {get_user_deposit_per_stokvel.__name__}: {e}")
+        print(f"Error in {get_user_deposits_and_payouts_per_stokvel.__name__}: {e}")
         print(f"Error in {get_nr_of_active_users_per_stokvel.__name__}: {e}")
         print(f"Error in {get_deposits_per_stokvel.__name__}: {e}")
         return jsonify({"error": msg}), 500  # Return internal server error

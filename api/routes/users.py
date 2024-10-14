@@ -9,6 +9,7 @@ from database.user_queries.queries import (
     get_total_number_of_users,
     update_user_name,
     update_user_surname,
+    get_total_user_deposits_and_payouts
 )
 from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
@@ -39,37 +40,6 @@ def get_all_users() -> str:
         msg = "There was an error performing that action, please try the action again."
         print(f"Error in {get_all_users.__name__}: {e}")
         return msg
-
-
-@users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
-def get_account_details_endpoint() -> str:
-    """
-    This endpoint returns account details of a user based on their phone number.
-    The phone number should be provided as a query parameter.
-    """
-    phone_number = request.json.get(
-        "user_number"
-    )  # Get the phone number from the query parameters
-
-    try:
-        user_details = get_account_details(
-            phone_number
-        )  # Call the function and store the result
-
-        # Prepare the notification message
-        notification_message = (
-            f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
-            f"Your user ID: {user_details['u.user_id']}\n"
-            f"Your wallet ID: {user_details['uw.user_wallet']}\n"
-            f"Your wallet balance: {user_details['uw.UserBalance']}\n\n"
-        )
-
-        return notification_message
-
-    except Exception as e:
-        msg = "There was an error performing that action, please try the action again."
-        print(f"Error in {get_account_details_endpoint.__name__}: {e}")
-        return msg
     
 @users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
 def get_account_details_endpoint() -> str:
@@ -79,30 +49,26 @@ def get_account_details_endpoint() -> str:
     The phone number and stokvel name should be provided in the request body.
     """
     phone_number = request.json.get("user_number")  # Get the phone number from the JSON body
-    stokvel_name = request.json.get("stokvel_name")  # Get the stokvel name from the JSON body
 
     try:
         # Fetch user details
         user_details = get_account_details(phone_number)
 
         # Fetch user deposit and payout details by calling the relevant function
-        contributions_payouts = get_user_deposits_and_payouts_per_stokvel(phone_number, stokvel_name)
+        contributions_payouts = get_total_user_deposits_and_payouts(phone_number)
 
-        # Check if contributions and payouts data were found
-        if not contributions_payouts:
-            contributions = 0
-            payouts = 0
-        else:
-            contributions = contributions_payouts.get("total_deposits", 0)
-            payouts = contributions_payouts.get("total_payouts", 0)
+        # Set contributions and payouts to zero if no data is found
+        contributions = contributions_payouts.get("total_deposits", 0) if contributions_payouts else 0
+        payouts = contributions_payouts.get("total_payouts", 0) if contributions_payouts else 0
+
 
         # Prepare the notification message with user details and contributions/payouts
         notification_message = (
             f"Welcome {user_details['u.user_name']} {user_details['u.user_surname']}!\n\n"
             f"Your user ID: {user_details['u.user_id']}\n"
             f"Your wallet ID: {user_details['uw.user_wallet']}\n"
-            f"Total contributions for '{stokvel_name}': {contributions} ZAR\n"
-            f"Total payouts for '{stokvel_name}': {payouts} ZAR\n"
+            f"Total contributions made: R{contributions:.2f}\n"
+            f"Total payouts received: R{payouts:.2f}\n"
         )
 
         return notification_message

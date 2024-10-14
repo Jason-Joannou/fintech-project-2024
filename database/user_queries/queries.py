@@ -355,3 +355,46 @@ def update_user_surname(phone_number: str, new_surname: str):
 
     except Exception as e:
         print(f"Error updating surname: {e}")
+
+def get_total_user_deposits_and_payouts(phone_number: str):
+    """
+    Retrieve total deposit and payout details for a specific user and stokvel based on stokvel name.
+
+    Args:
+        phone_number (str): The user's phone number.
+        stokvel_name (str): The name of the stokvel to filter by.
+
+    Returns:
+        dict: A dictionary containing the user's total deposit and payout amounts.
+    """
+    from_number = extract_whatsapp_number(from_number=phone_number)
+
+    # Updated query to find total deposits and payouts for a specific user and stokvel
+    query = """
+    SELECT
+        SUM(CASE WHEN t.tx_type = 'DEPOSIT' THEN t.amount ELSE 0 END) AS total_deposits,
+        SUM(CASE WHEN t.tx_type = 'PAYOUT' THEN t.amount ELSE 0 END) AS total_payouts
+    FROM
+        USERS u
+    JOIN
+        TRANSACTIONS t ON u.user_id = t.user_id
+    WHERE
+        u.user_number = :user_number;
+    """
+
+    # Executing the query using the SQLite connection
+    with sqlite_conn.connect() as conn:
+        result = conn.execute(
+            text(query), {"user_number": from_number}
+        ).fetchone()
+
+        if not result:
+            return {
+                "error": f"No data found for the given user number."
+            }
+
+        # Building the result dictionary from the query response
+        return {
+            "total_deposits": result[0],  # The total deposit amount for the user
+            "total_payouts": result[1],   # The total payout amount for the user
+        }
