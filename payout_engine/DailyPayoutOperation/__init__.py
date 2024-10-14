@@ -430,7 +430,7 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
                     ]  # Assuming it's the first record
 
                     payload = {
-                        "sender_wallet_address": "https://ilp.rafiki.money/alices_stokvel",
+                        "sender_wallet_address": "https://ilp.rafiki.money/masterstokveladdress",
                         "receiving_wallet_address": stokvel_members_details[
                             "ILP_wallet"
                         ],
