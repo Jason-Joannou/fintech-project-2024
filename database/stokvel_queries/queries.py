@@ -175,7 +175,7 @@ def get_stokvel_constitution(phone_number: str, stokvel_name: str):
 
         if not result:
             return {
-                "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {phone_number}."
+                "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {formatted_number}."
             }
 
         # Step 4: Build the result dictionary from the query response
@@ -1271,7 +1271,7 @@ def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: flo
         conn.commit()
 
 
-def update_stokvel_name(stokvel_name: str, new_stokvelname: float):
+def update_stokvel_name(stokvel_name: str, new_stokvelname: str, user_number: str):
     """
     Update the max number of contributors
 
@@ -1284,18 +1284,42 @@ def update_stokvel_name(stokvel_name: str, new_stokvelname: float):
     """
 
     # SQL query to update user name
+    user_number = extract_whatsapp_number(from_number=user_number)
     update_query = """
     UPDATE STOKVELS
     SET stokvel_name = :new_stokvelname
     WHERE stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name);
     """
+    update_state_query = """
+    UPDATE STATE_MANAGEMENT
+    SET current_stokvel = :new_stokvelname
+    WHERE user_number = :user_number;
+    """
 
+    update_admin_table = """
+    UPDATE ADMIN
+    SET stokvel_name = :new_stokvelname
+    WHERE stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :new_stokvelname);
+    """
     with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(update_query),
-            {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname},
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                text(update_query),
+                {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname},
+            )
+            conn.execute(
+                text(update_state_query),
+                {"user_number": user_number, "new_stokvelname": new_stokvelname},
+            )
+            conn.execute(
+                text(update_admin_table),
+                {"stokvel_name": stokvel_name, "new_stokvelname": new_stokvelname},
+            )
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print(f"Error updating stokvel name: {e}")
+            raise e
 
 
 def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:

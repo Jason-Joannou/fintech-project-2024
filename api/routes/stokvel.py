@@ -95,6 +95,7 @@ def get_user_total_deposit():
         result = get_user_deposits_and_payouts_per_stokvel(
             phone_number=phone_number, stokvel_name=stokvel_name
         )
+
         deposit_details = result["total_deposits"]
         total_deposit_details = result["total_payouts"]
         active_users_count = get_nr_of_active_users_per_stokvel(stokvel_name)
@@ -203,7 +204,11 @@ def change_stokvel_name_endpoint() -> str:
             return jsonify({"error": "Missing required fields"}), 400
 
         # Call the update function
-        update_stokvel_name(stokvel_name=stokvel_name, new_stokvelname=new_stokvel_name)
+        update_stokvel_name(
+            stokvel_name=stokvel_name,
+            new_stokvelname=new_stokvel_name,
+            user_number=user_number,
+        )
 
         return f"Your stokvel name has been successfully updated to {new_stokvel_name}."
 
