@@ -4,12 +4,10 @@ UNREGISTERED_NUMBER = {
     Hi there! We noticed this number is not registered with us. Registering your number is needed to start contributing to Stokvels.
     Please select one of the following options to proceed:
     1. Register using Rafiki money
-    2. Register using MTN Mobile Money
     """,
-    "valid_actions": ["1", "2"],
+    "valid_actions": ["1"],
     "action_responses": {
         "1": "Please register through our online portal: http://stokveldigital.uksouth.azurecontainer.io/onboard",
-        "2": "Please register through our online portal: https://stokvels.com/register",
     },
     "state": -1,
 }
