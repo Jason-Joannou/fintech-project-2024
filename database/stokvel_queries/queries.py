@@ -49,7 +49,8 @@ def get_user_deposits_and_payouts_per_stokvel(phone_number: str, stokvel_name: s
 
         if not result:
             return {
-                "error": f"No data found for the given user number and stokvel name: {stokvel_name}."
+                "total_deposits": 0,  # The total deposit amount for the user
+                "total_payouts": 0,  # The total payout amount for the user
             }
 
         # Building the result dictionary from the query response
