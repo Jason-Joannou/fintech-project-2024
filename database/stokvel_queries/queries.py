@@ -1126,7 +1126,7 @@ def double_number_periods_for_same_daterange(period):
         period_duration = "M"
         number_of_periods_coverted = 6
     elif period == "Months":
-        period_duration == "w"
+        period_duration = "W"
         number_of_periods_coverted = 2
     elif period == "Weeks":
         period_duration = "D"
