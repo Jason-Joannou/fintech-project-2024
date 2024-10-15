@@ -37,7 +37,7 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
       walletAddressURL,
       sender_walletAddressURL,
       payment_periods,
-      length_between_periods,
+      number_of_periods,
       payment_period_length,
       user_id,
       stokvel_id,
@@ -50,6 +50,7 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
       recieverWallet,
       GrantType.IncomingPayment,
       false,
+      "user",
       {},
       user_id,
       stokvel_id
@@ -69,7 +70,7 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
       stokvelContributionStartDate: stokvel_contributions_start_date,
       payment_periods: payment_periods,
       payment_period_length: payment_period_length,
-      length_between_periods: length_between_periods,
+      number_of_periods: number_of_periods,
       quote_id: quote.id,
       debitAmount: {
         value: quote.debitAmount.value,
@@ -108,8 +109,8 @@ router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
       walletAddressURL,
       sender_walletAddressURL,
       payment_periods,
-      length_between_periods,
       payment_period_length,
+      number_of_periods,
       user_id,
       stokvel_id,
     } = req.body; // Get data from request body
@@ -121,6 +122,7 @@ router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
       recieverWallet,
       GrantType.IncomingPayment,
       false,
+      "stokvel",
       {},
       user_id,
       stokvel_id
@@ -140,8 +142,8 @@ router.post("/stokvel_payment_setup", async (req: Request, res: Response) => {
       stokvelContributionStartDate: stokvel_contributions_start_date,
       payment_periods: payment_periods,
       payment_period_length: payment_period_length,
-      length_between_periods: length_between_periods,
       quote_id: quote.id,
+      number_of_periods: number_of_periods,
       debitAmount: {
         value: quote.debitAmount.value,
         assetCode: quote.debitAmount.assetCode,

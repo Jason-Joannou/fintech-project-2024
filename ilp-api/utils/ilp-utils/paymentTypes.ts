@@ -21,6 +21,7 @@ export const createGrant = async (
   walletAddress: IWalletAddressResponse,
   grantType: GrantType,
   withInteraction: boolean,
+  dynamicEndpoint: string = "user",
   paymentLimits?: Limits,
   userId?: string,
   stokvelId?: string
@@ -47,7 +48,7 @@ export const createGrant = async (
             start: ["redirect"],
             finish: {
               method: "redirect",
-              uri: `http://localhost:5000/stokvel/create_stokvel/user_interactive_grant_response?user_id=${userId}&stokvel_id=${stokvelId}`,
+              uri: `http://localhost:5000/stokvel/create_stokvel/${dynamicEndpoint}_interactive_grant_response?user_id=${userId}&stokvel_id=${stokvelId}`,
               nonce: randomUUID(),
             },
           },
@@ -147,7 +148,7 @@ export const createRecurringGrant = async (
       authParameters.stokvelContributionStartDate
     ).toISOString(); // Example date
 
-    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.length_between_periods}${authParameters.payment_period_length}`;
+    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P1${authParameters.payment_period_length}`;
 
     const paymentLimits = {
       debitAmount: authParameters.debitAmount,
@@ -159,6 +160,7 @@ export const createRecurringGrant = async (
       authParameters.senderWalletAddress,
       GrantType.OutgoingPayment,
       true,
+      "user",
       paymentLimits,
       authParameters.user_id,
       authParameters.stokvel_id
@@ -250,7 +252,7 @@ export const createRecurringGrantWithStokvelLimits = async (
     authParameters.debitAmount.value = "1000000000";
     authParameters.receiveAmount.value = "1000000000";
 
-    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.length_between_periods}${authParameters.payment_period_length}`;
+    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.number_of_periods}${authParameters.payment_period_length}`;
 
     const paymentLimits = {
       debitAmount: authParameters.debitAmount,
@@ -262,7 +264,10 @@ export const createRecurringGrantWithStokvelLimits = async (
       authParameters.senderWalletAddress,
       GrantType.OutgoingPayment,
       true,
-      paymentLimits
+      "stokvel",
+      paymentLimits,
+      authParameters.user_id,
+      authParameters.stokvel_id
     );
 
     return pending_recurring_grant as PendingGrant;
