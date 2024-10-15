@@ -32,13 +32,21 @@ export const executeRecurringPayments = async (
     const manageurl = token.access_token.manage;
     const used_token = token.access_token.value;
 
+
+
     const tokenAccessDetails = token.access_token.access as {
       type: "outgoing-payment";
       actions: ("create" | "read" | "read-all" | "list" | "list-all")[];
       identifier: string;
       limits?: components["schemas"]["limits-outgoing"];
     }[];
-    const receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
+    
+
+    let receiveAmount = tokenAccessDetails[0]?.limits?.receiveAmount?.value;
+
+    if (parameters.contributionValue != null){
+      receiveAmount = parameters.contributionValue
+    }
 
     const receiverWallet = await validateWalletAddress(
       parameters.receiverWalletAddress
@@ -51,7 +59,7 @@ export const executeRecurringPayments = async (
       receiverWallet,
       GrantType.IncomingPayment,
       false,
-      {}
+      // {}
     );
 
     if (isPendingGrant(grant)) {
@@ -74,6 +82,10 @@ export const executeRecurringPayments = async (
       tokenValue: token.access_token.value,
     };
     const outgoingPayment = await createOutgoingPayment(authParameters);
+
+    console.log('TOKEN INFO USED:')
+    console.log(manageurl)
+    console.log(used_token)
 
     return {
       outgoingPayment: outgoingPayment,
@@ -125,7 +137,7 @@ export const executeRecurringPaymentsWithInterest = async (
       receiverWallet,
       GrantType.IncomingPayment,
       false,
-      {}
+      // {}
     );
 
     if (isPendingGrant(grant)) {
