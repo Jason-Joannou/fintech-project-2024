@@ -15,7 +15,7 @@ Although foreign key relationships were established in the table design, they we
 
 The  various tables used in our design, the purpose of each table and the key fields of each table is detailed below 
 
-1. STOKVEL_MEMBERS Table
+1. **STOKVEL_MEMBERS Table**
 
 #### Purpose
 
@@ -28,7 +28,7 @@ Stores information about users who are members of specific stokvels.
 - contribution_amount: Amount the user contributes on a recurring basis. 
 - Unique Constraint: Ensures each combination of stokvel_id and user_id is unique, preventing duplicate memberships.
 
-2. STOKVELS Table
+2. **STOKVELS Table**
 
 #### Purpose 
 
@@ -43,7 +43,7 @@ Stores details about each stokvel. The details in this stokvel is used to create
 - payout_frequency_int, payout_frequency_period: Frequency of payouts.
 - start_date, end_date: Dates marking the stokvel's active period.
 
-3. USERS Table
+3. **USERS Table**
 
 #### Purpose 
 
@@ -57,7 +57,7 @@ Stores user-specific information.
 - ILP_wallet, MOMO_wallet: Wallet details for the user. This caters for both a ILP and Momo wallet for future applications.
 - verified_KYC: Flag indicating if the user has KYC verification.
 
-4. TRANSACTIONS Table
+4. **TRANSACTIONS Table**
 
 #### Purpose 
 
@@ -73,7 +73,7 @@ This table is used to determine the size of the payout each user should receive 
 - tx_type: Type of transaction (e.g., DEPOSIT, PAYOUT).
 - tx_date: Date of the transaction.
 
-5. RESOURCES Table
+5. **RESOURCES Table**
 
 #### Purpose 
 
@@ -85,7 +85,7 @@ Stores links or resources related to the system.
 - resource_type: Type of the resource (e.g., document, link).
 - url: URL where the resource is located.
 
-6. ADMIN Table
+6. **ADMIN Table**
 
 #### Purpose 
 
@@ -98,7 +98,7 @@ Holds data about stokvel administrators. Stokvel administrators have certain rig
 - total_contributions: Total contributions handled by the admin.
 - Unique Constraint: Each combination of stokvel_id and user_id must be unique.
 
-7. CONTRIBUTIONS Table
+7. **CONTRIBUTIONS Table**
 
 #### Purpose 
 
@@ -110,7 +110,7 @@ Tracks if the contributions process should be kicked off for a specific stokvel.
 - frequency_days: Frequency of contributions (in days).
 - StartDate, NextDate, PreviousDate, EndDate: Track the contribution schedule.
 
-8. PAYOUTS Table
+8. **PAYOUTS Table**
 
 #### Purpose 
 
@@ -122,7 +122,7 @@ Tracks if the payout process should be kicked off for a specific stokvel.
 - frequency_days: Frequency of payouts (in days).
 - StartDate, NextDate, PreviousDate, EndDate: Payout schedule.
 
-9. USER_WALLET Table
+9. **USER_WALLET Table**
 
 #### Purpose 
 
@@ -133,7 +133,7 @@ Stores wallet information for users.
 - user_wallet: Wallet details for the user.
 - UserBalance: Current balance in the user's wallet.
 
-10. STOKVEL_WALLET Table
+10. **STOKVEL_WALLET Table**
 
 #### Purpose 
 
@@ -144,7 +144,7 @@ Stores wallet information for stokvels.
 - user_id: Foreign key referencing the USERS table.
 - UserBalance: Balance in the stokvel’s wallet.
 
-11. APPLICATIONS Table
+11. **APPLICATIONS Table**
 
 #### Purpose 
 
@@ -157,7 +157,7 @@ Tracks applications made by users to join stokvels.
 - AppStatus: Status of the application (e.g., pending, approved).
 - AppDate: Date of the application.
 
-12. STATE_MANAGEMENT Table
+12. **STATE_MANAGEMENT Table**
 
 #### Purpose 
 
@@ -169,7 +169,7 @@ Manages interaction states on the WhatsApp Channel to enable usets to move betwe
 - last_interaction: Timestamp of the last interaction.
 - current_stokvel: Current stokvel the user is engaged with.
 
-13. INTEREST Table
+13. **INTEREST Table**
 
 #### Purpose 
 
