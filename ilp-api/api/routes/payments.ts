@@ -41,6 +41,7 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
       payment_period_length,
       user_id,
       stokvel_id,
+      user_contribution
     } = req.body; // Get data from request body
 
     const recieverWallet = await validateWalletAddress(walletAddressURL);
@@ -73,12 +74,12 @@ router.post("/user_payment_setup", async (req: Request, res: Response) => {
       number_of_periods: number_of_periods,
       quote_id: quote.id,
       debitAmount: {
-        value: quote.debitAmount.value,
+        value: user_contribution,
         assetCode: quote.debitAmount.assetCode,
         assetScale: quote.debitAmount.assetScale,
       },
       receiveAmount: {
-        value: quote.receiveAmount.value,
+        value: user_contribution,
         assetCode: quote.receiveAmount.assetCode,
         assetScale: quote.receiveAmount.assetScale,
       },
@@ -183,6 +184,7 @@ router.post(
         receiving_wallet_address,
         manageUrl,
         previousToken,
+        contributionValue
       } = req.body; // Get data from request body
 
       const recurringPaymentParameters: recurringGrantPayments = {
@@ -190,6 +192,7 @@ router.post(
         receiverWalletAddress: receiving_wallet_address,
         manageURL: manageUrl,
         previousToken: previousToken,
+        contributionValue: contributionValue
       };
       const recurringPayment = await executeRecurringPayments(
         recurringPaymentParameters

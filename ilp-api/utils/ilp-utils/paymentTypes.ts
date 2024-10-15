@@ -148,7 +148,7 @@ export const createRecurringGrant = async (
       authParameters.stokvelContributionStartDate
     ).toISOString(); // Example date
 
-    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P1${authParameters.payment_period_length}`;
+    const interval = `R${authParameters.payment_periods}/${stokvel_contributions_start_date_converted}/P${authParameters.number_of_periods}${authParameters.payment_period_length}`;
 
     const paymentLimits = {
       debitAmount: authParameters.debitAmount,

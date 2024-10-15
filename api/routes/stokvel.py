@@ -515,9 +515,11 @@ def onboard_stokvel() -> Response:
         print("USER CONTRIBUTION GRANT FUNCTIONALITY")
 
         payload = {
-            "value": str(
-                int(stokvel_data.min_contributing_amount * 100 + 0.02) #add a 2c for the initial payment?
-            ),  # multiply by 100 because the asset scale is 2?
+            # "value": str(
+            #     int(stokvel_data.min_contributing_amount * 100 + 0.02) #add a 2c for the initial payment?
+            # ),  # multiply by 100 because the asset scale is 2?
+            "value":str(int(1)),
+            "user_contribution":str(int(stokvel_data.min_contributing_amount)*100+2),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                 stokvel_data.start_date
             ),
@@ -527,7 +529,7 @@ def onboard_stokvel() -> Response:
             "payment_period_length": format_contribution_period_string(
                 stokvel_data.contribution_period
             ),
-            "length_between_periods": (
+            "number_of_periods": (
                 "T30"
                 if format_contribution_period_string(stokvel_data.contribution_period)
                 == "S"
@@ -852,10 +854,12 @@ def process_application():
 
             # Prepare the payload for user contribution grant
             payload = {
-                "value": str(
-                    int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
-                ),  # Multiply by 100 due to asset scale
-                "stokvel_contributions_start_date": get_iso_with_default_time(
+                # "value": str(
+                #     int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
+                # ),  # Multiply by 100 due to asset scale
+            "value":str(int(1)),
+            "user_contribution":str(int(stokvel_dict.get("user_contribution"))*100+2),
+            "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
                 "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
@@ -866,7 +870,7 @@ def process_application():
                 "payment_period_length": format_contribution_period_string(
                     stokvel_dict.get("contribution_period")
                 ),
-                "length_between_periods": (
+                "number_of_periods": (
                     "T30"
                     if format_contribution_period_string(
                         stokvel_dict.get("contribution_period")
