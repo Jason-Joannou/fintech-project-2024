@@ -248,6 +248,8 @@ def format_contribution_period_string(contribution_period: str):
         contribution_period = "Y"
     elif contribution_period == "30 Seconds":
         contribution_period = "S"
+    elif contribution_period == "2 Minutes":
+        contribution_period = "M"
     return contribution_period
 
 
@@ -1111,6 +1113,12 @@ def calculate_number_periods(payout_period, start_date, end_date):
         print("TOTAL SECONDS ", total_seconds)
         no_periods = int(total_seconds // 30)  # Total number of 30-second periods
         period_delta = timedelta(seconds=30)  # Increment by 30 seconds
+    elif payout_period == "2 Minutes":
+        # Calculate the total number of seconds in the period
+        total_seconds = (end_date - start_date).total_seconds()
+        print("TOTAL SECONDS ", total_seconds)
+        no_periods = int(total_seconds // 120)  # Total number of 2 minute periods
+        period_delta = timedelta(seconds=120)  # Increment by 30 seconds
     else:
         raise ValueError(
             f"Invalid payout period specified. Payout period {payout_period}"
@@ -1137,6 +1145,9 @@ def double_number_periods_for_same_daterange(period):
     elif period == "30 Seconds":
         period_duration = "S"
         number_of_periods_coverted = "T15"
+    elif period == "2 Minutes":
+        period_duration = "M"
+        number_of_periods_coverted = "T2"
     print(period, " ", period_duration, " ", number_of_periods_coverted)
     return period_duration, number_of_periods_coverted
 
