@@ -80,6 +80,7 @@ export type recurringGrantPayments = {
   receiverWalletAddress: string;
   manageURL: string;
   previousToken: string;
+  contributionValue?: string; //added this so that amounts can be slightly variable (so that we can consider the 1c payment from user)
 };
 
 export type recurringGrantPaymentsWithInterest = recurringGrantPayments & {
