@@ -50,8 +50,8 @@ export type recurringGrantType = {
   stokvelContributionStartDate: string;
   payment_periods: number;
   payment_period_length: string;
-  length_between_periods: string;
   quote_id: string;
+  number_of_periods: string;
   debitAmount: {
     value: string;
     assetCode: string;
