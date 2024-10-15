@@ -16,6 +16,19 @@ Our project is designed as a full-stack application, integrating a database, bac
 
   The frontend is the user-facing part of the application, developed using Vue.js. It provides an intuitive interface for users to interact with the data, visualize results, and perform various operations. The frontend communicates with the backend API to fetch and display data in real-time, ensuring a seamless user experience.
 
+**WhatsApp Interface**
+
+  Users are able to interact with our service via a WhatsApp chatbot that allows certain user functionality. This enables access to some of the key services of our service via a low cost, easy to access service. 
+  From the WhatsApp chatbot a user can perform the following actions: 
+
+  - Initiate user onboarding (completed via a web app)
+  - Initiate stokvel creation (completed via a web app)
+  - View user profile
+  - Update user profile
+  - View details of stokvels joined
+  - Update stokvels for which the user is an admin 
+
+
 **Azure Integration**  
 
   Azure is central to our infrastructure management, providing services for hosting, scaling, and monitoring our application. We use Azure Resource Manager (ARM) to define and manage resources, including our database, container registry, and container instances. Terraform is employed to define our infrastructure as code (IaC), enabling consistent and repeatable deployments.
