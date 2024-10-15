@@ -16,6 +16,7 @@ from database.contribution_payout_queries import (
     insert_member_contribution_parameters,
     insert_stokvel_payouts_parameters,
     update_stokvel_token_uri,
+    update_user_contribution_token_uri
 )
 from database.stokvel_queries.queries import (
     calculate_number_periods,
@@ -178,10 +179,10 @@ def update_stokvel_contribution() -> str:
         user_number = request.json.get("user_number")
         user_input = request.json.get("user_input")
         stokvel_name = request.json.get("stokvel_selection")
-        send_notification_message(
-            to=user_number,
-            body="Thank you, we are currently processing your request...",
-        )
+        # send_notification_message(
+        #     to=user_number,
+        #     body="Thank you, we are currently processing your request...",
+        # )
         msg = f"You contribution amount has been succesfully updated to R{user_input} for {stokvel_name}."
         return msg
     except Exception as e:
@@ -341,15 +342,15 @@ def apply_to_join_stokvel() -> Response:
         )
 
         # Send the notification message
-        send_notification_message(
-            to=f"whatsapp:{joiner_data.requesting_number}",
-            body=joiner_notification_message,
-        )
+        # send_notification_message(
+        #     to=f"whatsapp:{joiner_data.requesting_number}",
+        #     body=joiner_notification_message,
+        # )
 
-        # Send the notification message
-        send_notification_message(
-            to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
-        )
+        # # Send the notification message
+        # send_notification_message(
+        #     to=f"whatsapp:{stokvel_admin_cell_number}", body=admin_notification_message
+        # )
         return redirect(url_for("stokvel.success_stokvel_join_application"))
 
     except SQLAlchemyError as sql_error:
@@ -513,7 +514,7 @@ def onboard_stokvel() -> Response:
 
         payload = {
             "value": str(
-                int(stokvel_data.min_contributing_amount * 100)
+                int(stokvel_data.min_contributing_amount * 100 + 0.02) #add a 2c for the initial payment?
             ),  # multiply by 100 because the asset scale is 2?
             "stokvel_contributions_start_date": get_iso_with_default_time(
                 stokvel_data.start_date
@@ -552,9 +553,9 @@ def onboard_stokvel() -> Response:
         )
 
         # Send the notification message UNCOMMENT LATER!!
-        send_notification_message(
-            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
-        )
+        # send_notification_message(
+        #     to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
+        # )
 
         initial_continue_uri_contribution = response.json()["continue_uri"]
         initial_continue_token_contribution = response.json()["continue_token"]["value"]
@@ -681,9 +682,9 @@ def onboard_stokvel() -> Response:
         )
 
         # Send the notification message UNCOMMENT LATER!!
-        send_notification_message(
-            to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
-        )
+        # send_notification_message(
+        #     to=f"whatsapp:{stokvel_data.requesting_number}", body=notification_message
+        # )
         return redirect(url_for("stokvel.success_stokvel_creation"))
 
     except SQLAlchemyError as sql_error:
@@ -850,7 +851,7 @@ def process_application():
             # Prepare the payload for user contribution grant
             payload = {
                 "value": str(
-                    int(user_contribution) * 100
+                    int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
                 ),  # Multiply by 100 due to asset scale
                 "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
@@ -894,10 +895,10 @@ def process_application():
                 f"Please Authorize the recurring grant using this link: {auth_link}"
             )
 
-            send_notification_message(
-                to=f"whatsapp:{applicant_cell_number}",
-                body=notification_message,
-            )
+            # send_notification_message(
+            #     to=f"whatsapp:{applicant_cell_number}",
+            #     body=notification_message,
+            # )
 
             # Extract initial continue URI and token for contributions
             initial_continue_uri_contribution = response.json()["continue_uri"]
@@ -964,10 +965,10 @@ def process_application():
             ]["redirect"]
             notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {agent_auth_link}"
 
-            send_notification_message(
-                to="whatsapp:+27798782441",  # Need to change
-                body=notification_message,
-            )
+            # send_notification_message(
+            #     to="whatsapp:+27798782441",  # Need to change
+            #     body=notification_message,
+            # )
 
             # endregion
 
@@ -1003,11 +1004,12 @@ def process_application():
                 )
 
                 for number in declined_applications_list:
+                    pass
 
                     # Send the notification message
-                    send_notification_message(
-                        to=f"whatsapp:{number}", body=app_declined_notification_message
-                    )
+                    # send_notification_message(
+                    #     to=f"whatsapp:{number}", body=app_declined_notification_message
+                    # )
 
                 return redirect(
                     url_for(
@@ -1023,10 +1025,10 @@ def process_application():
             )
 
             # Send the notification message
-            send_notification_message(
-                to=f"whatsapp:{applicant_cell_number}",
-                body=app_accepted_notification_message,
-            )
+            # send_notification_message(
+            #     to=f"whatsapp:{applicant_cell_number}",
+            #     body=app_accepted_notification_message,
+            # )
 
         except Exception as e:
             print(f"General Error occurred during insert operations: {e}")
@@ -1055,10 +1057,10 @@ def process_application():
         )
 
         # Send the notification message
-        send_notification_message(
-            to=f"whatsapp:{applicant_cell_number}",
-            body=app_declined_notification_message,
-        )
+        # send_notification_message(
+        #     to=f"whatsapp:{applicant_cell_number}",
+        #     body=app_declined_notification_message,
+        # )
 
     # Redirect to a route that fetches the latest applications with the requesting_number
     return redirect(
@@ -1239,6 +1241,27 @@ def user_interactive_grant_handle() -> str:
             active_status="active",
             user_interaction_ref=interact_ref,
         )
+
+        print("add user initial payment")
+
+        stokvel_members_details = get_stokvel_member_details(stokvel_id, user_id)
+
+        payload = {
+            "quote_id": stokvel_members_details.get("user_quote_id"),
+            "continueUri": stokvel_members_details.get("user_payment_URI"),
+            "continueAccessToken": stokvel_members_details.get("user_payment_token"),
+            "walletAddressURL": find_wallet_by_userid(user_id = user_id),
+            "interact_ref": stokvel_members_details.get("user_interaction_ref"),
+        }
+
+        response = requests.post(node_user_create_initial_payment, json=payload)
+
+        print("RESPONSE: \n", response.json())
+
+        new_token = response.json()["token"]
+        new_uri = response.json()["manageurl"]
+
+        update_user_contribution_token_uri(stokvel_id, user_id, new_token, new_uri)
 
         return render_template(
             "action_success_template.html",
