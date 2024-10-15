@@ -957,7 +957,10 @@ def process_application():
             )
 
             auth_link = response.json()["recurring_grant"]["interact"]["redirect"]
-            notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {auth_link}"
+            agent_auth_link = response_payout_grant.json()["recurring_grant"][
+                "interact"
+            ]["redirect"]
+            notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {agent_auth_link}"
 
             send_notification_message(
                 to="whatsapp:+27798782441",  # Need to change
