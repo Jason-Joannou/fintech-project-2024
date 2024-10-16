@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import requests
 from flask import (
     Blueprint,
@@ -16,7 +18,7 @@ from database.contribution_payout_queries import (
     insert_member_contribution_parameters,
     insert_stokvel_payouts_parameters,
     update_stokvel_token_uri,
-    update_user_contribution_token_uri
+    update_user_contribution_token_uri,
 )
 from database.stokvel_queries.queries import (
     calculate_number_periods,
@@ -38,6 +40,7 @@ from database.stokvel_queries.queries import (
     insert_stokvel,
     insert_stokvel_join_application,
     insert_stokvel_member,
+    insert_transaction,
     update_adhoc_contribution_parms,
     update_application_status,
     update_max_nr_of_contributors,
@@ -516,8 +519,10 @@ def onboard_stokvel() -> Response:
             # "value": str(
             #     int(stokvel_data.min_contributing_amount * 100 + 0.02) #add a 2c for the initial payment?
             # ),  # multiply by 100 because the asset scale is 2?
-            "value":str(int(1)),
-            "user_contribution":str(int(stokvel_data.min_contributing_amount+2)*100),
+            "value": str(int(1)),
+            "user_contribution": str(
+                int(stokvel_data.min_contributing_amount + 2) * 100
+            ),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                 stokvel_data.start_date
             ),
@@ -817,7 +822,7 @@ def process_application():
     if action == "approve":
         # print(application_id, ' Approved')
         try:
-            update_application_status(application_id, 'Approved') #uncommented this
+            update_application_status(application_id, "Approved")  # uncommented this
             stokvel_dict = get_stokvel_details(stokvel_id=application_stokvel_id)
             print(stokvel_dict)
 
@@ -855,9 +860,9 @@ def process_application():
                 # "value": str(
                 #     int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
                 # ),  # Multiply by 100 due to asset scale
-            "value":str(int(1)),
-            "user_contribution":str((int(user_contribution)+2)*100),
-            "stokvel_contributions_start_date": get_iso_with_default_time(
+                "value": str(int(1)),
+                "user_contribution": str((int(user_contribution) + 2) * 100),
+                "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
                 "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
@@ -879,7 +884,7 @@ def process_application():
                 "user_id": application_joiner_id,
                 "stokvel_id": application_stokvel_id,
             }
-            
+
             print("REQUEST: ")
             print(payload)
 
@@ -979,7 +984,7 @@ def process_application():
 
             # region INSERTS USER IN TABLES
 
-            print('TRYING TO INSERT MEMBER')
+            print("TRYING TO INSERT MEMBER")
 
             declined_applications_list = insert_stokvel_member(
                 application_id=application_id,
@@ -1257,11 +1262,13 @@ def user_interactive_grant_handle() -> str:
             "quote_id": stokvel_members_details.get("user_quote_id"),
             "continueUri": stokvel_members_details.get("user_payment_URI"),
             "continueAccessToken": stokvel_members_details.get("user_payment_token"),
-            "walletAddressURL": find_wallet_by_userid(user_id = user_id),
+            "walletAddressURL": find_wallet_by_userid(user_id=user_id),
             "interact_ref": stokvel_members_details.get("user_interaction_ref"),
         }
 
-        response = requests.post(node_user_create_initial_payment, json=payload)
+        response = requests.post(
+            node_server_create_initial_payment, json=payload, timeout=10
+        )
 
         print("RESPONSE: \n", response.json())
 
@@ -1334,7 +1341,9 @@ def stokvel_interactive_grant_handle() -> str:
             "interact_ref": stokvel_members_details.get("stokvel_interaction_ref"),
         }
 
-        response = requests.post(node_server_create_initial_payment, json=payload)
+        response = requests.post(
+            node_server_create_initial_payment, json=payload, timeout=10
+        )
 
         print("RESPONSE: \n", response.json())
 
@@ -1406,14 +1415,28 @@ def adhoc_payment_grant_handle() -> str:
             response = requests.post(
                 node_server_create_initial_payment, json=payload, timeout=10
             )
+            response.raise_for_status()
 
             print("RESPONSE: \n", response.json())
 
-            if response.json()["payment"]["failed"] == False:
+            if response.json()["payment"]["failed"] is False:
                 # TO DO: ADD PAYMENT TO TRANSACION TABLE
+                payout = response.json()["payment"]["receiveAmount"]["value"]
                 # SEND USER NOTIFCATION
+                # Record Transaction
+                insert_transaction(
+                    user_id=user_id,
+                    stokvel_id=stokvel_id,
+                    amount=payout,
+                    tx_type="PAYOUT",
+                    tx_date=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                )
+                notifcation_message = f"Your payment of {payout} was successful. You have successfuly left Stokvel {get_stokvel_details(stokvel_id)['stokvel_name']}"
+                send_notification_message(
+                    to=f"whatsapp:{find_number_by_userid(user_id)}",
+                    body=notifcation_message,
+                )
                 print("payment was successful")
-                pass
 
             return render_template(
                 "action_success_template.html",
@@ -1433,59 +1456,6 @@ def adhoc_payment_grant_handle() -> str:
                 failed_message=failed_message,
                 failed_next_step_message=failed_next_step_message,
             )
-
-
-@stokvel_bp.route(
-    f"{BASE_ROUTE}/create_adhoc_payment", methods=["POST"]
-)  # would need to change this to take in actual parameters...
-def adhoc_payment_test():
-    node_end_point = "http://localhost:3000/adhoc-payment-setup"  # Fixed URL
-    user_id = 980618  # Fixed user_id
-    stokvel_id = 18  # Fixed stokvel_id
-
-    try:
-        payload = {
-            "value": "500",
-            "stokvel_contributions_start_date": "2024-10-09T16:52:30.123Z",
-            "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
-            "sender_walletAddressURL": "https://ilp.rafiki.money/bob_account",
-            "user_id": user_id,
-            "stokvel_id": stokvel_id,
-        }
-
-        response = requests.post(node_end_point, json=payload)
-
-        # Check for response status
-        response.raise_for_status()  # Raises an error for 4xx/5xx responses
-
-        # Ensure keys exist in the response
-        response_data = response.json()
-        adhoc_continue_uri = response_data.get("continue_uri")
-        adhoc_continue_token = response_data.get("continue_token", {}).get("value")
-
-        print("RESPONSE: \n", response_data)
-
-        # Ensure both URI and token are valid before proceeding
-        if adhoc_continue_uri and adhoc_continue_token:
-            update_adhoc_contribution_parms(
-                stokvel_id=stokvel_id,
-                user_id=user_id,
-                url=adhoc_continue_uri,
-                token=adhoc_continue_token,
-            )
-            return {"message": "Success", "data": response_data}, 200
-        else:
-            return {"error": "Missing continue_uri or continue_token"}, 400
-
-    except requests.exceptions.RequestException as req_error:
-        print("Request error occurred:", req_error)
-        return {
-            "error": str(req_error)
-        }, 500  # Return a JSON response with request error
-
-    except Exception as e:
-        print("Error occurred:", e)  # Print the error for debugging
-        return {"error": str(e)}, 500  # Return a JSON response with an error message
 
 
 @stokvel_bp.route(f"{BASE_ROUTE}/leave_stokvel", methods=["GET"])
@@ -1524,6 +1494,7 @@ def leave_current_stokvel():
         }
 
         response = requests.post(noder_server_adhoc_payment, json=payload, timeout=10)
+        response.raise_for_status()
         print(response.json())
 
         auth_link = response.json()["recurring_grant"]["interact"]["redirect"]

@@ -1190,39 +1190,43 @@ def get_next_unique_id(conn, table_name, id_column):
     return (result[0] or 0) + 1
 
 
-def insert_transaction(conn, user_id, stokvel_id, amount, tx_type, tx_date):
+def insert_transaction(user_id, stokvel_id, amount, tx_type, tx_date):
     """
     Insert a transaction into the TRANSACTIONS table with success and exception handling.
     """
-    try:
-        # Insert the transaction into the table
-        # Get the next unique id for the transaction
-        transaction_id = get_next_unique_id(conn, "TRANSACTIONS", "id")
-        conn.execute(
-            text(
+    with sqlite_conn.connect() as conn:
+
+        try:
+            # Insert the transaction into the table
+            # Get the next unique id for the transaction
+            transaction_id = get_next_unique_id(conn, "TRANSACTIONS", "id")
+
+            conn.execute(
+                text(
+                    """
+                INSERT INTO TRANSACTIONS (id, user_id, stokvel_id, amount, tx_type, tx_date, created_at, updated_at)
+                VALUES (:id, :user_id, :stokvel_id, :amount, :tx_type, :tx_date, :created_at, :updated_at)
                 """
-            INSERT INTO TRANSACTIONS (id, user_id, stokvel_id, amount, tx_type, tx_date, created_at, updated_at)
-            VALUES (:id, :user_id, :stokvel_id, :amount, :tx_type, :tx_date, :created_at, :updated_at)
-            """
-            ),
-            {
-                "id": transaction_id,
-                "user_id": user_id,
-                "stokvel_id": stokvel_id,
-                "amount": amount,
-                "tx_type": tx_type,
-                "tx_date": tx_date,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now(),
-            },
-        )
+                ),
+                {
+                    "id": transaction_id,
+                    "user_id": user_id,
+                    "stokvel_id": stokvel_id,
+                    "amount": amount,
+                    "tx_type": tx_type,
+                    "tx_date": tx_date,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                },
+            )
 
-        conn.commit()  # Commit the transaction to the database
+            conn.commit()  # Commit the transaction to the database
 
-        print(f"Transaction with ID {transaction_id} was successfully added.")
+            print(f"Transaction with ID {transaction_id} was successfully added.")
 
-    except Exception as e:
-        print(f"Failed to insert transaction. Error: {str(e)}")
+        except Exception as e:
+            print(f"Failed to insert transaction. Error: {str(e)}")
+            conn.rollback()
 
 
 def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: float):
@@ -1470,626 +1474,6 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             return 0.00
 
 
-# Contributions function
-
-
-def contribution_trigger():
-    """
-    Check if the contribution process should be kicked off based on the NextDate in the database.
-    """
-
-    input_date = datetime.now().date()  # Only compare the date part
-    tx_date = datetime.now()
-
-    try:
-        with sqlite_conn.connect() as conn:
-            # Query to check if the NextDate matches the input date
-            contribution_triggers = conn.execute(
-                text(
-                    """
-                    SELECT stokvel_id
-                    FROM CONTRIBUTIONS
-                    WHERE DATE(NextDate) = :input_date  -- Compare only the date part
-                    """
-                ),
-                {"input_date": input_date},
-            ).fetchall()  # Use fetchall() to get all stokvel_ids
-
-            # If results are found, kick off the contribution process
-            if contribution_triggers:
-                for trigger in contribution_triggers:
-                    stokvel_id = trigger[0]
-
-                    all_members = conn.execute(
-                        text(
-                            """
-                            SELECT *
-                            FROM STOKVEL_MEMBERS
-                            WHERE stokvel_id = :stokvel_id
-                            """
-                        ),
-                        {"stokvel_id": stokvel_id},
-                    ).fetchall()  # Fetch all members
-
-                    for member in all_members:
-                        try:
-                            user_id = member[2]
-                            amount = member[5]
-                            user_quote_id = member[9]
-                            tx_type = "DEPOSIT"
-                            tx_date = tx_date
-                            manageUrl = member[7]
-                            previousToken = member[8]
-
-                            sender_wallet_address = conn.execute(
-                                text(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM USERS
-                                    WHERE user_id = :user_id
-                                    """
-                                ),
-                                {"user_id": user_id},
-                            ).fetchone()
-
-                            receiving_wallet_address = conn.execute(
-                                text(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM STOKVELS
-                                    WHERE stokvel_id = :stokvel_id
-                                    """
-                                ),
-                                {"stokvel_id": stokvel_id},
-                            ).fetchone()
-
-                            # Check if a payment is needed based on user_quote_id
-                            if user_quote_id is not None:
-                                # Create initial payment
-                                # create_inital_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, user_quote_id)
-
-                                conn.execute(
-                                    text(
-                                        """
-                                        UPDATE STOKVEL_MEMBERS
-                                        SET user_quote_id = NULL
-                                        WHERE user_id = :user_id
-                                        """
-                                    ),
-                                    {"user_id": user_id},
-                                )
-
-                                insert_transaction(
-                                    conn, user_id, stokvel_id, amount, tx_type, tx_date
-                                )
-
-                            else:
-                                # Create contribution payment
-                                # create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
-
-                                insert_transaction(
-                                    conn, user_id, stokvel_id, amount, tx_type, tx_date
-                                )
-
-                                print(f"Ran the recurring payment")
-
-                        except Exception as e:
-                            print(
-                                f"Error attempting to make contribution for user {user_id}: {str(e)}"
-                            )
-                            return False
-
-            else:
-                print("No contributions scheduled for today.")
-                return True  # Indicate no contributions found but process is complete
-
-    except Exception as e:
-        print(f"Error checking contribution trigger: {str(e)}")
-        return False
-
-
-# Payout  function
-
-
-def payout_trigger():
-    """
-    Check if the payout process should be kicked off based on the NextDate in the database.
-    """
-
-    input_date = datetime.now().date()  # Only compare the date part
-    tx_date = datetime.now()
-
-    try:
-        with sqlite_conn.connect() as conn:
-            # Query to check if the NextDate matches the input date
-            payout_triggers = conn.execute(
-                text(
-                    """
-                    SELECT stokvel_id
-                    FROM PAYOUTS
-                    WHERE DATE(NextDate) = :input_date  -- Compare only the date part
-                    """
-                ),
-                {"input_date": input_date},
-            ).fetchall()  # Use fetchall() to get all stokvel_ids
-
-            # If results are found, kick off the contribution process
-            if payout_triggers:
-                for trigger in payout_triggers:
-                    stokvel_id = trigger[0]
-
-                    all_members = conn.execute(
-                        text(
-                            """
-                            SELECT *
-                            FROM STOKVEL_MEMBERS
-                            WHERE stokvel_id = :stokvel_id
-                            """
-                        ),
-                        {"stokvel_id": stokvel_id},
-                    ).fetchall()  # Fetch all members
-
-                    for member in all_members:
-                        try:
-
-                            user_id = member[2]
-                            stokvel_quote_id = member[12]
-                            tx_type = "PAYOUT"
-                            tx_date = tx_date
-                            manageUrl = member[7]
-                            previousToken = member[8]
-
-                            # SQL query to sum deposits after the most recent payout
-                            deposits = conn.execute(
-                                text(
-                                    """
-                                            SELECT SUM(amount) AS total_deposits
-                                            FROM TRANSACTIONS
-                                            WHERE user_id = :user_id
-                                            AND stokvel_id = :stokvel_id
-                                            AND tx_type = 'DEPOSIT'
-                                            AND tx_date > COALESCE((
-                                                SELECT MAX(tx_date)
-                                                FROM TRANSACTIONS
-                                                WHERE user_id = :user_id
-                                                    AND stokvel_id = :stokvel_id
-                                                    AND tx_type = 'PAYOUT'
-                                            ), '1900-01-01')
-                                            """
-                                ),
-                                {"user_id": user_id, "stokvel_id": stokvel_id},
-                            ).scalar()
-
-                            deposits = float(deposits)
-
-                            interest = get_user_interest(
-                                user_id=user_id, stokvel_id=stokvel_id
-                            )
-
-                            print(f"Total deposits: {deposits}")
-                            print(f"Total interest: {interest}")
-
-                            payout = deposits + interest
-
-                            receiving_wallet_address = conn.execute(
-                                text(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM USERS
-                                    WHERE user_id = :user_id
-                                    """
-                                ),
-                                {"user_id": user_id},
-                            ).fetchone()
-
-                            sender_wallet_address = conn.execute(
-                                text(
-                                    """
-                                    SELECT ILP_wallet
-                                    FROM STOKVELS
-                                    WHERE stokvel_id = :stokvel_id
-                                    """
-                                ),
-                                {"stokvel_id": stokvel_id},
-                            ).fetchone()
-
-                            # Check if a payment is needed based on user_quote_id
-                            if stokvel_quote_id is not None:
-                                # Create initial payment
-                                # create_inital_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken, user_quote_id)
-
-                                conn.execute(
-                                    text(
-                                        """
-                                        UPDATE STOKVEL_MEMBERS
-                                        SET stokvel_quote_id = NULL
-                                        WHERE user_id = :user_id
-                                        """
-                                    ),
-                                    {"user_id": user_id},
-                                )
-
-                                insert_transaction(
-                                    conn, user_id, stokvel_id, payout, tx_type, tx_date
-                                )
-
-                                print(f"Ran the initial payout")
-
-                            else:
-                                # Create contribution payment
-                                # create_contribution_payment(sender_wallet_address, receiving_wallet_address, manageUrl, previousToken)
-
-                                insert_transaction(
-                                    conn, user_id, stokvel_id, payout, tx_type, tx_date
-                                )
-
-                                print(f"Ran the recurring payout")
-
-                        except Exception as e:
-                            print(
-                                f"Error attempting to make contribution for user {user_id}: {str(e)}"
-                            )
-                            return False
-
-            else:
-                print("No contributions scheduled for today.")
-                return True  # Indicate no contributions found but process is complete
-
-    except Exception as e:
-        print(f"Error checking contribution trigger: {str(e)}")
-        return False
-
-
-# ------------------------------------------------test functions - to be deleted -----------------------------------------------------------------------------
-
-
-from datetime import timedelta
-from random import choice, randint
-
-
-def insert_test_data_contributions(num_records: int) -> None:
-    """
-    Insert test data into the CONTRIBUTIONS table.
-    """
-    users = [1]  # Sample user IDs
-    stokvels = [1]  # Sample stokvel IDs
-
-    start_date = datetime.now() - timedelta(days=7)  # Set start_date to yesterday
-    for _ in range(num_records):
-        user_id = choice(users)
-        stokvel_id = choice(stokvels)
-        frequency_days = 7  # Random frequency between 1 and 30 days
-        start_date = start_date - timedelta(days=14)  # Random start date within 10 days
-        next_date = datetime.now()
-        previous_date = datetime.now() - timedelta(days=7)
-        end_date = datetime.now() + timedelta(days=70)  # End date 60 days after start
-
-        try:
-            with sqlite_conn.connect() as conn:
-                conn.execute(
-                    text(
-                        """
-                    INSERT INTO CONTRIBUTIONS (user_id, stokvel_id, frequency_days, StartDate, NextDate, PreviousDate, EndDate)
-                    VALUES (:user_id, :stokvel_id, :frequency_days, :StartDate, :NextDate, :PreviousDate, :EndDate)
-                    """
-                    ),
-                    {
-                        "user_id": user_id,
-                        "stokvel_id": stokvel_id,
-                        "frequency_days": frequency_days,
-                        "StartDate": start_date,
-                        "NextDate": next_date,
-                        "PreviousDate": previous_date,
-                        "EndDate": end_date,
-                    },
-                )
-
-                conn.commit()  # Commit the transaction to the database
-
-            print(
-                f"Inserted test data for user_id {user_id} and stokvel_id {stokvel_id}."
-            )
-
-        except Exception as e:
-            print(f"Failed to insert test data. Error: {str(e)}")
-
-
-def clear_contributions_table() -> None:
-    """
-    Clear all records from the PAYOUTS table.
-    """
-    try:
-        with sqlite_conn.connect() as conn:
-            conn.execute(text("DELETE FROM TRANSACTIONS"))
-            conn.commit()  # Commit the transaction to the database
-        print("All records have been cleared from the CONTRIBUTIONS table.")
-    except Exception as e:
-        print(f"Failed to clear CONTRIBUTIONS table. Error: {str(e)}")
-
-
-def insert_test_user_into_stokvel_members() -> None:
-    """
-    Insert a test user into the STOKVEL_MEMBERS table with predefined values.
-    """
-    # Predefined values
-    id = 1
-    stokvel_id = 1
-    user_id = 1
-    contribution_amount = 100
-    active_status = "active"
-    created_at = datetime.now()
-    updated_at = datetime.now()
-    user_payment_token = "TT"
-    user_payment_URI = "TT"
-    user_quote_id = "TT"
-    stokvel_payment_token = "TT"
-    stokvel_payment_URI = "TT"
-    stokvel_quote_id = "TT"
-
-    try:
-        with sqlite_conn.connect() as conn:
-            conn.execute(
-                text(
-                    """
-                INSERT INTO STOKVEL_MEMBERS (id, stokvel_id, user_id, contribution_amount, active_status, created_at, updated_at,
-                                              user_payment_token, user_payment_URI, user_quote_id,
-                                              stokvel_payment_token, stokvel_payment_URI, stokvel_quote_id)
-                VALUES (:id, :stokvel_id, :user_id, :contribution_amount, :active_status, :created_at, :updated_at,
-                        :user_payment_token, :user_payment_URI, :user_quote_id,
-                        :stokvel_payment_token, :stokvel_payment_URI, :stokvel_quote_id)
-                """
-                ),
-                {
-                    "id": id,
-                    "stokvel_id": stokvel_id,
-                    "user_id": user_id,
-                    "contribution_amount": contribution_amount,
-                    "active_status": active_status,
-                    "created_at": created_at,
-                    "updated_at": updated_at,
-                    "user_payment_token": user_payment_token,
-                    "user_payment_URI": user_payment_URI,
-                    "user_quote_id": user_quote_id,
-                    "stokvel_payment_token": stokvel_payment_token,
-                    "stokvel_payment_URI": stokvel_payment_URI,
-                    "stokvel_quote_id": stokvel_quote_id,
-                },
-            )
-
-            conn.commit()  # Commit the transaction to the database
-
-        print(
-            f"Inserted test user with stokvel_id {stokvel_id} and user_id {user_id} into STOKVEL_MEMBERS."
-        )
-
-    except Exception as e:
-        print(f"Failed to insert test user into STOKVEL_MEMBERS. Error: {str(e)}")
-
-
-def insert_test_user() -> None:
-    """
-    Insert a test user into the USERS table with predefined values.
-    """
-    user_id = 1
-    user_number = "+123"
-    user_name = "John"
-    user_surname = "Doe"
-    ILP_wallet = "1123dvew"
-    MOMO_wallet = "123ABC"
-    verified_KYC = 1
-    created_at = datetime.now()
-    updated_at = datetime.now()
-
-    try:
-        with sqlite_conn.connect() as conn:
-            conn.execute(
-                text(
-                    """
-                INSERT INTO USERS (user_id, user_number, user_name, user_surname, ILP_wallet, MOMO_wallet, verified_KYC, created_at, updated_at)
-                VALUES (:user_id, :user_number, :user_name, :user_surname, :ILP_wallet, :MOMO_wallet, :verified_KYC, :created_at, :updated_at)
-                """
-                ),
-                {
-                    "user_id": user_id,
-                    "user_number": user_number,
-                    "user_name": user_name,
-                    "user_surname": user_surname,
-                    "ILP_wallet": ILP_wallet,
-                    "MOMO_wallet": MOMO_wallet,
-                    "verified_KYC": verified_KYC,
-                    "created_at": created_at,
-                    "updated_at": updated_at,
-                },
-            )
-
-            conn.commit()  # Commit the transaction to the database
-
-        print(f"Inserted test user with user_id {user_id} into USERS.")
-
-    except Exception as e:
-        print(f"Failed to insert test user into USERS. Error: {str(e)}")
-
-
-def insert_test_stokvel() -> None:
-    """
-    Insert a test stokvel into the STOKVELS table with predefined values.
-    """
-    stokvel_id = 1
-    stokvel_name = "Test Stokvel"
-    ILP_wallet = "1123ILP"
-    MOMO_wallet = "456MOMO"
-    total_members = 10
-    min_contributing_amount = 50.00
-    max_number_of_contributors = 100
-    total_contributions = 1000.00
-    start_date = "2024-01-01"  # Example start date in ISO8601 format
-    end_date = "2024-12-31"  # Example end date in ISO8601 format
-    payout_frequency_int = 1
-    payout_frequency_period = "month"
-    created_at = datetime.now() - timedelta(days=123)
-    updated_at = datetime.now()
-
-    try:
-        with sqlite_conn.connect() as conn:
-            conn.execute(
-                text(
-                    """
-                INSERT INTO STOKVELS (stokvel_id, stokvel_name, ILP_wallet, MOMO_wallet, total_members,
-                                      min_contributing_amount, max_number_of_contributors, total_contributions,
-                                      start_date, end_date, payout_frequency_int, payout_frequency_period,
-                                      created_at, updated_at)
-                VALUES (:stokvel_id, :stokvel_name, :ILP_wallet, :MOMO_wallet, :total_members,
-                        :min_contributing_amount, :max_number_of_contributors, :total_contributions,
-                        :start_date, :end_date, :payout_frequency_int, :payout_frequency_period,
-                        :created_at, :updated_at)
-                """
-                ),
-                {
-                    "stokvel_id": stokvel_id,
-                    "stokvel_name": stokvel_name,
-                    "ILP_wallet": ILP_wallet,
-                    "MOMO_wallet": MOMO_wallet,
-                    "total_members": total_members,
-                    "min_contributing_amount": min_contributing_amount,
-                    "max_number_of_contributors": max_number_of_contributors,
-                    "total_contributions": total_contributions,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "payout_frequency_int": payout_frequency_int,
-                    "payout_frequency_period": payout_frequency_period,
-                    "created_at": created_at,
-                    "updated_at": updated_at,
-                },
-            )
-
-            conn.commit()  # Commit the transaction to the database
-
-        print(f"Inserted test stokvel with stokvel_id {stokvel_id} into STOKVELS.")
-
-    except Exception as e:
-        print(f"Failed to insert test stokvel into STOKVELS. Error: {str(e)}")
-
-
-def insert_test_data_payouts(num_records: int) -> None:
-    """
-    Insert test data into the PAYOUTS table.
-    """
-    stokvels = [1]  # Sample stokvel IDs
-
-    start_date = datetime.now() - timedelta(days=7)  # Set start_date to yesterday
-    for _ in range(num_records):
-        stokvel_id = choice(stokvels)
-        frequency_days = 7  # Random frequency between 1 and 30 days
-        start_date = start_date - timedelta(days=14)  # Random start date within 10 days
-        next_date = datetime.now()
-        previous_date = datetime.now() - timedelta(days=7)
-        end_date = datetime.now() + timedelta(days=70)  # End date 60 days after start
-
-        try:
-            with sqlite_conn.connect() as conn:
-                conn.execute(
-                    text(
-                        """
-                    INSERT INTO PAYOUTS (stokvel_id, frequency_days, StartDate, NextDate, PreviousDate, EndDate)
-                    VALUES ( :stokvel_id, :frequency_days, :StartDate, :NextDate, :PreviousDate, :EndDate)
-                    """
-                    ),
-                    {
-                        "stokvel_id": stokvel_id,
-                        "frequency_days": frequency_days,
-                        "StartDate": start_date,
-                        "NextDate": next_date,
-                        "PreviousDate": previous_date,
-                        "EndDate": end_date,
-                    },
-                )
-
-                conn.commit()  # Commit the transaction to the database
-
-            print(f"Inserted test data for stokvel_id {stokvel_id}.")
-
-        except Exception as e:
-            print(f"Failed to insert test data. Error: {str(e)}")
-
-
-def insert_test_interest_data() -> None:
-    """
-    Inserts test data into the INTEREST table, ensuring date is in DATETIME format.
-    """
-    id = 4
-    stokvel_id = 1
-    date = "2024-07-30"  # Make sure this is in a valid SQL date format (YYYY-MM-DD)
-    interest_value = 15.00
-
-    # Connect to the database and insert the test data
-    with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO INTEREST (id, stokvel_id, date, interest_value)
-                VALUES (:id, :stokvel_id, :date, :interest_value)
-                """
-            ),
-            {
-                "id": id,
-                "stokvel_id": stokvel_id,
-                "date": date,
-                "interest_value": interest_value,
-            },
-        )
-        conn.commit()
-
-
-def delete_transaction_by_id(transaction_id: int) -> None:
-    """
-    Delete a transaction from the TRANSACTIONS table based on the given transaction ID.
-
-    Parameters:
-    transaction_id (int): The ID of the transaction to be deleted.
-    """
-    delete_query = """
-    DELETE FROM TRANSACTIONS
-    WHERE id = :transaction_id
-    """
-
-    try:
-        with sqlite_conn.connect() as conn:
-            conn.execute(text(delete_query), {"transaction_id": transaction_id})
-            conn.commit()
-            print(f"Transaction with ID {transaction_id} has been deleted.")
-
-    except sqlite3.Error as e:
-        print(f"Error occurred while deleting transaction: {e}")
-
-
-if __name__ == "__main__":
-    tx_date = datetime.now() - timedelta(days=90)
-    tx_date2 = datetime.now() - timedelta(days=60)
-    tx_date3 = datetime.now() - timedelta(days=30)
-    num_records = 1
-    conn = sqlite_conn.connect()
-    # contribution_trigger()
-    # payout_trigger()
-    # insert_test_data_payouts(num_records)
-    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date)
-    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date2)
-    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date3)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
-    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
-    delete_transaction_by_id(7)
-    delete_transaction_by_id(8)
-    # insert_test_user_into_stokvel_members()
-    # insert_test_user()
-    # insert_test_data_contributions(num_records)
-    # clear_contributions_table()
-    # insert_test_stokvel()
-    # insert_test_interest_data()
-    # print(get_user_interest(user_id=1,stokvel_id=1))
-    # print(get_user_interest(user_id=2,stokvel_id=1))
-    # print(get_stokvel_monthly_interest(stokvel_id = 1))
-
-
 def get_stokvel_details(stokvel_id):
     select_query = "SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id"
     parameters = {"stokvel_id": stokvel_id}
@@ -2250,3 +1634,29 @@ def update_adhoc_contribution_parms(
     except sqlite3.Error as e:
         print(f"Error updating stokvel payout: {e}")
         raise e
+
+
+if __name__ == "__main__":
+    tx_date = datetime.now() - timedelta(days=90)
+    tx_date2 = datetime.now() - timedelta(days=60)
+    tx_date3 = datetime.now() - timedelta(days=30)
+    num_records = 1
+    conn = sqlite_conn.connect()
+    # contribution_trigger()
+    # payout_trigger()
+    # insert_test_data_payouts(num_records)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    # insert_transaction(conn = conn,user_id = 2, stokvel_id = 1, amount = 100 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date2)
+    # insert_transaction(conn = conn,user_id = 1, stokvel_id = 1, amount = 200 , tx_type = "DEPOSIT", tx_date = tx_date3)
+    # insert_test_user_into_stokvel_members()
+    # insert_test_user()
+    # insert_test_data_contributions(num_records)
+    # clear_contributions_table()
+    # insert_test_stokvel()
+    # insert_test_interest_data()
+    # print(get_user_interest(user_id=1,stokvel_id=1))
+    # print(get_user_interest(user_id=2,stokvel_id=1))
+    # print(get_stokvel_monthly_interest(stokvel_id = 1))
