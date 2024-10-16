@@ -162,12 +162,13 @@
             <!-- <h3 id = "stokvel_display_name"></h3> -->
             <label for="requesting_number">Cellphone Number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
-            <label for="contribution_amount">Contribution Amount:</label>
-            <input type="number" id="contribution_amount" name="contribution_amount" required>
+            
             <div id="contribution_error" class="error-message"></div>
+            <label for="user_contribution">Your Contribution Amount:</label>
+            <input type="number" id="user_contribution" name="user_contribution" required>
 
-            <label for="contribution_amount">Your Contribution Amount:</label>
-            <input type="number" id = "user_contribution" name = "user_contribution">
+            <!-- <label for="user_contribution">Your Contribution Amount:</label>
+            <input type="number" id = "user_contribution" name = "user_contribution"> -->
 
             <!-- Hidden field for selected stokvel -->
             <input type="hidden" id="min_contributing_amount" name="min_contributing_amount" value="">
@@ -319,7 +320,7 @@
         }
 
         // Add event listener for real-time validation
-        document.getElementById('contribution_amount').addEventListener('input', function() {
+        document.getElementById('user_contribution').addEventListener('input', function() {
             const contributionAmount = parseFloat(this.value);
             const minContributingAmount = parseFloat(document.getElementById('min_contributing_amount').value);
             const errorElement = document.getElementById('contribution_error');
@@ -336,7 +337,7 @@
 
         // Add event listener for form submission
         document.getElementById('joinStokvelForm').addEventListener('submit', function(event) {
-            const contributionAmount = parseFloat(document.getElementById('contribution_amount').value);
+            const contributionAmount = parseFloat(document.getElementById('user_contribution').value);
             const minContributingAmount = parseFloat(document.getElementById('min_contributing_amount').value);
 
             if (isNaN(contributionAmount) || contributionAmount < minContributingAmount) {
