@@ -380,7 +380,7 @@ def success_stokvel_join_application() -> str:
     """
     docstrings
     """
-    action = "Application"
+    action = "Application Submitted!"
     success_message = "Application to join selected stokvel has been sent."
     success_next_step_message = (
         "Please navigate back to WhatsApp for further functions."
@@ -856,7 +856,7 @@ def process_application():
                 #     int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
                 # ),  # Multiply by 100 due to asset scale
             "value":str(int(1)),
-            "user_contribution":str((int(stokvel_dict.get("user_contribution"))+2)*100),
+            "user_contribution":str((int(user_contribution)+2)*100),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
