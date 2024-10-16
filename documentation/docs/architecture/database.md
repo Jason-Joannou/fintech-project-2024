@@ -2,181 +2,152 @@
 
 ### Introduction
 
-In this project, we used a SQLite implementation to build and manage our database. The design focused on scalability and flexibility, ensuring efficient data handling for stokvel members, transactions, contributions, and payouts.
+This project utilizes a SQLite database to build and manage data storage, focusing on scalability and flexibility. The design ensures efficient data handling for stokvel members, transactions, contributions, and payouts.
 
 ### Design Overview
 
-While foreign key relationships were created between various tables to maintain logical data structures and relationships, we did not enforce these relationships in SQLite. This represents a shortfall in our current design, and adding foreign key enforcement will be considered as future work to ensure referential integrity within the system.
+While foreign key relationships were defined between various tables to maintain logical data structures, these relationships are not currently enforced by SQLite. This is a limitation of the existing design, and future updates will aim to implement foreign key enforcement to ensure referential integrity across the system.
 
 ### Foreign Key Relationships
-Although foreign key relationships were established in the table design, they were not enforced at the database level. In future iterations of this project, implementing foreign key enforcement will be critical to prevent orphaned records and ensure that relationships between entities (such as USERS, STOKVELS, and TRANSACTIONS) are properly maintained. This will enhance the integrity and reliability of the data as the system evolves.
+
+Although foreign key relationships were set up in the table design, they are not enforced at the database level. Enforcing these relationships in future iterations will be essential to prevent orphaned records and to maintain the integrity of relationships between entities (e.g., **USERS**, **STOKVELS**, **TRANSACTIONS**). This step will enhance the data reliability as the system continues to develop.
 
 ### Tables and Relationships
 
-The  various tables used in our design, the purpose of each table and the key fields of each table is detailed below 
+#### STOKVEL_MEMBERS Table
 
-1. **STOKVEL_MEMBERS Table**
+**Purpose:** Stores information about users who are members of specific stokvels.
 
-#### Purpose
+**Key Fields:**
 
-Stores information about users who are members of specific stokvels.
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table, linking stokvels to their members.
+- `user_id`: Foreign key referencing the **USERS** table, associating users with the stokvels they belong to.
+- `contribution_amount`: Amount contributed by the user on a recurring basis.
+- **Unique Constraint:** Ensures that each combination of `stokvel_id` and `user_id` is unique, preventing duplicate memberships.
 
-### Key Fields
+#### STOKVELS Table
 
-- stokvel_id: Foreign key referencing the STOKVELS table, to link the relationship between stokvels and stokvel members.
-- user_id: Foreign key referencing the USERS table to link users with the stokvels they are part of.
-- contribution_amount: Amount the user contributes on a recurring basis. 
-- Unique Constraint: Ensures each combination of stokvel_id and user_id is unique, preventing duplicate memberships.
+**Purpose:** Stores details about each stokvel, which are used to create the stokvel constitution.
 
-2. **STOKVELS Table**
+**Key Fields:**
 
-#### Purpose 
+- `stokvel_id`: Primary key that uniquely identifies each stokvel.
+- `stokvel_name`: Name of the stokvel.
+- `ILP_wallet`, `MOMO_wallet`: Wallet information for transactions.
+- `total_contributions`: Sum of all contributions to the stokvel.
+- `payout_frequency_int`, `payout_frequency_period`: Defines payout frequency.
+- `start_date`, `end_date`: Period marking the stokvel’s activity duration.
 
-Stores details about each stokvel. The details in this stokvel is used to create the stokvel constitution.
+#### USERS Table
 
-### Key Fields
+**Purpose:** Stores user-specific information.
 
-- stokvel_id: Primary key that uniquely identifies each stokvel.
-- stokvel_name: Name of the stokvel.
-- ILP_wallet, MOMO_wallet: Wallet information for transactions.
-- total_contributions: Total contributions made to the stokvel.
-- payout_frequency_int, payout_frequency_period: Frequency of payouts.
-- start_date, end_date: Dates marking the stokvel's active period.
+**Key Fields:**
 
-3. **USERS Table**
+- `user_id`: Primary key that uniquely identifies each user.
+- `user_number`: The user's cell phone number, used for interactions on our WhatsApp channel.
+- `user_name`, `user_surname`: Basic user details.
+- `ILP_wallet`, `MOMO_wallet`: Wallet details for both ILP and Momo wallets.
+- `verified_KYC`: Indicates if the user has completed KYC verification.
 
-#### Purpose 
+#### TRANSACTIONS Table
 
-Stores user-specific information.
+**Purpose:** Records all transactions by users, including contributions to and payouts from stokvels.
 
-#### Key Fields
+**Key Fields:**
 
-- user_id: Primary key that uniquely identifies each user.
-- user_number: The cell phone number of the user which will be used for interactions on our WhatsApp channel.
-- user_name, user_surname: Basic user details.
-- ILP_wallet, MOMO_wallet: Wallet details for the user. This caters for both a ILP and Momo wallet for future applications.
-- verified_KYC: Flag indicating if the user has KYC verification.
+- `user_id`: Foreign key referencing the **USERS** table.
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `amount`: Transaction amount.
+- `tx_type`: Type of transaction (e.g., DEPOSIT, PAYOUT).
+- `tx_date`: Date of the transaction.
 
-4. **TRANSACTIONS Table**
+#### RESOURCES Table
 
-#### Purpose 
+**Purpose:** Stores links or resources related to the system.
 
-Records all transactions made by users. Which include contributions to a stokvel and payouts from a stokvel.
+**Key Fields:**
 
-This table is used to determine the size of the payout each user should receive from a given stokvel. 
+- `name`: Name of the resource.
+- `resource_type`: Type of the resource (e.g., document, link).
+- `url`: URL location of the resource.
 
-#### Key Fields
+#### ADMIN Table
 
-- user_id: Foreign key referencing the USERS table.
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- amount: Transaction amount.
-- tx_type: Type of transaction (e.g., DEPOSIT, PAYOUT).
-- tx_date: Date of the transaction.
+**Purpose:** Contains information about stokvel administrators, who have specific rights unavailable to regular members.
 
-5. **RESOURCES Table**
+**Key Fields:**
 
-#### Purpose 
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `user_id`: Foreign key referencing the **USERS** table.
+- `total_contributions`: Total contributions managed by the admin.
+- **Unique Constraint:** Ensures each `stokvel_id` and `user_id` pairing is unique.
 
-Stores links or resources related to the system.
+#### CONTRIBUTIONS Table
 
-#### Key Fields
+**Purpose:** Manages the contribution process for specific stokvels.
 
-- name: Name of the resource.
-- resource_type: Type of the resource (e.g., document, link).
-- url: URL where the resource is located.
+**Key Fields:**
 
-6. **ADMIN Table**
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `frequency_days`: Contribution frequency (in days).
+- `StartDate`, `NextDate`, `PreviousDate`, `EndDate`: Tracks the contribution schedule.
 
-#### Purpose 
+#### PAYOUTS Table
 
-Holds data about stokvel administrators. Stokvel administrators have certain rights that normal stokvel members won't have. 
+**Purpose:** Manages the payout process for specific stokvels.
 
-#### Key Fields
+**Key Fields:**
 
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- user_id: Foreign key referencing the USERS table.
-- total_contributions: Total contributions handled by the admin.
-- Unique Constraint: Each combination of stokvel_id and user_id must be unique.
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `frequency_days`: Payout frequency (in days).
+- `StartDate`, `NextDate`, `PreviousDate`, `EndDate`: Payout schedule.
 
-7. **CONTRIBUTIONS Table**
+#### USER_WALLET Table
 
-#### Purpose 
+**Purpose:** Stores user wallet information.
 
-Tracks if the contributions process should be kicked off for a specific stokvel. 
+**Key Fields:**
 
-#### Key Fields
+- `user_wallet`: Wallet details for the user.
+- `UserBalance`: Current balance in the user's wallet.
 
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- frequency_days: Frequency of contributions (in days).
-- StartDate, NextDate, PreviousDate, EndDate: Track the contribution schedule.
+#### STOKVEL_WALLET Table
 
-8. **PAYOUTS Table**
+**Purpose:** Stores wallet information for stokvels.
 
-#### Purpose 
+**Key Fields:**
 
-Tracks if the payout process should be kicked off for a specific stokvel. 
+- `user_id`: Foreign key referencing the **USERS** table.
+- `UserBalance`: Balance in the stokvel's wallet.
 
-#### Key Fields
+#### APPLICATIONS Table
 
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- frequency_days: Frequency of payouts (in days).
-- StartDate, NextDate, PreviousDate, EndDate: Payout schedule.
+**Purpose:** Tracks user applications to join stokvels.
 
-9. **USER_WALLET Table**
+**Key Fields:**
 
-#### Purpose 
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `user_id`: Foreign key referencing the **USERS** table.
+- `AppStatus`: Status of the application (e.g., pending, approved).
+- `AppDate`: Application submission date.
 
-Stores wallet information for users.
+#### STATE_MANAGEMENT Table
 
-#### Key Fields
+**Purpose:** Manages interaction states on the WhatsApp channel, allowing users to navigate between different messaging states.
 
-- user_wallet: Wallet details for the user.
-- UserBalance: Current balance in the user's wallet.
+**Key Fields:**
 
-10. **STOKVEL_WALLET Table**
+- `user_number`: Unique user number.
+- `last_interaction`: Timestamp of the last interaction.
+- `current_stokvel`: The current stokvel the user is engaged with.
 
-#### Purpose 
+#### INTEREST Table
 
-Stores wallet information for stokvels.
+**Purpose:** Tracks interest rates earned by stokvels, used to calculate monthly payouts to members.
 
-#### Key Fields
+**Key Fields:**
 
-- user_id: Foreign key referencing the USERS table.
-- UserBalance: Balance in the stokvel’s wallet.
-
-11. **APPLICATIONS Table**
-
-#### Purpose 
-
-Tracks applications made by users to join stokvels.
-
-#### Key Fields
-
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- user_id: Foreign key referencing the USERS table.
-- AppStatus: Status of the application (e.g., pending, approved).
-- AppDate: Date of the application.
-
-12. **STATE_MANAGEMENT Table**
-
-#### Purpose 
-
-Manages interaction states on the WhatsApp Channel to enable usets to move between different messaging states.
-
-#### Key Fields
-
-- user_number: User's unique number.
-- last_interaction: Timestamp of the last interaction.
-- current_stokvel: Current stokvel the user is engaged with.
-
-13. **INTEREST Table**
-
-#### Purpose 
-
-Tracks the interest rates earned by stokvels across various months. This table will be used to calculate the interest earned by each stokvel in a given month when the payout amount to each stokvel member is calculated
-
-#### Key Fields
-
-- stokvel_id: Foreign key referencing the STOKVELS table.
-- interest_value: The value of the interest.
-- date: Date the interest was recorded.
+- `stokvel_id`: Foreign key referencing the **STOKVELS** table.
+- `interest_value`: Interest rate.
+- `date`: Date when the interest was recorded.

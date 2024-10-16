@@ -12,6 +12,7 @@ nav:
   - Home: index.md
   - Architecture:
       - Overview: architecture/overview.md
+      - Database: architecture/database.md
       - Terraform: architecture/terraform.md
       - Docker: architecture/docker.md
       - Flask Templates: architecture/flask_templates.md
