@@ -517,7 +517,7 @@ def onboard_stokvel() -> Response:
             #     int(stokvel_data.min_contributing_amount * 100 + 0.02) #add a 2c for the initial payment?
             # ),  # multiply by 100 because the asset scale is 2?
             "value":str(int(1)),
-            "user_contribution":str(int(stokvel_data.min_contributing_amount)*100+2),
+            "user_contribution":str(int(stokvel_data.min_contributing_amount+2)*100),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                 stokvel_data.start_date
             ),
@@ -856,7 +856,7 @@ def process_application():
                 #     int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
                 # ),  # Multiply by 100 due to asset scale
             "value":str(int(1)),
-            "user_contribution":str(int(stokvel_dict.get("user_contribution"))*100+2),
+            "user_contribution":str(int(stokvel_dict.get("user_contribution")+2)*100),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
