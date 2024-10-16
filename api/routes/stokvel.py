@@ -816,8 +816,8 @@ def process_application():
 
     if action == "approve":
         # print(application_id, ' Approved')
-        # update_application_status(application_id, 'Approved')
         try:
+            update_application_status(application_id, 'Approved') #uncommented this
             stokvel_dict = get_stokvel_details(stokvel_id=application_stokvel_id)
             print(stokvel_dict)
 
@@ -856,7 +856,7 @@ def process_application():
                 #     int(user_contribution) * 100 + 0.02 #add a 2c for the initial payment?
                 # ),  # Multiply by 100 due to asset scale
             "value":str(int(1)),
-            "user_contribution":str(int(stokvel_dict.get("user_contribution")+2)*100),
+            "user_contribution":str((int(stokvel_dict.get("user_contribution"))+2)*100),
             "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
@@ -879,6 +879,7 @@ def process_application():
                 "user_id": application_joiner_id,
                 "stokvel_id": application_stokvel_id,
             }
+            
             print("REQUEST: ")
             print(payload)
 
@@ -977,6 +978,8 @@ def process_application():
             # endregion
 
             # region INSERTS USER IN TABLES
+
+            print('TRYING TO INSERT MEMBER')
 
             declined_applications_list = insert_stokvel_member(
                 application_id=application_id,
