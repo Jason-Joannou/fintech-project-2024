@@ -10,13 +10,14 @@ theme:
 
 nav:
   - Home: index.md
-  - Architecture:
+  - System Architecture:
+    - Overview: system-architecture/overview.md
+  - Components:
       - Overview: architecture/overview.md
       - Database: architecture/database.md
       - Terraform: architecture/terraform.md
       - Docker: architecture/docker.md
       - Flask Templates: architecture/flask_templates.md
-
       - Components: architecture/components.md
       - Testing: architecture/testing.md
 
