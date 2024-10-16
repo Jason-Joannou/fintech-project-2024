@@ -459,7 +459,12 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                         raise ValueError("Invalid contribution period specified.")
 
                     # Calculate the next contribution date
-                    next_date = current_next_date + period_delta
+                    current_next_date_dt = datetime.strptime(
+                        current_next_date, "%Y-%m-%d"
+                    )
+                    next_date = (current_next_date_dt + period_delta).strftime(
+                        "%Y-%m-%d"
+                    )
 
                     update_next_contribution_query = """
                             UPDATE CONTRIBUTIONS
