@@ -20,6 +20,10 @@ nav:
       - Flask Templates: architecture/flask_templates.md
       - Components: architecture/components.md
       - Testing: architecture/testing.md
+  - Devops:
+      - Overview: devops/overview.md
+      - Docker: devops/docker.md
+
 
 markdown_extensions:
   - admonition
