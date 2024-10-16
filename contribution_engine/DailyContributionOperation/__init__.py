@@ -97,7 +97,7 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                 logging.info(
                     f"No members found for stokvel_id {stokvel_id}. Continuing to next stokvel."
                 )
-                return  # Continue with the next stokvel_id
+                continue  # Continue with the next stokvel_id
 
             for member in stokvel_members:
 
