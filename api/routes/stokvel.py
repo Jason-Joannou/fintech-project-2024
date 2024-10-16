@@ -545,6 +545,7 @@ def onboard_stokvel() -> Response:
         print(payload)
 
         response = requests.post(node_server_initiate_grant, json=payload, timeout=10)
+        response.raise_for_status()
 
         print(response)
 
@@ -599,6 +600,7 @@ def onboard_stokvel() -> Response:
         response_payout_grant = requests.post(
             node_server_initiate_stokvelpayout_grant, json=payload_payout, timeout=10
         )
+        response_payout_grant.raise_for_status()
         print(response_payout_grant)
 
         # quote_json = ""
@@ -616,6 +618,13 @@ def onboard_stokvel() -> Response:
             "\n \n \nREDIRECT STOKVEL AGENT FOR AUTH: ",
             response_payout_grant.json()["recurring_grant"]["interact"]["redirect"],
         )
+
+        auth_link = response_payout_grant.json()["recurring_grant"]["interact"][
+            "redirect"
+        ]
+        notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {auth_link}"
+
+        send_notification_message(to="whatsapp:+27798782441", body=notification_message)
 
         # #On grant accept, redirect to the logic to: add status active and forward date payments
 
