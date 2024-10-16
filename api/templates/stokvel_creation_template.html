@@ -209,32 +209,46 @@
 
             let contribtion_frequency_view = ""
             let payout_frequency_period_view = ""
+
+            // console.log(contribtion_frequency)
+            // console.log(payoutFrequencyPeriod)
+
             switch (contribution_frequency) {
-            case 'Years':
+            case "Years":
                 contribtion_frequency_view = 'Yearly';
-            case 'Months':
+                break;
+            case "Months":
                 contribtion_frequency_view = 'Monthly';
-            case 'Weeks':
+                break;
+            case "Weeks":
                 contribtion_frequency_view = 'Weekly';
-            case 'Days':
+                break;
+            case "Days":
                 contribtion_frequency_view = 'Daily';
-            case '30 Seconds':
+                break;
+            case "30 Seconds":
                 contribtion_frequency_view = 'Every 30 Seconds';
+                break;
             default:
                 contribtion_frequency_view = 'Unknown frequency';
             }
 
             switch (payoutFrequencyPeriod) {
-                case 'Years':
+                case "Years":
                     payout_frequency_period_view = 'Yearly';
-                case 'Months':
+                    break;
+                case "Months":
                     payout_frequency_period_view = 'Monthly';
-                case 'Weeks':
+                    break;
+                case "Weeks":
                     payout_frequency_period_view = 'Weekly';
-                case 'Days':
+                    break;
+                case "Days":
                     payout_frequency_period_view = 'Daily';
-                case '30 Seconds':
+                    break;
+                case "30 Seconds":
                     payout_frequency_period_view = 'Every 30 Seconds';
+                    break;
                 default:
                     payout_frequency_period_view = 'Unknown frequency';
             }
