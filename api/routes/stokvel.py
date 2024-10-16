@@ -1399,7 +1399,7 @@ def adhoc_payment_grant_handle() -> str:
                 "continueAccessToken": stokvel_members_details.get(
                     "adhoc_contribution_token"
                 ),
-                "walletAddressURL": find_wallet_by_userid(user_id=user_id),
+                "walletAddressURL": "$ilp.rafiki.money/masterstokveladdress",
                 "interact_ref": interact_ref,
             }
 
