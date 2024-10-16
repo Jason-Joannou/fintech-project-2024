@@ -1462,11 +1462,8 @@ def adhoc_payment_grant_handle() -> str:
 def leave_current_stokvel():
 
     try:
-        # user_number = request.json.get("user_number")
-        # stokvel_name = request.json.get("stokvel_selection")
-
-        user_number = "+27798782441"
-        stokvel_name = "Jasons Stokvel"
+        user_number = request.json.get("user_number")
+        stokvel_name = request.json.get("stokvel_selection")
 
         # Update user state in members table
         update_user_active_status(user_number, stokvel_name, "inactive")
