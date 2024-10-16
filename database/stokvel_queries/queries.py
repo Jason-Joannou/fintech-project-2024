@@ -9,7 +9,6 @@ from database.sqlite_connection import SQLiteConnection
 from database.utils import extract_whatsapp_number
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
-# sql_conn = sql_connection()
 
 
 def get_user_deposits_and_payouts_per_stokvel(phone_number: str, stokvel_name: str):
@@ -1141,34 +1140,22 @@ def double_number_periods_for_same_daterange(period):
     return period_duration, number_of_periods_coverted
 
 
-def update_user_active_status(userid, stokvelid, grantaccepted):
+def update_user_active_status(user_number: str, stokvel_name: str, active_status: str):
     """
     Updates the active status of a user in a stokvel based on whether their grant is accepted or not.
     """
-    if grantaccepted:
-        # If grant is accepted, set status to 'active'
-        query = """
-            UPDATE STOKVEL_MEMBERS
-            SET active_status = :status
-            WHERE user_id = :userid AND stokvel_id = :stokvelid
-        """
-        params = {
-            "status": "active",
-            "userid": userid,
-            "stokvelid": stokvelid,
-        }
-    else:
-        # If grant is not accepted, set status to 'inactive'
-        query = """
-            UPDATE STOKVEL_MEMBERS
-            SET active_status = :status
-            WHERE user_id = :userid AND stokvel_id = :stokvelid
-        """
-        params = {
-            "status": "inactive",
-            "userid": userid,
-            "stokvelid": stokvelid,
-        }
+    # If grant is accepted, set status to 'active'
+    user_number = extract_whatsapp_number(from_number=user_number)
+    query = """
+        UPDATE STOKVEL_MEMBERS
+        SET active_status = :active_status
+        WHERE user_id = (SELECT user_id FROM USERS WHERE user_number = :user_number) AND stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
+    """
+    params = {
+        "active_status": active_status,
+        "user_number": user_number,
+        "stokvel_name": stokvel_name,
+    }
 
     # Execute the query
     try:
@@ -1176,25 +1163,11 @@ def update_user_active_status(userid, stokvelid, grantaccepted):
             conn.execute(text(query), params)
             conn.commit()
             print(
-                f"Updated user {userid} status to {params['status']} for stokvel {stokvelid}."
+                f"Updated user {user_number} status to {active_status} for stokvel {stokvel_name}."
             )
     except sqlite3.Error as e:
         print(f"Error updating user status: {e}")
         raise e
-
-
-# First attempt at transaction table
-
-# from .sql_connection import sql_connection
-import sqlite3
-from datetime import datetime
-from typing import List, Optional
-
-from sqlalchemy import text
-
-from database.sqlite_connection import SQLiteConnection
-
-sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 
 
 def get_next_unique_id(conn, table_name, id_column):

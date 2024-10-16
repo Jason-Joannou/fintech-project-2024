@@ -18,7 +18,6 @@ from database.contribution_payout_queries import (
     update_stokvel_token_uri,
 )
 from database.stokvel_queries.queries import (
-    add_url_token,
     calculate_number_periods,
     check_application_pending_approved,
     double_number_periods_for_same_daterange,
@@ -45,6 +44,7 @@ from database.stokvel_queries.queries import (
     update_stokvel_grantaccepted,
     update_stokvel_members_count,
     update_stokvel_name,
+    update_user_active_status,
 )
 from database.user_queries.queries import (
     find_number_by_userid,
@@ -67,6 +67,8 @@ node_server_initiate_stokvelpayout_grant = (
 node_server_create_initial_payment = (
     "http://localhost:3001/payments/initial_outgoing_payment"
 )
+
+noder_server_adhoc_payment = "http://localhost:3001/payments/adhoc-payment"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -1371,12 +1373,15 @@ def adhoc_payment_grant_handle() -> str:
                 "interact_ref": interact_ref,
             }
 
-            response = requests.post(node_server_create_initial_payment, json=payload)
+            response = requests.post(
+                node_server_create_initial_payment, json=payload, timeout=10
+            )
 
             print("RESPONSE: \n", response.json())
 
             if response.json()["payment"]["failed"] == False:
                 # TO DO: ADD PAYMENT TO TRANSACION TABLE
+                # SEND USER NOTIFCATION
                 print("payment was successful")
                 pass
 
@@ -1447,6 +1452,73 @@ def adhoc_payment_test():
         return {
             "error": str(req_error)
         }, 500  # Return a JSON response with request error
+
+    except Exception as e:
+        print("Error occurred:", e)  # Print the error for debugging
+        return {"error": str(e)}, 500  # Return a JSON response with an error message
+
+
+@stokvel_bp.route(f"{BASE_ROUTE}/leave_stokvel", methods=["GET"])
+def leave_current_stokvel():
+
+    try:
+        # user_number = request.json.get("user_number")
+        # stokvel_name = request.json.get("stokvel_selection")
+
+        user_number = "+27798782441"
+        stokvel_name = "Jasons Stokvel"
+
+        # Update user state in members table
+        update_user_active_status(user_number, stokvel_name, "inactive")
+
+        # Calculate Contributions
+
+        total_deposits = get_user_deposits_and_payouts_per_stokvel(
+            phone_number=user_number, stokvel_name=stokvel_name
+        )["total_deposits"]
+
+        print(total_deposits, " DEPOSITS")
+
+        user_id = find_user_by_number(user_number)
+        print(user_id, " USER ID")
+        user_wallet = find_wallet_by_userid(user_id)
+        stokvel_id = get_stokvel_id_by_name(stokvel_name)
+        stokvel_wallet = "$ilp.rafiki.money/masterstokveladdress"
+
+        payload = {
+            "value": str(total_deposits),
+            "walletAddressURL": user_wallet,
+            "sender_walletAddressURL": stokvel_wallet,
+            "user_id": user_id,
+            "stokvel_id": stokvel_id,
+        }
+
+        response = requests.post(noder_server_adhoc_payment, json=payload, timeout=10)
+        print(response.json())
+
+        auth_link = response.json()["recurring_grant"]["interact"]["redirect"]
+        adhoc_contribution_url = response.json()["continue_uri"]
+        adhoc_contribution_token = response.json()["continue_token"]["value"]
+
+        print(adhoc_contribution_token)
+        print(adhoc_contribution_url)
+
+        update_adhoc_contribution_parms(
+            stokvel_id=stokvel_id,
+            user_id=user_id,
+            url=adhoc_contribution_url,
+            token=adhoc_contribution_token,
+        )
+
+        notfication_message = (
+            f"SYSTEM REQUEST: A user is requesting a payout {auth_link}"
+        )
+        print(notfication_message)
+
+        # Send notification message to SYSTEM AGENT
+        send_notification_message(to="whatsapp:+27798782441", body=notfication_message)
+
+        return {"message": "Success"}, 200
 
     except Exception as e:
         print("Error occurred:", e)  # Print the error for debugging

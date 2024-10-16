@@ -20,6 +20,7 @@ import {
   executeRecurringPayments,
   executeRecurringPaymentsWithInterest,
 } from "../../utils/ilp-utils/payments";
+import { Limits } from "../../utils/types/accounting";
 
 const router = express.Router();
 
@@ -269,5 +270,60 @@ router.post(
     }
   }
 );
+
+router.post("/adhoc-payment", async (req: Request, res: Response) => {
+  try {
+    const {
+      value,
+      walletAddressURL,
+      sender_walletAddressURL,
+      user_id,
+      stokvel_id,
+    } = req.body; // Get data from request body
+
+    const receiverWallet = await validateWalletAddress(walletAddressURL);
+    const senderWallet = await validateWalletAddress(sender_walletAddressURL);
+
+    const paydate = new Date().toISOString();
+    const grant = await createGrant(
+      receiverWallet,
+      GrantType.IncomingPayment,
+      false
+    );
+    const incomingPayment = await createIncomingPayment(
+      receiverWallet,
+      value,
+      grant as Grant,
+      paydate
+    );
+    const quote = await createQuote(senderWallet, incomingPayment.id);
+    const paymentLimits: Limits = {
+      debitAmount: quote.debitAmount,
+      receiveAmount: quote.receiveAmount,
+    };
+    const recurringGrant = await createGrant(
+      senderWallet,
+      GrantType.OutgoingPayment,
+      true,
+      "adhoc",
+      paymentLimits,
+      user_id,
+      stokvel_id,
+      quote.id
+    );
+
+    res.json({
+      recurring_grant: recurringGrant,
+      continue_uri: recurringGrant.continue.uri,
+      continue_token: recurringGrant.continue.access_token,
+      quote_id: quote.id,
+    }); //{all information stored here should be returned}
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "An unexpected error occurred during grant creation." });
+  }
+});
 
 export default router;
