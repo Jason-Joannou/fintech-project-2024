@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date, datetime, timedelta
+from datetime import10 datetime, timedelta
 from typing import Dict, List, Optional
 
 from dateutil.relativedelta import relativedelta
@@ -1051,7 +1051,8 @@ def update_user_active_status(user_number: str, stokvel_name: str, active_status
     query = """
         UPDATE STOKVEL_MEMBERS
         SET active_status = :active_status
-        WHERE user_id = (SELECT user_id FROM USERS WHERE user_number = :user_number) AND stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
+        WHERE user_id = (SELECT user_id FROM USERS WHERE user_number = :user_number)
+        AND stokvel_id = (SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name)
     """
     params = {
         "active_status": active_status,

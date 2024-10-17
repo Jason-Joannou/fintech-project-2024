@@ -72,11 +72,11 @@ def insert_member_contribution_parameters(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a stokvel: {e}")
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a stokvel: {e}")
+        raise e
 
 
 def insert_stokvel_payouts_parameters(
@@ -129,15 +129,10 @@ def insert_stokvel_payouts_parameters(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
-
+        raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def calculate_next_date(contribution_or_payout_period, current_date):
@@ -194,23 +189,16 @@ def update_next_contributions_dates(
             }
             conn.execute(text(update_query), parameters)
             conn.commit()
-            print(
-                f"Contribution parameters inserted successfully.: \n{current_next_date} \n {calculate_next_date(contribution_or_payout_period, current_next_date)}"
-            )
 
         return calculate_next_date(contribution_or_payout_period, current_next_date)
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def update_next_payout_dates(

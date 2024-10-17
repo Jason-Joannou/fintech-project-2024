@@ -99,10 +99,7 @@ def main(DailyPayoutOperation: TimerRequest) -> None:
             for member in stokvel_members:
 
                 user_id = member["user_id"]
-                stokvel_quote_id = member["stokvel_quote_id"]
                 tx_type = "PAYOUT"
-                manageUrl = member["stokvel_payment_URI"]
-                previousToken = member["stokvel_payment_token"]
 
                 # SQL query to sum deposits after the most recent payout
 

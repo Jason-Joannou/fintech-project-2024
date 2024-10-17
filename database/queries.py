@@ -6,10 +6,6 @@ from typing import Optional
 from sqlalchemy import text
 
 from .sqlite_connection import SQLiteConnection
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-
-
-from datetime import datetime
 
 sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 # sql_conn = sql_connection()
@@ -19,9 +15,7 @@ def get_next_unique_id(conn, table_name, id_column):
     """
     Get the next unique id for the given table and id column.
     """
-    result = conn.execute(
-        text(f"SELECT MAX({id_column}) FROM {table_name}")
-    ).fetchone()
+    result = conn.execute(text(f"SELECT MAX({id_column}) FROM {table_name}")).fetchone()
     # If no result exists (table is empty), return 1, otherwise increment the max id
     return (result[0] or 0) + 1
 
@@ -40,7 +34,8 @@ def check_if_number_exists_sqlite(from_number: str) -> bool:
             return True
 
         return False
-    
+
+
 def find_user_by_number(from_number: str) -> bool:
     """
     docstring UNCOMMENT LATER
@@ -74,6 +69,7 @@ def find_user_by_number2(from_number: str) -> Optional[str]:
 
         return None
 
+
 def find_number_by_userid(user_id: str) -> Optional[str]:
     """
     docstring
@@ -91,6 +87,7 @@ def find_number_by_userid(user_id: str) -> Optional[str]:
 
         return None
 
+
 def find_wallet_by_userid(user_id: str) -> Optional[str]:
     """
     docstring
@@ -107,6 +104,7 @@ def find_wallet_by_userid(user_id: str) -> Optional[str]:
             return result
 
         return None
+
 
 def check_if_id_number_exists_sqlite(user_id: str) -> bool:
     """
@@ -132,6 +130,7 @@ def check_if_id_number_exists_sqlite(user_id: str) -> bool:
             return True
 
         return False
+
 
 def insert_user(
     user_id: str,
@@ -197,26 +196,26 @@ def insert_user(
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
-    
+
     except sqlite3.IntegrityError as integrity_error:
         # Catch integrity errors such as unique constraint violations
         print(f"IntegrityError during insert: {integrity_error}")
         raise sqlite3.IntegrityError(f"IntegrityError during insert: {integrity_error}")
-    
+
     except sqlite3.Error as e:
         # print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a user: {e}")  # Stops execution by raising the error
+        raise Exception(
+            f"SQLiteError occurred during inserting a user: {e}"
+        )  # Stops execution by raising the error
 
     except Exception as e:
         # print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a user: {e}")  # Stops execution by raising the error
+        raise Exception(
+            f"Exception occurred during inserting a user: {e}"
+        )  # Stops execution by raising the error
 
 
-
-def insert_wallet(
-        user_id: str,
-        user_wallet: str,
-        user_balance: float) -> None:
+def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
     """
     Inserts a new user wallet into the USER_WALLET table.
 
@@ -251,11 +250,12 @@ def insert_wallet(
                 print("Insert failed.")
     except sqlite3.Error as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"SQLiteError occurred during inserting a wallet: {e}")  # Stops execution by raising the error
+        raise Exception(
+            f"SQLiteError occurred during inserting a wallet: {e}"
+        )  # Stops execution by raising the error
 
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(f"Exception occurred during inserting a wallet: {e}")  # Stops execution by raising the error
-    
-
-
+        raise Exception(
+            f"Exception occurred during inserting a wallet: {e}"
+        )  # Stops execution by raising the error
