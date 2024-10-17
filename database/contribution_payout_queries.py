@@ -122,7 +122,7 @@ def insert_stokvel_payouts_parameters(
             }
 
             # Insert the new contribution data
-            result = conn.execute(text(prepped_insert_query), parameters)
+            conn.execute(text(prepped_insert_query), parameters)
             conn.commit()
 
             print("Contribution parameters inserted successfully.")
@@ -192,7 +192,7 @@ def update_next_contributions_dates(
                 ),  # Set the new calculated NextDate
                 "stokvel_id": stokvel_id,
             }
-            result = conn.execute(text(update_query), parameters)
+            conn.execute(text(update_query), parameters)
             conn.commit()
             print(
                 f"Contribution parameters inserted successfully.: \n{current_next_date} \n {calculate_next_date(contribution_or_payout_period, current_next_date)}"
@@ -232,7 +232,7 @@ def update_next_payout_dates(
                 ),  # Set the new calculated NextDate
                 "stokvel_id": stokvel_id,
             }
-            result = conn.execute(text(update_query), parameters)
+            conn.execute(text(update_query), parameters)
             conn.commit()
 
         print("Contribution parameters inserted successfully.")
