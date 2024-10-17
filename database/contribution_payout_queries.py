@@ -228,15 +228,10 @@ def update_next_payout_dates(
 
     except sqlite3.Error as e:
         print(f"Error occurred during insert stokvel: {e}")
-        raise Exception(
-            f"SQLiteError occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
-
+        raise e
     except Exception as e:
         print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a stokvel: {e}"
-        )  # Stops execution by raising the error
+        raise e
 
 
 def update_user_contribution_token_uri(stokvel_id, user_id, new_token, new_uri):
@@ -271,11 +266,10 @@ def update_user_contribution_token_uri(stokvel_id, user_id, new_token, new_uri):
 
     except sqlite3.Error as e:
         print(f"SQLite error during update: {e}")
-        raise Exception(f"SQLiteError occurred during token/URI update: {e}")
-
+        raise e
     except Exception as e:
         print(f"Error during token/URI update: {e}")
-        raise Exception(f"Exception occurred during token/URI update: {e}")
+        raise e
 
 
 def update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri):
@@ -310,20 +304,8 @@ def update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri):
 
     except sqlite3.Error as e:
         print(f"SQLite error during update: {e}")
-        raise Exception(f"SQLiteError occurred during stokvel token/URI update: {e}")
+        raise e
 
     except Exception as e:
         print(f"Error during stokvel token/URI update: {e}")
-        raise Exception(f"Exception occurred during stokvel token/URI update: {e}")
-
-
-if __name__ == "__main__":
-    stokvel_id = 1
-    result = insert_member_contribution_parameters(
-        stokvel_id=stokvel_id,
-        start_date="2022-01-01",
-        end_date="2022-12-31",
-        payout_period="Months",
-        contribution=100.00,
-    )
-    print(result)
+        raise e
