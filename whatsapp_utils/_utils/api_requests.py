@@ -3,9 +3,9 @@ from typing import Dict, Optional
 import requests
 
 # LOCAT TESTING
-BASE_URL = "http://127.0.0.1:5000"
+# BASE_URL = "http://127.0.0.1:5000"
 # Production URL
-# BASE_URL = "http://0.0.0.0:80"
+BASE_URL = "https://digistokvel-api.onrender.com"
 
 
 def query_endpoint(endpoint_suffix: str, payload: Optional[Dict] = None) -> str:
