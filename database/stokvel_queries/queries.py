@@ -1277,7 +1277,10 @@ def get_stokvel_monthly_interest(stokvel_id: Optional[str]) -> Dict[str, float]:
 
             interest_result = conn.execute(
                 interest_query, {"stokvel_id": stokvel_id, "prev_payout": prev_payout}
-            )
+            ).fetchall()
+
+            if not interest_result:
+                return {}
 
             # Store the interest values in a dictionary (keyed by date)
             interest = {row[1]: row[0] for row in interest_result}
