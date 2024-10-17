@@ -1130,7 +1130,17 @@ def failed_stokvel_creation() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals", methods=["GET"])
 def approval_login() -> str:
     """
-    docstrings
+    Stokvel Admin Approval Login
+    Displays the approval login page for stokvel administrators.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully displayed the stokvel admin approval login page.
+        schema:
+          type: string
+          example: "Rendered HTML template for stokvel approval login."
     """
     return render_template("approval_login.html")
 
@@ -1138,7 +1148,36 @@ def approval_login() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/manage_approvals", methods=["POST"])
 def approve_stokvels() -> Response:
     """
-    Handles onboarding of a new user.
+    Manage Stokvel Applications
+    Allows a stokvel admin to view and manage applications for their stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - requesting_number
+          properties:
+            requesting_number:
+              type: string
+              description: The phone number of the admin managing the applications.
+              example: "+27821234567"
+    responses:
+      302:
+        description: Redirects to the applications management page for the stokvel admin.
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide a valid admin phone number."
+      500:
+        description: Internal server error. An error occurred while processing the approval login.
+        schema:
+          type: string
+          example: "An unknown error occurred while processing the approval login."
     """
     try:
         requesting_number = request.form.get("requesting_number")
@@ -1167,7 +1206,71 @@ def approve_stokvels() -> Response:
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/process_applications", methods=["POST"])
 def process_application():
     """
-    docstring
+    Process Stokvel Application
+    Handles the approval or decline of a stokvel application by the admin.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - application_id
+            - stokvel_id
+            - user_id
+            - stokvel_name
+            - action
+            - user_contribution
+            - requesting_number
+            - admin_id
+          properties:
+            application_id:
+              type: string
+              description: The ID of the stokvel application.
+              example: "12345"
+            stokvel_id:
+              type: string
+              description: The ID of the stokvel.
+              example: "67890"
+            user_id:
+              type: string
+              description: The ID of the user applying to join the stokvel.
+              example: "54321"
+            stokvel_name:
+              type: string
+              description: The name of the stokvel.
+              example: "Community Savings Club"
+            action:
+              type: string
+              description: The action to take ("approve" or "decline").
+              example: "approve"
+            user_contribution:
+              type: string
+              description: The contribution amount set by the user.
+              example: "200"
+            requesting_number:
+              type: string
+              description: The phone number of the admin processing the application.
+              example: "+27821234567"
+            admin_id:
+              type: string
+              description: The ID of the admin managing the application.
+              example: "11111"
+    responses:
+      302:
+        description: Redirects to a status page after processing the stokvel application.
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid data for the application process."
+      500:
+        description: Internal server error. An error occurred while processing the stokvel application.
+        schema:
+          type: string
+          example: "An unknown error occurred while processing the stokvel application."
     """
     application_id = request.form.get("application_id")
     application_stokvel_id = request.form.get("stokvel_id")
@@ -1452,7 +1555,35 @@ def process_application():
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/applications", methods=["GET"])
 def display_applications():
     """
-    docstring
+    Display Stokvel Applications
+    Shows a list of applications for stokvels managed by the admin.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: admin_id
+        type: string
+        required: true
+        description: The ID of the admin managing the applications.
+        example: "11111"
+      - in: query
+        name: requesting_number
+        type: string
+        required: true
+        description: The phone number of the admin requesting the applications.
+        example: "+27821234567"
+    responses:
+      200:
+        description: Successfully displayed the list of applications for approval.
+        schema:
+          type: string
+          example: "Rendered HTML template displaying stokvel applications for approval."
+      500:
+        description: Internal server error. An error occurred while fetching the applications.
+        schema:
+          type: string
+          example: "An unknown error occurred while displaying applications."
     """
     admin_id = request.args.get("admin_id")  # Get admin_id from query parameters
     requesting_number = request.args.get(
@@ -1481,7 +1612,17 @@ def display_applications():
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/failed_approval_login")
 def failed_approval_login() -> str:
     """
-    docstring
+    Failed Approval Login
+    Displays a failure message if the approval login process fails.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully displayed the failure message for approval login.
+        schema:
+          type: string
+          example: "We could not process your login. Please go back and try again."
     """
     action = "Approval Login"
     failed_message = "We could not process your login."  # Define a better message here - depending on what went wrong
@@ -1498,7 +1639,24 @@ def failed_approval_login() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/approvals/failed_approval_sv_full")
 def failed_approval_sv_full() -> str:
     """
-    docstring
+    Failed Application Approval - Stokvel Full
+    Displays a failure message when a stokvel is full, and no more members can be added.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: error_message
+        type: string
+        required: false
+        description: The error message to display.
+        example: "The stokvel is full. No new members can be added."
+    responses:
+      200:
+        description: Successfully displayed the failure message for a full stokvel.
+        schema:
+          type: string
+          example: "The stokvel is full. No new members can be added."
     """
 
     action = "Application Approval"
@@ -1521,7 +1679,34 @@ def failed_approval_sv_full() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel_total_interest", methods=["POST"])
 def stokvel_total_interest() -> str:
     """
-    This enpoint returns the total stokvel interest in the savings period.
+    Get Total Stokvel Interest
+    Returns the total interest accumulated by a stokvel over the savings period.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - stokvel_selection
+          properties:
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: Successfully retrieved the total interest for the stokvel.
+        schema:
+          type: string
+          example: "The total interest for this Stokvel is: R500.00"
+      500:
+        description: Internal server error. An error occurred while calculating the total interest.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try again."
     """
     stokvel_name = request.json.get(
         "stokvel_selection"
