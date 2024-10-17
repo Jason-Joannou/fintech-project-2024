@@ -17,7 +17,7 @@ nav:
       - Flask : components/flask.md
       - Express: components/express.md
       - Flask Templates: components/flask_templates.md
-      - Testing: components/testing.md
+      - Function App: components/function_app.md
   - Devops:
       - Overview: devops/overview.md
       - Git Management: devops/git.md
