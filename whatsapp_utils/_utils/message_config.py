@@ -1,3 +1,8 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 UNREGISTERED_NUMBER = {
     "tag": "unregistered_number",
     "message": """
@@ -7,7 +12,7 @@ UNREGISTERED_NUMBER = {
     """,
     "valid_actions": ["1"],
     "action_responses": {
-        "1": "Please register through our online portal: http://stokveldigital.uksouth.azurecontainer.io/onboard",
+        "1": f"Please register through our online portal: {os.getenv('PYTHON_SERVER')}/onboard",
     },
     "state": -1,
 }
@@ -38,8 +43,8 @@ STOKVEL_SERVICES = {
     """,
     "valid_actions": ["1", "2", "3", "4"],
     "action_responses": {
-        "1": "Please join a stokvel through our online portal: http://stokveldigital.uksouth.azurecontainer.io/stokvel/join_stokvel",
-        "2": "Please create a new stokvel through our online portal: http://stokveldigital.uksouth.azurecontainer.io/stokvel/create_stokvel",
+        "1": f"Please join a stokvel through our online portal: {os.getenv('PYTHON_SERVER')}/stokvel/join_stokvel",
+        "2": f"Please create a new stokvel through our online portal: {os.getenv('PYTHON_SERVER')}/stokvel/create_stokvel",
     },
     "action_requests": {"3": "/stokvel/my_stokvels"},
     "state_selection": {"4": "back_state"},
@@ -119,7 +124,7 @@ Welcome to stokvel administration! Please select one of the following options to
     },
     "state_selection": {"4": "back_state"},
     "action_responses": {
-        "3": "View pending applications here: http://stokveldigital.uksouth.azurecontainer.io/stokvel/approvals",
+        "3": f"View pending applications here: {os.getenv('PYTHON_SERVER')}/stokvel/approvals",
     },
     "input_request_states": {
         "1": {
