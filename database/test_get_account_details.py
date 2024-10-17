@@ -1,5 +1,3 @@
-import json
-
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
