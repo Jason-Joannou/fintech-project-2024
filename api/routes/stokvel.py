@@ -673,7 +673,17 @@ def failed_stokvel_join_application() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/create_stokvel", methods=["GET"])
 def create_stokvel_base() -> str:
     """
-    docstring
+    Stokvel Creation Base Page
+    Displays the base page for creating a new stokvel.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully displayed the stokvel creation base page.
+        schema:
+          type: string
+          example: "Rendered HTML template for creating a new stokvel."
     """
     return render_template("stokvel_creation_template.html")
 
@@ -681,7 +691,76 @@ def create_stokvel_base() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/create_stokvel/stokvels", methods=["POST"])
 def onboard_stokvel() -> Response:
     """
-    Handles onboarding of a new user.
+    Onboard a New Stokvel
+    Handles the creation and onboarding of a new stokvel, including setting up contribution and payout mechanisms.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - stokvel_name
+            - total_members
+            - min_contributing_amount
+            - max_number_of_contributors
+            - start_date
+            - end_date
+            - payout_frequency_duration
+            - contribution_period
+            - requesting_number
+          properties:
+            stokvel_name:
+              type: string
+              description: The name of the new stokvel.
+              example: "Community Savings Club"
+            total_members:
+              type: integer
+              description: The total number of members in the stokvel.
+              example: 10
+            min_contributing_amount:
+              type: number
+              description: The minimum contribution amount per member.
+              example: 100.00
+            max_number_of_contributors:
+              type: integer
+              description: The maximum number of contributors allowed in the stokvel.
+              example: 20
+            start_date:
+              type: string
+              description: The start date of the stokvel in ISO format.
+              example: "2023-05-01"
+            end_date:
+              type: string
+              description: The end date of the stokvel in ISO format.
+              example: "2023-12-01"
+            payout_frequency_duration:
+              type: string
+              description: The duration for payout frequency.
+              example: "Monthly"
+            contribution_period:
+              type: string
+              description: The period for member contributions.
+              example: "Monthly"
+            requesting_number:
+              type: string
+              description: The phone number of the user initiating the stokvel creation.
+              example: "+27821234567"
+    responses:
+      302:
+        description: Redirects to success or failure page after processing stokvel creation.
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Missing required fields."
+      500:
+        description: Internal server error. An error occurred during stokvel creation.
+        schema:
+          type: string
+          example: "An unknown error occurred while processing the stokvel creation."
     """
     try:
         stokvel_data = RegisterStokvelSchema(
@@ -982,7 +1061,17 @@ def onboard_stokvel() -> Response:
 )
 def success_stokvel_creation() -> str:
     """
-    docstrings
+    Successful Stokvel Creation
+    Displays a success message after a stokvel has been successfully created.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully displayed the success message for stokvel creation.
+        schema:
+          type: string
+          example: "Stokvel created successfully. Please navigate back to WhatsApp for further functions."
     """
     action = "Stokvel Creation"
     success_message = "Stokvel created successfully."
@@ -1003,7 +1092,23 @@ def success_stokvel_creation() -> str:
 )
 def failed_stokvel_creation() -> str:
     """
-    docstring
+    Failed Stokvel Creation
+    Displays an error message when the creation of a stokvel fails.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: error_message
+        type: string
+        required: false
+        description: The error message to display.
+    responses:
+      200:
+        description: Successfully displayed the failure message for stokvel creation.
+        schema:
+          type: string
+          example: "Stokvel could not be registered. Please try again later."
     """
     action = "Stokvel Registration"
     if request.args.get("error_message"):
