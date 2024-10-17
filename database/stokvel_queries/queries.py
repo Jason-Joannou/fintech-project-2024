@@ -586,6 +586,18 @@ def insert_stokvel_member(
 
 
 def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
+    """
+    Checks if a user needs to make an initial payout to a stokvel.
+
+    Args:
+        stokvel_id (int): The ID of the stokvel.
+        user_id (int): The ID of the user.
+
+    Returns:
+        bool: True if the user needs to make an initial payout, False if not. If
+            there is no record found for the given stokvel_id and user_id, returns
+            None.
+    """
     query = """
     SELECT stokvel_initial_payout_required
     FROM STOKVEL_MEMBERS
@@ -618,6 +630,20 @@ def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
 
 
 def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
+    """
+    Update the 'stokvel_initial_payout_required' field to 0 for a specific user in a stokvel.
+
+    Args:
+        stokvel_id (int): The ID of the stokvel.
+        user_id (int): The ID of the user.
+
+    Raises:
+        sqlite3.Error: If there is an error during the update operation.
+
+    This function updates the 'stokvel_initial_payout_required' field to 0 for the specified
+    stokvel and user in the STOKVEL_MEMBERS table. It commits the changes if successful,
+    otherwise it rolls back the transaction in case of an error.
+    """
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET stokvel_initial_payout_required = 0
@@ -1454,6 +1480,23 @@ def get_stokvel_member_details(stokvel_id, user_id):
 def update_member_grantaccepted(
     stokvel_id: int, user_id: int, active_status: str, user_interaction_ref: str
 ):
+    """
+    Update the active status and user interaction reference for a stokvel member in the database.
+
+    Args:
+        stokvel_id (int): The ID of the stokvel to update the member for.
+        user_id (int): The ID of the user to update the member for.
+        active_status (str): The new active status for the stokvel member.
+        user_interaction_ref (str): The new user interaction reference for the stokvel member.
+
+    Returns:
+        None
+
+    Raises:
+        sqlite3.Error: If an error occurs during the database update.
+        Exception: If an error occurs during the function execution.
+    """
+
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET active_status = :active_status, user_interaction_ref = :user_interaction_ref
@@ -1543,6 +1586,18 @@ def update_stokvel_grantaccepted(
 def update_adhoc_contribution_parms(
     stokvel_id: int, user_id: int, url: str, token: str
 ):
+    """
+    Update the adhoc contribution parameters for a user in a stokvel in the STOKVEL_MEMBERS table.
+
+    Parameters:
+    stokvel_id (int): The ID of the stokvel (group).
+    user_id (int): The ID of the user.
+    url (str): The url of the adhoc contribution.
+    token (str): The token for the adhoc contribution.
+
+    Returns:
+    None
+    """
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET adhoc_contribution_uri = :adhoc_contribution_uri, adhoc_contribution_token = :adhoc_contribution_token
