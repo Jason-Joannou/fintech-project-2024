@@ -42,21 +42,26 @@ def get_user_deposits_and_payouts_per_stokvel(phone_number: str, stokvel_name: s
 
     # Executing the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(
-            text(query), {"user_number": from_number, "stokvel_name": stokvel_name}
-        ).fetchone()
+        try:
+            result = conn.execute(
+                text(query), {"user_number": from_number, "stokvel_name": stokvel_name}
+            ).fetchone()
 
-        if not result:
+            if not result:
+                return {
+                    "total_deposits": 0,  # The total deposit amount for the user
+                    "total_payouts": 0,  # The total payout amount for the user
+                }
+
+            # Building the result dictionary from the query response
             return {
-                "total_deposits": 0,  # The total deposit amount for the user
-                "total_payouts": 0,  # The total payout amount for the user
+                "total_deposits": result[0],  # The total deposit amount for the user
+                "total_payouts": result[1],  # The total payout amount for the user
             }
 
-        # Building the result dictionary from the query response
-        return {
-            "total_deposits": result[0],  # The total deposit amount for the user
-            "total_payouts": result[1],  # The total payout amount for the user
-        }
+        except Exception as e:
+            print("Exception occured in get_user_deposits_and_payouts_per_stokvel: ", e)
+            raise e
 
 
 def get_deposits_per_stokvel(stokvel_name: str):
@@ -84,18 +89,25 @@ def get_deposits_per_stokvel(stokvel_name: str):
 
     # Executing the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
+        try:
 
-        if not result:
+            result = conn.execute(
+                text(query), {"stokvel_name": stokvel_name}
+            ).fetchone()
+
+            if not result:
+                return {
+                    "error": f"No data found for the given stokvel name: {stokvel_name}"
+                }
+
+            # Building the result dictionary from the query response
             return {
-                "error": f"No data found for the given stokvel name: {stokvel_name}"
+                "stokvel_name": stokvel_name,
+                "total_deposits": result[0],
             }
-
-        # Building the result dictionary from the query response
-        return {
-            "stokvel_name": stokvel_name,
-            "total_deposits": result[0],
-        }
+        except Exception as e:
+            print("Exception occured in get_deposits_per_stokvel: ", e)
+            raise e
 
 
 def get_nr_of_active_users_per_stokvel(stokvel_name: str):
@@ -120,18 +132,25 @@ def get_nr_of_active_users_per_stokvel(stokvel_name: str):
     """
     # Executing the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(text(query), {"stokvel_name": stokvel_name}).fetchone()
+        try:
 
-        if not result or result[0] is None:
+            result = conn.execute(
+                text(query), {"stokvel_name": stokvel_name}
+            ).fetchone()
+
+            if not result or result[0] is None:
+                return {
+                    "error": f"No data found for the given stokvel name: {stokvel_name}"
+                }
+
+            # Building the result dictionary from the query response
             return {
-                "error": f"No data found for the given stokvel name: {stokvel_name}"
+                "stokvel_name": stokvel_name,
+                "nr_of_active_users": result[0],
             }
-
-        # Building the result dictionary from the query response
-        return {
-            "stokvel_name": stokvel_name,
-            "nr_of_active_users": result[0],
-        }
+        except Exception as e:
+            print("Exception occured in get_nr_of_active_users_per_stokvel: ", e)
+            raise e
 
 
 def get_stokvel_constitution(phone_number: str, stokvel_name: str):
@@ -168,22 +187,28 @@ def get_stokvel_constitution(phone_number: str, stokvel_name: str):
 
     # Step 3: Execute the query using the SQLite connection
     with sqlite_conn.connect() as conn:
-        result = conn.execute(
-            text(query), {"stokvel_name": stokvel_name, "user_number": formatted_number}
-        ).fetchone()
+        try:
 
-        if not result:
+            result = conn.execute(
+                text(query),
+                {"stokvel_name": stokvel_name, "user_number": formatted_number},
+            ).fetchone()
+
+            if not result:
+                return {
+                    "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {formatted_number}."
+                }
+
+            # Step 4: Build the result dictionary from the query response
             return {
-                "error": f"No data found for the given stokvel name: {stokvel_name} and phone number: {formatted_number}."
+                "stokvel_name": stokvel_name,
+                "minimum_contributing_amount": result[0],
+                "max_number_of_contributors": result[1],
+                "creation_date": result[2],
             }
-
-        # Step 4: Build the result dictionary from the query response
-        return {
-            "stokvel_name": stokvel_name,
-            "minimum_contributing_amount": result[0],
-            "max_number_of_contributors": result[1],
-            "creation_date": result[2],
-        }
+        except Exception as e:
+            print("Exception occured in get_stokvel_constitution: ", e)
+            raise e
 
 
 def get_stokvel_id_by_name(stokvel_name) -> Optional[str]:
@@ -193,13 +218,18 @@ def get_stokvel_id_by_name(stokvel_name) -> Optional[str]:
     print(stokvel_name)
     query = "SELECT stokvel_id FROM STOKVELS WHERE stokvel_name = :stokvel_name"
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"stokvel_name": stokvel_name})
-        result = cursor.fetchone()[0]
-        print(result)
-        if result:
-            return result
+        try:
 
-        return None
+            cursor = conn.execute(text(query), {"stokvel_name": stokvel_name})
+            result = cursor.fetchone()[0]
+            print(result)
+            if result:
+                return result
+
+            return None
+        except Exception as e:
+            print("Exception occured in get_stokvel_id_by_name: ", e)
+            raise
 
 
 def get_admin_by_stokvel(stokvel_id):
@@ -216,15 +246,34 @@ def get_admin_by_stokvel(stokvel_id):
             u.user_id = (SELECT a.user_id FROM ADMIN a WHERE a.stokvel_id = :stokvel_id);
     """
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"stokvel_id": stokvel_id})
-        result = cursor.fetchone()[0]
-        print(result)
-        if result:
-            return result
-        return None
+        try:
+            cursor = conn.execute(text(query), {"stokvel_id": stokvel_id})
+            result = cursor.fetchone()[0]
+            print(result)
+            if result:
+                return result
+            return None
+        except Exception as e:
+            print("Exception occured in get_admin_by_stokvel: ", e)
+            raise e
 
 
 def get_iso_with_default_time(date_string: str) -> str:
+    """
+    Given a date string in ISO format, attempts to parse it with time information.
+    If time information is missing, appends 12:00 AM (00:00:00) and re-parses the string.
+    Returns the date in ISO format with Z for UTC timezone.
+
+    Parameters
+    ----------
+    date_string : str
+        Date string in ISO format
+
+    Returns
+    -------
+    str
+        Date string in ISO format with Z for UTC timezone
+    """
     try:
         # Try parsing the date string with time
         date_object = datetime.fromisoformat(date_string)
@@ -237,6 +286,19 @@ def get_iso_with_default_time(date_string: str) -> str:
 
 
 def format_contribution_period_string(contribution_period: str):
+    """
+    Format a contribution period string to a single character for easier parsing in the database.
+
+    Parameters
+    ----------
+    contribution_period : str
+        The contribution period string
+
+    Returns
+    -------
+    str
+        The formatted contribution period string
+    """
     if contribution_period == "Days":
         contribution_period = "D"
     elif contribution_period == "Months":
@@ -250,52 +312,6 @@ def format_contribution_period_string(contribution_period: str):
     elif contribution_period == "2 Minutes":
         contribution_period = "M"
     return contribution_period
-
-
-# def get_all_applications(user_id):
-#     """
-#     docstring
-#     """
-#     query = """
-#         SELECT
-#             a.id,
-#             a.stokvel_id,
-#             a.user_id,
-#             a.user_contribution,
-#             a.AppStatus,
-#             a.AppDate,
-#             u.user_number,
-#             u.user_name,
-#             u.user_surname,
-#             s.stokvel_name
-#         FROM APPLICATIONS a
-#         JOIN USERS u ON a.user_id = u.user_id
-#         JOIN STOKVELS s ON a.stokvel_id = s.stokvel_id
-#         JOIN ADMIN ad ON s.stokvel_id = ad.stokvel_id  -- Join ADMIN to check admin link
-#         WHERE ad.user_id = :user_id          -- Check if requesting number is an admin
-#         AND a.AppStatus = 'Application Submitted'    -- Application status filter
-#     """
-
-#     with sqlite_conn.connect() as conn:
-#         cursor = conn.execute(text(query), {"user_id": user_id})
-#         result = cursor.fetchall()
-
-#         applications = [
-#             {
-#                 "id": i[0],
-#                 "stokvel_id": i[1],
-#                 "user_id": i[2],
-#                 "AppStatus": i[3],
-#                 "AppDate": i[4],
-#                 "user_number": i[5],
-#                 "user_name": i[6],
-#                 "user_surname": i[7],
-#                 "stokvel_name": i[8],
-#             }
-#             for i in result
-#         ]
-
-#         return applications
 
 
 def get_all_applications(user_id):
@@ -322,28 +338,35 @@ def get_all_applications(user_id):
         WHERE ad.user_id = :user_id                    -- Check if requesting number is an admin
         AND a.AppStatus = 'Application Submitted'      -- Application status filter
     """
-
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_id": user_id})
-        result = cursor.fetchall()
+        try:
+            cursor = conn.execute(text(query), {"user_id": user_id})
+            result = cursor.fetchall()
 
-        applications = [
-            {
-                "id": i[0],
-                "stokvel_id": i[1],
-                "user_id": i[2],
-                "user_contribution": i[3],  # Add user contribution here
-                "AppStatus": i[4],
-                "AppDate": i[5],
-                "user_number": i[6],
-                "user_name": i[7],
-                "user_surname": i[8],
-                "stokvel_name": i[9],
-            }
-            for i in result
-        ]
+            applications = [
+                {
+                    "id": i[0],
+                    "stokvel_id": i[1],
+                    "user_id": i[2],
+                    "user_contribution": i[3],  # Add user contribution here
+                    "AppStatus": i[4],
+                    "AppDate": i[5],
+                    "user_number": i[6],
+                    "user_name": i[7],
+                    "user_surname": i[8],
+                    "stokvel_name": i[9],
+                }
+                for i in result
+            ]
 
-        return applications
+            return applications
+        except sqlite3.Error as e:
+            print(f"Error occurred during getting all applications: {e}")
+            raise e
+
+        except Exception as e:
+            print(f"Error occurred in applications: {e}")
+            raise e
 
 
 def insert_stokvel(
@@ -426,14 +449,12 @@ def insert_stokvel(
     }
 
     stokvel_current_id = ""
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             if stokvel_id is None:
                 stokvel_current_id = get_next_unique_id(conn, "STOKVELS", "stokvel_id")
                 parameters["stokvel_id"] = stokvel_current_id
 
-            print("Connected in stokvel insert")
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
 
@@ -446,13 +467,15 @@ def insert_stokvel(
 
             return stokvel_current_id
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert stokvel: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert stokvel: {e}")
+            conn.rollback()
+            raise e
 
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def check_if_stokvel_member(user_id, stokvel_id):
@@ -460,151 +483,23 @@ def check_if_stokvel_member(user_id, stokvel_id):
     Checks if a user is already a member of a stokvel
     """
     query = f"SELECT * FROM STOKVEL_MEMBERS WHERE user_id = {user_id} AND stokvel_id = {stokvel_id}"
-
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query))
-        result = cursor.fetchall()
+        try:
+            cursor = conn.execute(text(query))
+            result = cursor.fetchall()
 
-        if len(result) > 0:
-            return True
+            if len(result) > 0:
+                return True
 
-        return False
+            return False
 
+        except sqlite3.Error as e:
+            print(f"Error occurred during check if stokvel member: {e}")
+            raise e
 
-# def insert_stokvel_member(
-#     application_id: Optional[int],
-#     stokvel_id: Optional[str],  # unique constraint here
-#     user_id: Optional[str],
-#     user_contribution: Optional[float],
-#     user_token: Optional[str],
-#     user_url:  Optional[str],
-#     user_quote_id: Optional[str],
-#     stokvel_token:Optional[str],
-#     stokvel_url:Optional[str],
-#     strokvel_quote_id:Optional[str],
-#     created_at: Optional[str] = None,
-#     updated_at: Optional[str] = None,
-# ) -> List:
-#     """
-#     Inserts a new stokvel member into the STOKVEL_MEMBERS table.
-#     Raises:
-#         Exception: If an error occurs during insert.
-#     """
-#     # Need to look at refactoring this
-
-#     print("user id from inserting member: ", user_id)
-
-#     if created_at is None:
-#         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     if updated_at is None:
-#         updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-#     insert_query = """
-#         INSERT INTO STOKVEL_MEMBERS (
-#             stokvel_id, user_id, user_contribution, created_at, updated_at
-#         ) VALUES (
-#             :stokvel_id, :user_id, : user_contribution, :created_at, :updated_at
-#         )
-#         """
-
-#     # Parameter dictionary for executing the query
-#     parameters = {
-#         "stokvel_id": stokvel_id,
-#         "user_id": user_id,
-#         "user_contribution":user_contribution,
-#         "created_at": created_at,
-#         "updated_at": updated_at,
-#     }
-#     declined_applications_list = []
-#     try:
-#         with sqlite_conn.connect() as conn:
-#             print("Connected in stokvel_members insert")
-#             if check_available_space_in_stokvel(stokvel_id):
-#                 if not check_if_stokvel_member(user_id, stokvel_id):
-#                     update_application_status(application_id, "Approved")
-#                     conn.execute(text(insert_query), parameters)
-#                     conn.commit()
-#                 else:
-#                     print(
-#                         f"could not insert, user {user_id} is already a member of this stokvel {stokvel_id}"
-#                     )
-#                     raise sqlite3.Error("User is already a member of this stokvel")
-#             else:
-#                 print(f"Could not insert, stokvel {stokvel_id} is full")
-
-#                 # Find the most recently accepted application for the stokvel
-#                 latest_application_query = """
-#                     SELECT * FROM APPLICATIONS
-#                     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Approved'
-#                     ORDER BY AppDate DESC
-#                     LIMIT 1
-#                 """
-#                 latest_application = conn.execute(
-#                     text(latest_application_query), {"stokvel_id": stokvel_id}
-#                 ).fetchone()
-
-#                 print("latest app = ", latest_application)
-
-#                 if latest_application:
-#                     print("AGAIN latest app = ", latest_application)
-
-#                     latest_created_at = latest_application[4]
-#                     print(
-#                         f"Latest accepted application created at: {latest_created_at}"
-#                     )
-
-#                     # Decline all applications after the latest accepted application
-#                     decline_applications_query = """
-#                         UPDATE APPLICATIONS
-#                         SET AppStatus = 'Declined'
-#                         WHERE stokvel_id = :stokvel_id AND AppDate > :latest_created_at
-#                     """
-#                     conn.execute(
-#                         text(decline_applications_query),
-#                         {
-#                             "stokvel_id": stokvel_id,
-#                             "latest_created_at": latest_created_at,
-#                         },
-#                     )
-
-#                     conn.commit()
-
-#                     # Fetch IDs of the declined applications after the update
-#                     # declined_apps_query = """
-#                     #     SELECT id, AppStatus, user_id FROM APPLICATIONS
-#                     #     WHERE stokvel_id = :stokvel_id AND AppStatus = 'Declined' AND AppDate > :latest_created_at
-#                     # """
-
-#                     declined_users_query = """
-#                         SELECT u.user_number FROM APPLICATIONS a
-#                         JOIN USERS u ON a.user_id = u.user_id
-#                         WHERE a.stokvel_id = :stokvel_id AND a.AppStatus = 'Declined' AND a.AppDate > :latest_created_at
-#                     """
-
-#                     declined_apps_numbers = conn.execute(
-#                         text(declined_users_query),
-#                         {
-#                             "stokvel_id": stokvel_id,
-#                             "latest_created_at": latest_created_at,
-#                         },
-#                     ).fetchall()
-
-#                     # print(declined_apps_numbers)
-
-#                     # Store the IDs of the declined applications
-#                     declined_applications_list = [
-#                         app[0] for app in declined_apps_numbers
-#                     ]
-#                     print("Declined Applications IDs:", declined_applications_list)
-
-#         return declined_applications_list
-
-#     except sqlite3.Error as e:
-#         print(f"Error occurred during insert: {e}")
-#         raise e
-#     except Exception as e:
-#         print(f"Error occurred during insert: {e}")
-#         raise e
+        except Exception as e:
+            print(f"Error occurred during check if stokvel member: {e}")
+            raise e
 
 
 def insert_stokvel_member(
@@ -627,8 +522,6 @@ def insert_stokvel_member(
     Raises:
         Exception: If an error occurs during insert.
     """
-
-    print("User ID from inserting member: ", user_id)
 
     if created_at is None:
         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -663,15 +556,11 @@ def insert_stokvel_member(
     }
 
     declined_applications_list = []
-
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected in stokvel_members insert")
+    with sqlite_conn.connect() as conn:
+        try:
             if check_available_space_in_stokvel(stokvel_id):
                 if not check_if_stokvel_member(user_id, stokvel_id):
-                    update_application_status(
-                        application_id, "Approved"
-                    )  # what is going on here lol - issue: members are applying to be in their own stokvel and there is an error?
+                    update_application_status(application_id, "Approved")
                     conn.execute(text(insert_query), parameters)
                     conn.commit()
                 else:
@@ -684,14 +573,16 @@ def insert_stokvel_member(
 
                 # Handle declined applications logic here
 
-        return declined_applications_list
+            return declined_applications_list
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
@@ -701,9 +592,8 @@ def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
     WHERE user_id = :user_id AND stokvel_id = :stokvel_id
     """
     parameters = {"user_id": user_id, "stokvel_id": stokvel_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(query), parameters)
             payout_required = result.fetchone()  # Fetch one record
 
@@ -713,14 +603,18 @@ def check_update_stokvel_initial_payout_required(stokvel_id, user_id):
                 )
                 return None
 
-            print(f"Initial payout required: {payout_required[0]}")
             return payout_required[
                 0
             ]  # Return the value of `stokvel_initial_payout_required`
 
-    except sqlite3.Error as e:
-        print(f"Error retrieving stokvel initial payout: {e}")
-        raise e
+        except sqlite3.Error as e:
+            conn.rollback()
+            print(f"Error retrieving stokvel initial payout: {e}")
+            raise e
+        except Exception as e:
+            conn.rollback()
+            print(f"Error retrieving stokvel initial payout: {e}")
+            raise e
 
 
 def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
@@ -730,9 +624,8 @@ def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
     WHERE stokvel_id = :stokvel_id AND user_id = :user_id
     """
     parameters = {"stokvel_id": stokvel_id, "user_id": user_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(update_query), parameters)
             conn.commit()
 
@@ -745,60 +638,57 @@ def update_stokvel_initial_payout_required_to_zero(stokvel_id, user_id):
                     f"No records found to update for stokvel_id: {stokvel_id} and user_id: {user_id}"
                 )
 
-    except sqlite3.Error as e:
-        print(f"Error updating stokvel initial payout required: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error updating stokvel initial payout required: {e}")
+            conn.rollback()
+            raise e
 
 
 def get_all_stokvels():
     """
     Retrieve all stokvels from database
     """
-    try:
-        with sqlite_conn.connect() as conn:
-
-            print("Connected in stokvel_members insert")
+    with sqlite_conn.connect() as conn:
+        try:
             cursor = conn.execute(text("SELECT * FROM stokvels;"))
             stokvels = cursor.fetchall()
 
-            # print(stokvels)
+            stokvels_list = [
+                {
+                    "stokvel_id": stokvel[0],
+                    "stokvel_name": stokvel[1],
+                    "ILP_wallet": stokvel[2],
+                    "MOMO_wallet": stokvel[3],
+                    "total_members": (
+                        stokvel[4] if stokvel[4] is not None else 0
+                    ),  # Set to 0 if None
+                    "min_contributing_amount": stokvel[5],
+                    "max_number_of_contributors": stokvel[6],
+                    "total_contributions": stokvel[7],
+                    "created_at": stokvel[8],
+                    "updated_at": stokvel[9],
+                    "start_date": stokvel[10],
+                    "end_date": stokvel[11],
+                    "payout_frequency_int": stokvel[12],
+                    "payout_frequency_period": stokvel[13],
+                    "available_space": max(
+                        (stokvel[6] if stokvel[6] is not None else 0)
+                        - (stokvel[4] if stokvel[4] is not None else 0),
+                        0,
+                    ),  # Calculate available space
+                }
+                for stokvel in stokvels
+            ]
 
-        stokvels_list = [
-            {
-                "stokvel_id": stokvel[0],
-                "stokvel_name": stokvel[1],
-                "ILP_wallet": stokvel[2],
-                "MOMO_wallet": stokvel[3],
-                "total_members": (
-                    stokvel[4] if stokvel[4] is not None else 0
-                ),  # Set to 0 if None
-                "min_contributing_amount": stokvel[5],
-                "max_number_of_contributors": stokvel[6],
-                "total_contributions": stokvel[7],
-                "created_at": stokvel[8],
-                "updated_at": stokvel[9],
-                "start_date": stokvel[10],
-                "end_date": stokvel[11],
-                "payout_frequency_int": stokvel[12],
-                "payout_frequency_period": stokvel[13],
-                "available_space": max(
-                    (stokvel[6] if stokvel[6] is not None else 0)
-                    - (stokvel[4] if stokvel[4] is not None else 0),
-                    0,
-                ),  # Calculate available space
-            }
-            for stokvel in stokvels
-        ]
+            return stokvels_list
 
-        return stokvels_list
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert: {e}")
+            raise e
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
-
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            raise e
 
 
 def insert_admin(
@@ -826,7 +716,6 @@ def insert_admin(
             :id, :stokvel_id, :stokvel_name, :user_id, :total_contributions, :total_members
         )
         """
-    print("user id from inserting admin: ", user_id)
 
     # Parameter dictionary for executing the query
     parameters = {
@@ -837,9 +726,8 @@ def insert_admin(
         "total_contributions": total_contributions,
         "total_members": total_members,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             print("Connected in stokvel_admin insert")
             parameters["id"] = get_next_unique_id(conn, "ADMIN", "id")
 
@@ -850,13 +738,15 @@ def insert_admin(
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def update_stokvel_members_count(stokvel_id):
@@ -866,9 +756,8 @@ def update_stokvel_members_count(stokvel_id):
 
     count_query = "SELECT COUNT(*) FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id;"
     parameters = {"stokvel_id": stokvel_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             print("Connected to the database for stokvel members update")
 
             cursor = conn.execute(text(count_query), parameters)
@@ -888,8 +777,9 @@ def update_stokvel_members_count(stokvel_id):
                 f"Updated total_members for stokvel_id {stokvel_id} to {total_members}"
             )
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            conn.rollback()
+            print(f"An error occurred: {e}")
 
 
 def check_application_pending_approved(user_id, stokvel_id):
@@ -905,24 +795,21 @@ def check_application_pending_approved(user_id, stokvel_id):
 
     members_query = "select * from STOKVEL_MEMBERS where user_id = :user_id and stokvel_id = :stokvel_id;"
     members_parameters = {"user_id": user_id, "stokvel_id": stokvel_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             cursor = conn.execute(text(query), parameters)
             result = cursor.fetchone()
             if result is not None:
                 print("User has an application in the database")
                 return True
 
-            print("No app in db for this user")
             members_cursor = conn.execute(text(members_query), members_parameters)
             members_result = members_cursor.fetchone()
             if members_result is not None:
-                print("user is a member in the database")
                 return True
             return False
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 
 def check_available_space_in_stokvel(stokvel_id):
@@ -931,18 +818,16 @@ def check_available_space_in_stokvel(stokvel_id):
     query = "SELECT total_members, max_number_of_contributors FROM STOKVELS WHERE stokvel_id = :stokvel_id;"
     parameters = {"stokvel_id": stokvel_id}
 
-    print("checking space of : ", str(stokvel_id))
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             cursor = conn.execute(text(query), parameters)
             contributors, max_contributors = cursor.fetchone()
             contributors = 0 if contributors is None else contributors
             # print('contribs = ', contributors, ' max contributors ' + max_contributors)
             return contributors < max_contributors
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 
 def insert_stokvel_join_application(
@@ -953,9 +838,13 @@ def insert_stokvel_join_application(
     app_date: Optional[str] = None,
 ):
     """
-    docstring
+    Inserts a new stokvel join application into the APPLICATIONS table.
+    If stokvel_id is None, the next unique id is generated.
+    If app_status is None, the status is set to 'Application Submitted'.
+    If app_date is None, the date is set to the current date and time.
+    Raises:
+        SQLiteError: If an error occurs during insert.
     """
-
     if app_date is None:
         app_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -978,9 +867,9 @@ def insert_stokvel_join_application(
         "AppStatus": app_status,
         "AppDate": app_date,
     }
+    with sqlite_conn.connect() as conn:
+        try:
 
-    try:
-        with sqlite_conn.connect() as conn:
             if check_available_space_in_stokvel(stokvel_id):
                 if stokvel_id is None:
                     current_application_id = get_next_unique_id(
@@ -988,7 +877,6 @@ def insert_stokvel_join_application(
                     )
                     parameters["id"] = current_application_id
 
-                print("Connected in application insert")
                 result = conn.execute(text(insert_query), parameters)
                 conn.commit()
 
@@ -1001,19 +889,28 @@ def insert_stokvel_join_application(
             else:
                 print("No space in stokvel")
 
-            # return current_application_id
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert application: {e}")
+            conn.rollback()
+            raise e
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert application: {e}")
-        raise e
-
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def update_application_status(app_id: Optional[int], app_status: str):
-    """docstring"""
+    """
+    Updates the application status of an application in the APPLICATIONS table.
+
+    Args:
+        app_id (Optional[int]): The ID of the application to update.
+        app_status (str): The new status of the application.
+
+    Returns:
+        None
+    """
     update_query = """
         UPDATE APPLICATIONS
         SET
@@ -1026,9 +923,8 @@ def update_application_status(app_id: Optional[int], app_status: str):
         "id": app_id,
         "AppStatus": app_status,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             print("Connected in application update")
             result = conn.execute(text(update_query), parameters)
             conn.commit()
@@ -1040,45 +936,33 @@ def update_application_status(app_id: Optional[int], app_status: str):
             else:
                 print("Insert failed.")
 
-        # return current_application_id
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert application: {e}")
+            conn.rollback()
+            raise e
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert application: {e}")
-        raise e
-
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise Exception(
-            f"Exception occurred during inserting a application: {e}"
-        )  # Stops execution by raising the error
-
-
-def add_url_token(userid, stokvel_id, url, token):
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected to the database for stokvel members update TOKEN details")
-
-            update_query = "UPDATE STOKVEL_MEMBERS SET url = :url, token = :token WHERE stokvel_id = :stokvel_id AND user_id = :user_id;"
-            update_parameters = {
-                "stokvel_id": stokvel_id,
-                "user_id": userid,
-                "url": url,
-                "token": token,
-            }
-
-            conn.execute(text(update_query), update_parameters)
-            conn.commit()
-
-            print(
-                f"Updated token for stokvel_id {stokvel_id} and usser_id {userid} to {token}"
-            )
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def calculate_number_periods(payout_period, start_date, end_date):
-    # Parse the start and end dates as datetime objects using the correct format
+    """
+    Calculates the number of periods between two dates based on the specified payout period.
+
+    Args:
+        payout_period (str): The payout period, e.g., 'Days', 'Weeks', 'Months', 'Years', '30 Seconds', '2 Minutes'.
+        start_date (str): The start date in 'YYYY-MM-DD' format.
+        end_date (str): The end date in 'YYYY-MM-DD' format.
+
+    Returns:
+        int: The number of periods between the start and end dates.
+
+    Raises:
+        ValueError: If an invalid payout period is specified.
+    """
+
     start_date = datetime.strptime(
         start_date, "%Y-%m-%d"
     )  # Include seconds in the format
@@ -1088,36 +972,25 @@ def calculate_number_periods(payout_period, start_date, end_date):
     date_difference = (end_date - start_date).days  # Get the total days difference
     no_periods = 0
     payout_period = payout_period.strip()
-    print(payout_period, " PAYOUTPERIOD ")
-    print(payout_period == "Days")
-    print(payout_period == "Weeks")
 
     if payout_period == "Days":
         no_periods = date_difference  # Total days
-        period_delta = timedelta(days=1)  # Increment by 1 day
     elif payout_period == "Weeks":
         no_periods = date_difference // 7  # Total weeks
-        period_delta = timedelta(weeks=1)  # Increment by 1 week
     elif payout_period == "Months":
         diff = relativedelta(end_date, start_date)
         no_periods = diff.years * 12 + diff.months  # Total months
-        period_delta = relativedelta(months=1)  # Increment by 1 month
     elif payout_period == "Years":
         diff = relativedelta(end_date, start_date)
         no_periods = diff.years  # Total years
-        period_delta = relativedelta(years=1)  # Increment by 1 year
     elif payout_period == "30 Seconds":
         # Calculate the total number of seconds in the period
         total_seconds = (end_date - start_date).total_seconds()
-        print("TOTAL SECONDS ", total_seconds)
         no_periods = int(total_seconds // 30)  # Total number of 30-second periods
-        period_delta = timedelta(seconds=30)  # Increment by 30 seconds
     elif payout_period == "2 Minutes":
         # Calculate the total number of seconds in the period
         total_seconds = (end_date - start_date).total_seconds()
-        print("TOTAL SECONDS ", total_seconds)
         no_periods = int(total_seconds // 120)  # Total number of 2 minute periods
-        period_delta = timedelta(seconds=120)  # Increment by 30 seconds
     else:
         raise ValueError(
             f"Invalid payout period specified. Payout period {payout_period}"
@@ -1127,6 +1000,25 @@ def calculate_number_periods(payout_period, start_date, end_date):
 
 
 def double_number_periods_for_same_daterange(period):
+    """
+    Convert a period of time to double the number of periods for the same date range.
+
+    Given a period of time, this function will return the period duration and number of periods
+    required to cover the same date range, but with double the number of periods.
+
+    Parameters
+    ----------
+    period : str
+        The period of time to convert. Can be "Years", "Months", "Weeks", "Days", "30 Seconds", or "2 Minutes".
+
+    Returns
+    -------
+    period_duration : str
+        The new period duration. Can be "Y", "M", "W", "D", "H", "M", "S", or an empty string.
+    number_of_periods_coverted : str or int
+        The new number of periods. Can be an integer or a string in the format "T<int>" where <int> is the number of periods.
+    """
+
     period_duration = ""
     number_of_periods_coverted = ""
     if period == "Years":
@@ -1147,7 +1039,6 @@ def double_number_periods_for_same_daterange(period):
     elif period == "2 Minutes":
         period_duration = "M"
         number_of_periods_coverted = "T2"
-    print(period, " ", period_duration, " ", number_of_periods_coverted)
     return period_duration, number_of_periods_coverted
 
 
@@ -1169,25 +1060,33 @@ def update_user_active_status(user_number: str, stokvel_name: str, active_status
     }
 
     # Execute the query
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             conn.execute(text(query), params)
             conn.commit()
-            print(
-                f"Updated user {user_number} status to {active_status} for stokvel {stokvel_name}."
-            )
-    except sqlite3.Error as e:
-        print(f"Error updating user status: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error updating user status: {e}")
+            conn.rollback()
+            raise e
+        except Exception as e:
+            print(f"Error updating user status: {e}")
+            conn.rollback()
+            raise e
 
 
 def get_next_unique_id(conn, table_name, id_column):
     """
     Get the next unique id for the given table and id column.
     """
-    result = conn.execute(text(f"SELECT MAX({id_column}) FROM {table_name}")).fetchone()
-    # If no result exists (table is empty), return 1, otherwise increment the max id
-    return (result[0] or 0) + 1
+    try:
+        result = conn.execute(
+            text(f"SELECT MAX({id_column}) FROM {table_name}")
+        ).fetchone()
+        # If no result exists (table is empty), return 1, otherwise increment the max id
+        return (result[0] or 0) + 1
+    except Exception as e:
+        print(f"Error getting next unique id: {e}")
+        raise e
 
 
 def insert_transaction(user_id, stokvel_id, amount, tx_type, tx_date):
@@ -1222,8 +1121,6 @@ def insert_transaction(user_id, stokvel_id, amount, tx_type, tx_date):
 
             conn.commit()  # Commit the transaction to the database
 
-            print(f"Transaction with ID {transaction_id} was successfully added.")
-
         except Exception as e:
             print(f"Failed to insert transaction. Error: {str(e)}")
             conn.rollback()
@@ -1249,14 +1146,19 @@ def update_max_nr_of_contributors(stokvel_name: str, max_nr_of_contributors: flo
     """
 
     with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(update_query),
-            {
-                "stokvel_name": stokvel_name,
-                "max_nr_of_contributors": max_nr_of_contributors,
-            },
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                text(update_query),
+                {
+                    "stokvel_name": stokvel_name,
+                    "max_nr_of_contributors": max_nr_of_contributors,
+                },
+            )
+            conn.commit()
+        except Exception as e:
+            print(f"Error updating max number of contributors: {e}")
+            conn.rollback()
+            raise e
 
 
 def update_stokvel_name(stokvel_name: str, new_stokvelname: str, user_number: str):
@@ -1475,11 +1377,21 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
 
 
 def get_stokvel_details(stokvel_id):
+    """
+    Retrieve stokvel details from the database given a stokvel ID.
+
+    Args:
+        stokvel_id (str): The ID of the stokvel to retrieve details for.
+
+    Returns:
+        dict: A dictionary containing the stokvel's details, including
+              the ID, name, minimum contribution amount, maximum number of
+              contributors, creation date, and the user who created it.
+    """
     select_query = "SELECT * FROM STOKVELS WHERE stokvel_id = :stokvel_id"
     parameters = {"stokvel_id": stokvel_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(select_query), parameters)
             stokvel_details = result.fetchone()  # Fetch one record
 
@@ -1496,17 +1408,28 @@ def get_stokvel_details(stokvel_id):
             print(f"Selected stokvel details: {stokvel_dict}")
             return stokvel_dict  # Return the details
 
-    except sqlite3.Error as e:
-        print(f"Error retrieving stokvel details: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error retrieving stokvel details: {e}")
+            raise e
 
 
 def get_stokvel_member_details(stokvel_id, user_id):
+    """
+    Retrieve stokvel member details from the database given a stokvel ID and user ID.
+
+    Args:
+        stokvel_id (str): The ID of the stokvel to retrieve member details for.
+        user_id (str): The user ID to filter the stokvel members by.
+
+    Returns:
+        dict: A dictionary containing the stokvel member's details, including
+              the user ID, stokvel ID, contribution amount, payment token, payment
+              URI, quote ID, and the creation date.
+    """
     select_query = "SELECT * FROM STOKVEL_MEMBERS WHERE stokvel_id = :stokvel_id and user_id = :user_id"
     parameters = {"stokvel_id": stokvel_id, "user_id": user_id}
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(select_query), parameters)
             stokvel_members_details = result.fetchone()  # Fetch one record
 
@@ -1520,12 +1443,11 @@ def get_stokvel_member_details(stokvel_id, user_id):
                 zip(columns, stokvel_members_details)
             )  # Create a dictionary from column names and values
 
-            print(f"Selected stokvel details: {stokvel_members_dict}")
             return stokvel_members_dict  # Return the details
 
-    except sqlite3.Error as e:
-        print(f"Error retrieving stokvel details: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error retrieving stokvel details: {e}")
+            raise e
 
 
 def update_member_grantaccepted(
@@ -1543,9 +1465,8 @@ def update_member_grantaccepted(
         "active_status": active_status,
         "user_interaction_ref": user_interaction_ref,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(update_query), parameters)
             conn.commit()
 
@@ -1558,9 +1479,14 @@ def update_member_grantaccepted(
                     f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
                 )
 
-    except sqlite3.Error as e:
-        print(f"Error updating stokvel member: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error updating stokvel member: {e}")
+            conn.rollback()
+            raise e
+        except Exception as e:
+            print(f"Error updating stokvel member: {e}")
+            conn.rollback()
+            raise e
 
 
 def update_stokvel_grantaccepted(
@@ -1569,6 +1495,14 @@ def update_stokvel_grantaccepted(
     stokvel_payout_active_status: str,
     stokvel_interaction_ref: str,
 ):
+    """
+    Updates the stokvel payout active status and interaction reference in the STOKVEL_MEMBERS table.
+    :param stokvel_id: The ID of the stokvel.
+    :param user_id: The ID of the user.
+    :param stokvel_payout_active_status: The active status of the stokvel payout.
+    :param stokvel_interaction_ref: The reference for the stokvel payout interaction.
+    :raises: sqlite3.Error
+    """
     update_query = """
     UPDATE STOKVEL_MEMBERS
     SET stokvel_payout_active_status = :stokvel_payout_active_status, stokvel_interaction_ref = :stokvel_interaction_ref
@@ -1581,9 +1515,8 @@ def update_stokvel_grantaccepted(
         "stokvel_payout_active_status": stokvel_payout_active_status,
         "stokvel_interaction_ref": stokvel_interaction_ref,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(update_query), parameters)
             conn.commit()
 
@@ -1596,9 +1529,14 @@ def update_stokvel_grantaccepted(
                     f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
                 )
 
-    except sqlite3.Error as e:
-        print(f"Error updating stokvel payout: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error updating stokvel payout: {e}")
+            conn.rollback()
+            raise e
+        except Exception as e:
+            print(f"Error updating stokvel payout: {e}")
+            conn.rollback()
+            raise e
 
 
 def update_adhoc_contribution_parms(
@@ -1616,9 +1554,8 @@ def update_adhoc_contribution_parms(
         "adhoc_contribution_uri": url,
         "adhoc_contribution_token": token,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(update_query), parameters)
             conn.commit()
 
@@ -1631,9 +1568,12 @@ def update_adhoc_contribution_parms(
                     f"No records found to update for stokvel_id: {stokvel_id}, user_id: {user_id}"
                 )
 
-    except sqlite3.Error as e:
-        print(f"Error updating stokvel payout: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error updating stokvel payout: {e}")
+            raise e
+        except Exception as e:
+            print(f"Error updating stokvel payout: {e}")
+            raise e
 
 
 if __name__ == "__main__":
