@@ -1,36 +1,61 @@
-## Architecture Overview
+## Components Overview
 
-Our project is designed as a full-stack application, integrating a database, backend API, and frontend interface to deliver a comprehensive solution. The architecture is built to efficiently handle data processing, API requests, and user interactions, while leveraging Azure's cloud services to manage and scale our resources.
+The DigiStokvel project is built using a modular architecture, leveraging various components to handle specific functions such as database management, backend frameworks, and automated financial operations. This overview provides a detailed look at the core components that form the foundation of the DigiStokvel system.
 
-### Key Components
+### Database
 
-**Database**  
+The DigiStokvel system uses **SQLite** for its database, which stores and manages key data related to stokvels, users, transactions, and contributions. Although foreign key relationships have been defined between tables, they are not enforced by SQLite in the current design. Future iterations will enhance data integrity by enforcing these relationships.
 
-  The database serves as the foundation of our data management, storing and organizing the information needed by both the API and the frontend. We utilize a SQL-based relational database hosted on Azure, ensuring robust performance, security, and scalability.
+- **Key Features**:
+  - Storage for users, stokvels, transactions, and payouts.
+  - Efficient handling of stokvel member data, contributions, and financial operations.
+  - Future-proof design for scalability and referential integrity.
 
-**Backend API** 
-
-  The API acts as the intermediary between the database and the frontend. It is built using FastAPI, a modern web framework for building APIs with Python. The API handles data processing, business logic, and communication with the database, providing endpoints for data retrieval, updates, and analytical functions. The API is containerized and deployed on Azure Container Instances for easy scaling and management.
-
-**Frontend**  
-
-  The frontend is the user-facing part of the application, developed using Vue.js. It provides an intuitive interface for users to interact with the data, visualize results, and perform various operations. The frontend communicates with the backend API to fetch and display data in real-time, ensuring a seamless user experience.
-
-**WhatsApp Interface**
-
-  Users are able to interact with our service via a WhatsApp chatbot that allows certain user functionality. This enables access to some of the key services of our service via a low cost, easy to access service. 
-  From the WhatsApp chatbot a user can perform the following actions: 
-
-  - Initiate user onboarding (completed via a web app)
-  - Initiate stokvel creation (completed via a web app)
-  - View user profile
-  - Update user profile
-  - View details of stokvels joined
-  - Update stokvels for which the user is an admin 
+For a more detailed description of the database design, including table structures and relationships, refer to the [Database Overview](./database.md).
 
 
-**Azure Integration**  
+### Express
 
-  Azure is central to our infrastructure management, providing services for hosting, scaling, and monitoring our application. We use Azure Resource Manager (ARM) to define and manage resources, including our database, container registry, and container instances. Terraform is employed to define our infrastructure as code (IaC), enabling consistent and repeatable deployments.
+**Express** is used as the core framework for DigiStokvel’s backend services, specifically for handling communication with the **Interledger Protocol (ILP)**. Express is lightweight yet powerful, enabling the system to manage grants, incoming and outgoing payments, and quotes generation with the ILP Open Payments API.
 
-This architecture ensures a modular, scalable, and maintainable system that can handle the demands of a dynamic and data-intensive application. By utilizing Azure's cloud capabilities, we are able to efficiently manage our resources, ensuring high availability and performance.
+- **Core Features**:
+  - RESTful API services to interact with payment systems.
+  - Integration with ILP for managing grants and secure payment transactions.
+  - Asynchronous processing to handle multiple user requests efficiently.
+
+For more information on how Express is used in the DigiStokvel project, visit the [Express Overview](./express.md).
+
+
+
+### Flask Templates
+
+The **Flask** framework is utilized to build web-based user interfaces that complement WhatsApp-based interactions. While WhatsApp is the primary communication channel for simple text commands, more complex tasks like form submissions and detailed user inputs are handled using Flask templates.
+
+- **Key Use Cases**:
+  - Complex forms for user onboarding, stokvel creation, and membership management.
+  - Secure handling of sensitive information, such as user credentials and stokvel settings.
+  - Enhanced user experience through rich visual feedback and structured forms.
+
+To learn more about why Flask templates are integrated into the system, refer to the [Flask Template Overview](./flask_templates.md).
+
+
+### Flask Backend
+
+The **Flask** backend serves as the backbone of the DigiStokvel system, handling core operations such as user registration, stokvel management, and integration with payment services like **MTN MoMo** and **WhatsApp**.
+
+- **Key Features**:
+  - User authentication and management.
+  - Stokvel creation, contribution tracking, and payouts.
+  - Automated financial operations integrated with WhatsApp chatbot for user convenience.
+
+For further details about the endpoints and features provided by the Flask backend, see the [Flask Overview](./flask.md).
+
+### Function Apps
+
+**Function apps** automate the core financial operations within the DigiStokvel system, specifically for handling scheduled contributions and payouts. These apps run daily, ensuring that all financial activities are processed without manual intervention.
+
+- **Payouts Engine**: Automatically handles the disbursement of funds to stokvel members based on the predefined payout schedules.
+- **Contributions Engine**: Automates the collection of recurring contributions from stokvel members, ensuring the financial stability of the group.
+
+The function apps are critical for ensuring the efficiency and reliability of DigiStokvel's automated financial workflows. To explore how these apps work, visit the [Function Apps Overview](./function_app.md).
+
