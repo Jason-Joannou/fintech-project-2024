@@ -2046,7 +2046,10 @@ def adhoc_payment_grant_handle() -> str:
                     tx_type="PAYOUT",
                     tx_date=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                notifcation_message = f"Your payment of {payout} was successful. You have successfuly left Stokvel {get_stokvel_details(stokvel_id)['stokvel_name']}"
+                notifcation_message = f"""
+                Your payment of {payout} was successful.
+                You have successfuly left Stokvel {get_stokvel_details(stokvel_id)['stokvel_name']}
+                """
                 send_notification_message(
                     to=f"whatsapp:{find_number_by_userid(user_id)}",
                     body=notifcation_message,

@@ -105,8 +105,6 @@ def main(DailyContributionOperation: TimerRequest) -> None:
                 amount = member["contribution_amount"]
                 user_quote_id = member["user_quote_id"]
                 tx_type = "DEPOSIT"
-                manageUrl = member["user_payment_URI"]
-                previousToken = member["user_payment_token"]
 
                 logging.info(
                     f"Processing member: user_id={user_id}, amount={amount}, tx_type={tx_type}"
