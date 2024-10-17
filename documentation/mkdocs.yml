@@ -13,6 +13,7 @@ nav:
   - System Architecture:
     - Overview: system-architecture/overview.md
   - Components:
+      - Overview: components/overview.md
       - Database: components/database.md
       - Flask : components/flask.md
       - Express: components/express.md
@@ -20,6 +21,7 @@ nav:
       - Function App: components/function_app.md
   - Devops:
       - Overview: devops/overview.md
+      - Agile Workflow: devops/agile.md
       - Git Management: devops/git.md
       - Docker: devops/docker.md
       - Terraform: devops/terraform.md
