@@ -166,6 +166,7 @@ def find_user_by_number(from_number: str) -> Optional[str]:
         The user_id if the user exists, otherwise None.
     """
     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
+    from_number = extract_whatsapp_number(from_number=from_number)
     with sqlite_conn.connect() as conn:
         try:
             cursor = conn.execute(text(query), {"from_number": from_number})
@@ -367,6 +368,9 @@ def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> floa
     """
 
     stokvel_interest = get_stokvel_monthly_interest(stokvel_id)
+
+    if not stokvel_interest:
+        return 0
 
     start_date = next(iter(stokvel_interest))
 
