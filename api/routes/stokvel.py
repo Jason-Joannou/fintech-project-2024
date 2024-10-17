@@ -1,6 +1,8 @@
+import os
 from datetime import datetime
 
 import requests
+from dotenv import load_dotenv
 from flask import (
     Blueprint,
     Response,
@@ -74,6 +76,8 @@ NODE_SERVER_CREATE_INITIAL_PAYMENT = (
 )
 
 NODE_SERVER_ADHOC_PAYMENT = "http://localhost:3001/payments/adhoc-payment"
+
+load_dotenv()
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -884,7 +888,9 @@ def onboard_stokvel() -> Response:
         ]
         notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {auth_link}"
 
-        send_notification_message(to="whatsapp:+27798782441", body=notification_message)
+        send_notification_message(
+            to=f"whatsapp:{os.getenv('SYSTEM_AGENT_NUMBER')}", body=notification_message
+        )
 
         insert_stokvel_member(
             application_id=None,
@@ -1327,7 +1333,7 @@ def process_application():
             notification_message = f"SYSTEM REQUEST: Please Authorize the recurring grant using this link: {agent_auth_link}"
 
             send_notification_message(
-                to="whatsapp:+27798782441",  # Need to change
+                to=f"whatsapp:{os.getenv('SYSTEM_AGENT_NUMBER')}",  # Need to change
                 body=notification_message,
             )
 
@@ -2177,7 +2183,9 @@ def leave_current_stokvel():
         notfication_message = f"SYSTEM REQUEST: A user is requesting a payout ( attemtping to leave ) {auth_link}"
 
         # Send notification message to SYSTEM AGENT
-        send_notification_message(to="whatsapp:+27798782441", body=notfication_message)
+        send_notification_message(
+            to=f"whatsapp:{os.getenv('SYSTEM_AGENT_NUMBER')}", body=notfication_message
+        )
         pop_previous_state(from_number=user_number)
         pop_previous_state(from_number=user_number)
 
