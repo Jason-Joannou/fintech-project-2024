@@ -5,7 +5,6 @@ from database.sqlite_connection import SQLiteConnection
 from database.stokvel_queries.queries import (
     get_all_applications,
     get_stokvel_id_by_name,
-    get_user_deposits_and_payouts_per_stokvel,
 )
 from database.user_queries.queries import (
     find_user_by_number,
@@ -15,7 +14,6 @@ from database.user_queries.queries import (
     update_user_name,
     update_user_surname,
 )
-from whatsapp_utils._utils.twilio_messenger import send_notification_message
 
 db_conn = SQLiteConnection(database="./database/test_db.db")
 users_bp = Blueprint("users", __name__)
