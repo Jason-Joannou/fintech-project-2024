@@ -27,7 +27,8 @@ export const getEnviromentVariables = (): IEnvVariables => {
     keyID: process.env.KEY_ID || "853aa509-9d78-4354-96d1-4236cbe1236e",
     privateKeyID:
       process.env.PRIVATE_KEY_ID || path.resolve(__dirname, "./private.key"), // Ensure the correct file path
-    nodeServer: process.env.NODE_SERVER || "http://localhost:3000",
+    nodeServer: process.env.NODE_SERVER || "http://localhost:3001",
+    pythonServer: process.env.PYTHON_SERVER || "http://localhost:3000",
   };
 
   return variables;
