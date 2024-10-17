@@ -13,7 +13,12 @@ sqlite_conn = SQLiteConnection(database="./database/test_db.db")
 
 def get_total_number_of_users() -> int:
     """
-    docstrings
+    Retrieve the total count of unique users in the system.
+
+    Returns
+    -------
+    int
+        The total number of unique users in the system.
     """
     engine = sqlite_conn.get_engine()
     with engine.connect() as conn:
@@ -27,29 +32,52 @@ def get_total_number_of_users() -> int:
 
             return user_count
         except Exception as e:
-            transaction.rollback()
             print(f"There was an error retreiving the SQL error: {e}")
             return 0
 
 
 def check_if_number_exists_sqlite(from_number: str) -> bool:
     """
-    docstring
+    Check if a given number exists in the USERS table.
+
+    Parameters
+    ----------
+    from_number : str
+        The phone number to check.
+
+    Returns
+    -------
+    bool
+        True if the user exists, False otherwise.
     """
     from_number = extract_whatsapp_number(from_number=from_number)
     query = "SELECT * FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"from_number": from_number})
-        result = cursor.fetchone()
-        if result:
-            return True
+        try:
+            cursor = conn.execute(text(query), {"from_number": from_number})
+            result = cursor.fetchone()
+            if result:
+                return True
 
-        return False
+            return False
+        except Exception as e:
+            print(f"An error occurred in check_if_number_exists: {e}")
+            raise e
 
 
 def check_if_number_is_admin(from_number: str) -> bool:
     """
-    docstring
+    Check if the given phone number belongs to an admin.
+
+    Parameters
+    ----------
+    from_number : str
+        The phone number to check.
+
+    Returns
+    -------
+    bool
+        True if the user is an admin, False otherwise.
     """
     from_number = extract_whatsapp_number(from_number=from_number)
 
@@ -61,16 +89,30 @@ def check_if_number_is_admin(from_number: str) -> bool:
     """
 
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_number": from_number})
-        result = cursor.fetchone()
-
-    return result[0] >= 1
+        try:
+            cursor = conn.execute(text(query), {"user_number": from_number})
+            result = cursor.fetchone()
+            return result[0] >= 1
+        except Exception as e:
+            print(f"An error occurred in check_if_number_is_admin: {e}")
+            raise e
 
 
 def get_linked_stokvels(user_number):
     """
-    Get the stokvels a user is linked to, and check if they are an admin.
+    Retrieve the stokvels that the given user is linked to, along with an indicator of whether they are an admin or not.
+
+    Parameters
+    ----------
+    user_number : str
+        The user's phone number.
+
+    Returns
+    -------
+    list
+        A list of tuples, where each tuple contains the name of a stokvel, and a boolean indicating whether the user is an admin of that stokvel.
     """
+
     user_number = extract_whatsapp_number(from_number=user_number)
     query = """
     SELECT
@@ -96,8 +138,12 @@ def get_linked_stokvels(user_number):
     """
 
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_number": user_number})
-        result = cursor.fetchall()
+        try:
+            cursor = conn.execute(text(query), {"user_number": user_number})
+            result = cursor.fetchall()
+        except Exception as e:
+            print(f"An error occurred in get_linked_stokvels: {e}")
+            raise e
 
     # Process the results into a list of (stokvel_name, admin_ind)
     linked_accounts = [(row[0], row[1]) for row in result]
@@ -107,38 +153,61 @@ def get_linked_stokvels(user_number):
 
 def find_user_by_number(from_number: str) -> Optional[str]:
     """
-    docstring
+    Find a user by their phone number.
+
+    Parameters
+    ----------
+    from_number : str
+        The phone number to search for.
+
+    Returns
+    -------
+    Optional[str]
+        The user_id if the user exists, otherwise None.
     """
-    # from_number = "0"+str(from_number)
-    # print(from_number)
-    print(from_number)
     query = "SELECT user_id FROM USERS WHERE user_number = :from_number"
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"from_number": from_number})
-        result = cursor.fetchone()[0]
-        print(result)
-        if result:
-            return result
+        try:
+            cursor = conn.execute(text(query), {"from_number": from_number})
+            result = cursor.fetchone()[0]
+            print(result)
+            if result:
+                return result
 
-        return None
+            return None
+        except Exception as e:
+            print(f"An error occurred in find_user_by_number: {e}")
+            raise e
 
 
 def find_number_by_userid(user_id: str) -> Optional[str]:
     """
-    docstring
+    Find a user's phone number by their user_id.
+
+    Parameters
+    ----------
+    user_id : str
+        The user_id to search for.
+
+    Returns
+    -------
+    Optional[str]
+        The user's phone number if the user exists, otherwise None.
     """
-    # from_number = "0"+str(from_number)
-    # print(from_number)
-    print(user_id)
+
     query = "SELECT user_number FROM USERS WHERE user_id = :user_id"
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_id": user_id})
-        result = cursor.fetchone()[0]
-        print(result)
-        if result:
-            return result
+        try:
+            cursor = conn.execute(text(query), {"user_id": user_id})
+            result = cursor.fetchone()[0]
+            print(result)
+            if result:
+                return result
 
-        return None
+            return None
+        except Exception as e:
+            print(f"An error occurred in find_number_by_userid: {e}")
+            raise e
 
 
 def insert_user(
@@ -152,8 +221,6 @@ def insert_user(
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None,
 ) -> None:
-    # Need to look at refactoring this
-
     """
     Inserts a new user into the USERS table.
 
@@ -194,10 +261,8 @@ def insert_user(
         "created_at": created_at,
         "updated_at": updated_at,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected in user insert")
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
 
@@ -206,17 +271,21 @@ def insert_user(
             else:
                 print("Insert failed.")
 
-    except sqlite3.IntegrityError as integrity_error:
-        # Catch integrity errors such as unique constraint violations
-        print(f"IntegrityError during insert: {integrity_error}")
+        except sqlite3.IntegrityError as integrity_error:
+            # Catch integrity errors such as unique constraint violations
+            print(f"IntegrityError during insert: {integrity_error}")
+            conn.rollback()
+            raise integrity_error
 
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
 def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
@@ -242,25 +311,53 @@ def insert_wallet(user_id: str, user_wallet: str, user_balance: float) -> None:
         "user_wallet": user_wallet,
         "UserBalance": user_balance,
     }
-
-    try:
-        with sqlite_conn.connect() as conn:
-            print("Connected in wallet insert")
+    with sqlite_conn.connect() as conn:
+        try:
             result = conn.execute(text(insert_query), parameters)
             conn.commit()
             if result.rowcount > 0:
                 print(f"Insert successful, {result.rowcount} row(s) affected.")
             else:
                 print("Insert failed.")
-    except sqlite3.Error as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
-    except Exception as e:
-        print(f"Error occurred during insert: {e}")
-        raise e
+        except sqlite3.Error as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
+        except Exception as e:
+            print(f"Error occurred during insert: {e}")
+            conn.rollback()
+            raise e
 
 
-def get_user_interest(user_id: int, stokvel_id: int) -> float:
+def find_wallet_by_userid(user_id: str) -> Optional[str]:
+    """
+    Find the ILP wallet of a user by their user_id.
+
+    Parameters
+    ----------
+    user_id : str
+        The user_id to search for.
+
+    Returns
+    -------
+    Optional[str]
+        The ILP wallet address of the user if found, otherwise None.
+    """
+    query = "SELECT ILP_wallet FROM USERS WHERE user_id = :user_id"
+    with sqlite_conn.connect() as conn:
+        try:
+
+            cursor = conn.execute(text(query), {"user_id": user_id})
+            result = cursor.fetchone()[0]
+            print(result)
+            if result:
+                return result
+        except Exception as e:
+            print("Exception occured in find_wallet_by_userid: ", e)
+            raise e
+
+
+def get_user_interest(user_id: Optional[str], stokvel_id: Optional[str]) -> float:
     """
     Get the accumulated interest for a user in the current savings period.
 
@@ -294,7 +391,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
                 FROM TRANSACTIONS
                 WHERE user_id = :user_id
                 AND stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """
@@ -319,7 +416,7 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
                     SUM(amount) AS total_deposit_stokvel
                 FROM TRANSACTIONS
                 WHERE stokvel_id = :stokvel_id
-                AND tx_type = 'deposit'
+                AND tx_type = 'DEPOSIT'
                 AND tx_date > :previous_month_date  -- Start from the month before the interest period
                 GROUP BY strftime('%Y-%m', tx_date)  -- Group by year-month
             """
@@ -366,7 +463,6 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
             return user_total_interest
 
         except Exception as e:
-            transaction.rollback()
             print(f"There was an error retrieving the SQL data: {e}")
             return 0.00
 
@@ -374,9 +470,18 @@ def get_user_interest(user_id: int, stokvel_id: int) -> float:
 def get_account_details(phone_number: str):
     """
     Retrieve account details for a user based on their phone number.
+
+    Parameters
+    ----------
+    phone_number : str
+        The phone number of the user.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the user's account details including user ID, number, name, surname, wallet details, balance, and creation date.
     """
     from_number = extract_whatsapp_number(from_number=phone_number)
-    print(f"Extracted phone number: {from_number}")
 
     query = """
     SELECT
@@ -396,29 +501,30 @@ def get_account_details(phone_number: str):
     """
 
     with sqlite_conn.connect() as conn:
-        cursor = conn.execute(text(query), {"user_number": from_number})
-        result = cursor.fetchone()
-        print(f"Query result: {result}")
+        try:
+            cursor = conn.execute(text(query), {"user_number": from_number})
+            result = cursor.fetchone()
 
-        if result is None:
-            print("No user found for this phone number.")
-            return None
+            if result is None:
+                print("No user found for this phone number.")
+                return None
 
-        print(f"Number of fields returned: {len(result)}")
+            # Create a dictionary with column names as keys and the corresponding values
+            user_details = {
+                "u.user_id": result[0],
+                "u.user_number": result[1],
+                "u.user_name": result[2],
+                "u.user_surname": result[3],
+                "uw.user_wallet": result[4],
+                "uw.UserBalance": result[5],
+                "u.created_at": result[6],
+            }
 
-        # Create a dictionary with column names as keys and the corresponding values
-        user_details = {
-            "u.user_id": result[0],
-            "u.user_number": result[1],
-            "u.user_name": result[2],
-            "u.user_surname": result[3],
-            "uw.user_wallet": result[4],
-            "uw.UserBalance": result[5],
-            "u.created_at": result[6],
-        }
-
-        # print(f"User details: {user_details}")
-        return user_details  # Return the complete user details
+            # print(f"User details: {user_details}")
+            return user_details  # Return the complete user details
+        except Exception as e:
+            print(f"There was an error retrieving the SQL data: {e}")
+            raise e
 
 
 def update_user_name(phone_number: str, new_name: str):
@@ -442,13 +548,32 @@ def update_user_name(phone_number: str, new_name: str):
     """
 
     with sqlite_conn.connect() as conn:
-        conn.execute(
-            text(update_query), {"new_name": new_name, "user_number": formatted_number}
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                text(update_query),
+                {"new_name": new_name, "user_number": formatted_number},
+            )
+            conn.commit()
+        except Exception as e:
+            print(f"Error updating name: {e}")
+            raise e
 
 
 def update_user_surname(phone_number: str, new_surname: str):
+    """
+    Update the user's surname based on their phone number.
+
+    Parameters
+    ----------
+    phone_number : str
+        The user's phone number.
+    new_surname : str
+        The new surname to update.
+
+    Returns
+    -------
+    None
+    """
     formatted_number = extract_whatsapp_number(from_number=phone_number)
 
     update_query = """
@@ -456,14 +581,13 @@ def update_user_surname(phone_number: str, new_surname: str):
     SET user_surname = :new_surname
     WHERE user_number = :user_number;
     """
-
-    try:
-        with sqlite_conn.connect() as conn:
+    with sqlite_conn.connect() as conn:
+        try:
             conn.execute(
                 text(update_query),
                 {"new_surname": new_surname, "user_number": formatted_number},
             )
             conn.commit()
 
-    except Exception as e:
-        print(f"Error updating surname: {e}")
+        except Exception as e:
+            print(f"Error updating surname: {e}")

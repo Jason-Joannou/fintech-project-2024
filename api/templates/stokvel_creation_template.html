@@ -25,7 +25,7 @@
             width: 600px;
         }
 
-        h1, h2 {
+        h1, h2, h3 {
             text-align: center;
             color: #333;
         }
@@ -86,6 +86,15 @@
         font-weight: bold;
     }
 
+    .creator_details, .stokvel_payment_details, .stokvel_details {
+        border: 2px solid #ccc;      /* Border with a light gray color */
+        border-radius: 10px;         /* Rounded corners */
+        padding: 15px;               /* Padding inside the box */
+        margin-bottom: 20px;         /* Space between sections */
+        background-color: #f9f9f9;   /* Light background color */
+    }
+
+
     </style>
 </head>
 
@@ -101,69 +110,72 @@
         <form action="{{ url_for('stokvel.onboard_stokvel') }}" method="POST">
             <!-- Stokvel Name -->
 
-            <label for="requesting_number">Requesting Number:</label>
+            <div class = 'creator_details'>
+
+            <label for="requesting_number">Please enter your cellphone number:</label>
             <input type="tel" id="requesting_number" name="requesting_number" required>
 
-            <label for="stokvel_name">Stokvel Name:</label>
-            <input type="text" id="stokvel_name" name="stokvel_name" required>
+            </div>
 
-            <!-- Number of Administrators
-            <label for="num_admins">Number of Administrators:</label>
-            <input type="number" id="num_admins" name="num_admins" required> -->
+            <div class = 'stokvel_details'>
 
-            <!-- Administrator Details
-            <label for="admin_details">Details of Administrators (Names and Contacts):</label>
-            <input type="text" id="admin_details" name="admin_details" required>-->
+                <h3>Stokvel Details: </h3>
 
-            <!-- Max Number of Members -->
-            <label for="max_members">Max Number of Members:</label>
-            <input type="number" id="max_number_of_contributors" name="max_number_of_contributors" required>
+                <label for="stokvel_name">Stokvel Name:</label>
+                <input type="text" id="stokvel_name" name="stokvel_name" required>
 
-            <!-- Wallet Option Amount
-            <label for="wallet_option">Wallet Option:</label>
-            <select id="wallet_option" name="wallet_option" required>
-                <option value="rafiki">Rafiki</option>
-                <option value="momo">MoMo</option>
-            </select>
+                <label for="payout_frequency">Stokvel Duration:</label>
 
-            Type of Stokvel
-            <label for="stokvel_type">Type of Stokvel:</label>
-            <input type="text" id="stokvel_type" name="stokvel_type" required> -->
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" required>
 
-            <!-- Frequency of Stokvel Payout -->
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" required>
 
-            <label for="min_contributing_amount">Minimum contribution (ZAR):</label>
-            <input type="number" id="min_contributing_amount" name="min_contributing_amount" required>
+                <!-- stokvel type -->
+                <label for="stokvel_type">Type of Stokvel:</label>
+                <select id="stokvel_type" name="stokvel_type" required>
+                    <option value="savings">Savings</option>
+                    <!-- <option value="rotational">Rotational</option> -->
+                </select>
 
-            <label for="payout_frequency">Stokvel Duration:</label>
-
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" required>
-
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" required>
-
-            <label for="payout_frequency_int">Frequency of Stokvel Payout:</label>
-            <input type="number" id="payout_frequency_int" name="payout_frequency_int" required>
-
-            <label for="payout_frequency_period">Stokvel Payout Period:</label>
-            <select id="payout_frequency_period" name="payout_frequency_period" required>
-                <option value="Days">Days</option>
-                <option value="Weeks">Weeks</option>
-                <option value="Months">Months</option>
-                <option value="Years">Years</option>
-            </select>
+                <!-- Max Number of Members -->
+                <label for="max_members">Maximum Number of Members:</label>
+                <input type="number" id="max_number_of_contributors" name="max_number_of_contributors" required>
+            
+            </div>
 
 
-            <!-- stokvel type -->
-            <label for="stokvel_type">Type of Stokvel:</label>
-            <select id="stokvel_type" name="stokvel_type" required>
-                <!-- <option value="investment">Investment</option>
-                <option value="grocery">Grocery</option>
-                <option value="funeral">Funeral</option> -->
-                <option value="savings">Savings</option>
-                <!-- <option value="rotational">Rotational</option> -->
-            </select>
+            <div class = 'stokvel_payment_details'>
+
+                <h3>Stokvel Payment Details: </h3>
+
+                <!-- Frequency of Stokvel Payout -->
+                <label for="min_contributing_amount">Minimum contribution (ZAR):</label>
+                <input type="number" id="min_contributing_amount" name="min_contributing_amount" required>
+
+                <!-- This should be contribution frequency - aka how often we take money out of people's accounts -->
+                <label for="contribution_period">Stokvel Contribution Period:</label>
+                <select id="contribution_period" name="contribution_period" required>
+                    <option value="Days">Daily</option>
+                    <option value="Weeks">Weekly</option>
+                    <option value="Months">Monthly</option>
+                    <option value="Years">Yearly</option>
+                    <option value="30 Seconds">30 Seconds</option>
+                </select>
+
+                <!-- From the above we calculate the number of payouts that is going to happen -->
+                <label for="payout_frequency_duration">Frequency of Stokvel Payout:</label>
+                <select id="payout_frequency_duration" name="payout_frequency_duration" required>
+                    <option value="Days">Daily</option>
+                    <option value="Weeks">Weekly</option>
+                    <option value="Months">Monthly</option>
+                    <option value="Years">Yearly</option>
+                    <option value="30 Seconds">30 Seconds</option>
+                    <!-- <option value="2 Minutes">2 Minutes</option> -->
+                </select>
+            </div>
+
 
             <!-- Constitution Preview -->
             <div id="constitution-preview" style="display:none; margin-top: 20px; padding: 10px; border: 1px solid #ddd;">
@@ -183,8 +195,8 @@
         document.getElementById('min_contributing_amount').addEventListener('input', updateConstitution);
         document.getElementById('start_date').addEventListener('change', updateConstitution);
         document.getElementById('end_date').addEventListener('change', updateConstitution);
-        document.getElementById('payout_frequency_int').addEventListener('input', updateConstitution);
-        document.getElementById('payout_frequency_period').addEventListener('input', updateConstitution);
+        document.getElementById('contribution_period').addEventListener('input', updateConstitution);
+        document.getElementById('payout_frequency_duration').addEventListener('input', updateConstitution);
 
 
         function updateConstitution() {
@@ -192,25 +204,81 @@
             const minContribution = document.getElementById('min_contributing_amount').value;
             const startDate = document.getElementById('start_date').value;
             const endDate = document.getElementById('end_date').value;
-            const payoutFrequency = document.getElementById('payout_frequency_int').value;
-            const payoutFrequencyPeriod = document.getElementById('payout_frequency_period').value;
+            const contribution_frequency = document.getElementById('contribution_period').value;
+            const payoutFrequencyPeriod = document.getElementById('payout_frequency_duration').value;
+
+            let contribtion_frequency_view = ""
+            let payout_frequency_period_view = ""
+
+            // console.log(contribtion_frequency)
+            // console.log(payoutFrequencyPeriod)
+
+            switch (contribution_frequency) {
+            case "Years":
+                contribtion_frequency_view = 'Yearly';
+                break;
+            case "Months":
+                contribtion_frequency_view = 'Monthly';
+                break;
+            case "Weeks":
+                contribtion_frequency_view = 'Weekly';
+                break;
+            case "Days":
+                contribtion_frequency_view = 'Daily';
+                break;
+            case "30 Seconds":
+                contribtion_frequency_view = 'Every 30 Seconds';
+                break;
+            default:
+                contribtion_frequency_view = 'Unknown frequency';
+            }
+
+            switch (payoutFrequencyPeriod) {
+                case "Years":
+                    payout_frequency_period_view = 'Yearly';
+                    break;
+                case "Months":
+                    payout_frequency_period_view = 'Monthly';
+                    break;
+                case "Weeks":
+                    payout_frequency_period_view = 'Weekly';
+                    break;
+                case "Days":
+                    payout_frequency_period_view = 'Daily';
+                    break;
+                case "30 Seconds":
+                    payout_frequency_period_view = 'Every 30 Seconds';
+                    break;
+                default:
+                    payout_frequency_period_view = 'Unknown frequency';
+            }
 
 
-            const constitutionText = `Constitution for "${stokvelName}":
-            <br>
-            <br>
-            - Minimum contribution is ZAR ${minContribution}
-            <br>
-            - Payouts every ${payoutFrequency} ${payoutFrequencyPeriod}
-            <br>
-            - Starting from ${startDate} to ${endDate}.`;
+            const constitutionText = `
+
+            <strong style="font-size: 18px; color: #333;">Constitution for ${stokvelName}:</strong>
+            <br><br>
+
+            <p>Your stokvel is a <strong>SAVINGS</strong> stokvel. Members will contribute to the stokvel at
+                 regular intervals, and both contributions and interest earned will be distributed to all
+                  members at the specified payout interval
+            </p>
+
+            <ul style="list-style-type: disc; margin-left: 20px; color: #555; font-size: 16px;">
+                <li style="margin-bottom: 8px;">Minimum contribution is ZAR ${minContribution}</li>
+                <li style="margin-bottom: 8px;">Contributions are required: ${contribtion_frequency_view}</li>
+                <li style="margin-bottom: 8px;">Payouts occur every: ${payout_frequency_period_view}</li>
+                <li style="margin-bottom: 8px;">Starting from ${startDate} to ${endDate}</li>
+            </ul>
+        `;
+
+
             document.getElementById('constitution-text').textContent = constitutionText;
-
             document.getElementById('constitution-text').innerHTML = constitutionText;
 
 
             // Show the constitution preview only if all fields are filled
-            if (stokvelName && minContribution && startDate && endDate && payoutFrequency) {
+            if (stokvelName && minContribution && startDate && endDate && payoutFrequencyPeriod && contribution_frequency) {
                 document.getElementById('constitution-preview').style.display = 'block';
             }
         }

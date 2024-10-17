@@ -32,8 +32,8 @@ class RegisterStokvelSchema(BaseModel):
     Total_contributions: Optional[float] = Field(None, example=153800)
     start_date: str = Field(..., example="2024-10-01 00:00:00")
     end_date: str = Field(..., example="2024-10-01 00:00:00")
-    payout_frequency_int: int = Field(..., example=1)
-    payout_frequency_period: str = Field(..., example="day")
+    contribution_period: str = Field(..., example='day')
+    payout_frequency_duration: str = Field(..., example="day")
     created_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     updated_at: Optional[str] = Field(None, example="2024-10-01 00:00:00")
     requesting_number: str = Field(..., example="1234567890")
@@ -49,6 +49,7 @@ class JoinStokvelSchema(BaseModel):
         ..., example="John's Soccer Stokvel"
     )  # unique constraint here
     stokvel_id: int = Field(None, example=123)
+    user_contribution: float = Field(..., example=100)
 
 
 class UpdateUser(BaseModel):

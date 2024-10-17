@@ -1,5 +1,3 @@
-import json
-
 from sqlalchemy import text
 
 from database.sqlite_connection import SQLiteConnection
@@ -45,10 +43,3 @@ def get_account_details(phone_number: str):
         }
 
         return user_details  # Return the complete user details
-
-
-# Testing the function
-if __name__ == "__main__":
-    phone_number_to_test = "1234567890"
-    details = get_account_details(phone_number_to_test)
-    print(json.dumps(details, indent=2))  # Print the JSON response

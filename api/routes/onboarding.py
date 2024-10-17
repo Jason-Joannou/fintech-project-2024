@@ -13,7 +13,14 @@ BASE_ROUTE = "/onboard"
 @onboarding_bp.route(BASE_ROUTE)
 def onboarding() -> str:
     """
-    docstring
+    Render the Onboarding Template
+    Displays the onboarding template page for new users.
+    ---
+    tags:
+      - Onboard
+    responses:
+      200:
+        description: Successfully loaded the onboarding template.
     """
     return render_template("onboarding_template.html")
 
@@ -21,7 +28,48 @@ def onboarding() -> str:
 @onboarding_bp.route(f"{BASE_ROUTE}/users", methods=["POST"])
 def onboard_user() -> Response:
     """
-    Handles onboarding of a new user.
+    Handle Onboarding of a New User
+    Accepts user information, stores it in the database, and sends a welcome notification.
+    ---
+    tags:
+      - Onboard
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - id_number
+            - cellphone_number
+            - surname
+            - name
+            - wallet_id
+          properties:
+            id_number:
+              type: string
+              description: The ID number of the user.
+              example: "1234567890123"
+            cellphone_number:
+              type: string
+              description: The user's cellphone number.
+              example: "+27821234567"
+            surname:
+              type: string
+              description: The surname of the user.
+              example: "Doe"
+            name:
+              type: string
+              description: The first name of the user.
+              example: "John"
+            wallet_id:
+              type: string
+              description: The wallet ID assigned to the user.
+              example: "wallet123"
+    responses:
+      302:
+        description: Redirects to success or failure page after processing.
+      500:
+        description: Internal server error during onboarding.
     """
     try:
         user_data = OnboardUserSchema(
@@ -87,7 +135,14 @@ def onboard_user() -> Response:
 @onboarding_bp.route("/success_user_creation")
 def success_user_creation() -> str:
     """
-    docstring
+    Successful User Creation Page
+    Displays a success message after a user is successfully onboarded.
+    ---
+    tags:
+      - Onboard
+    responses:
+      200:
+        description: Successfully created user, displays success message.
     """
     action = "Onboarding"
     success_message = (
@@ -108,7 +163,20 @@ def success_user_creation() -> str:
 @onboarding_bp.route("/failed_user_creation")
 def failed_user_creation() -> str:
     """
-    docstring
+    Failed User Creation Page
+    Displays an error message if user onboarding fails.
+    ---
+    tags:
+      - Onboard
+    parameters:
+      - in: query
+        name: error_message
+        type: string
+        required: false
+        description: The error message to display.
+    responses:
+      200:
+        description: Failed user onboarding, displays error message.
     """
 
     action = "Onboarding"

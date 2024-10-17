@@ -4,12 +4,10 @@ UNREGISTERED_NUMBER = {
     Hi there! We noticed this number is not registered with us. Registering your number is needed to start contributing to Stokvels.
     Please select one of the following options to proceed:
     1. Register using Rafiki money
-    2. Register using MTN Mobile Money
     """,
-    "valid_actions": ["1", "2"],
+    "valid_actions": ["1"],
     "action_responses": {
         "1": "Please register through our online portal: http://stokveldigital.uksouth.azurecontainer.io/onboard",
-        "2": "Please register through our online portal: https://stokvels.com/register",
     },
     "state": -1,
 }
@@ -54,14 +52,18 @@ STOKVEL_ACTIONS_USER = {
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
     2. View stokvel constitution
-    3. Leave stokvel
-    4. Back""",
-    "valid_actions": ["1", "2", "3", "4"],
+    3. View your interest
+    4. View stokvel interest
+    5. Leave stokvel
+    6. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
         "2": "/stokvel/view_constitution",
+        "3": "/stokvel/user_total_interest",
+        "4": "/stokvel/stokvel_total_interest",
     },
-    "state_selection": {"3": "leave_stokvel", "4": "back_state"},
+    "state_selection": {"5": "leave_stokvel", "6": "back_state"},
     "state": 1,
 }
 
@@ -72,15 +74,17 @@ STOKVEL_ACTIONS_ADMIN = {
     Welcome to stokvel actions page! Please select one of the following options to proceed:
     1. View stokvel summary
     2. View stokvel constitution
-    3. Leave stokvel
-    4. Administrative actions
-    5. Back""",
-    "valid_actions": ["1", "2", "3", "4", "5"],
+    3. View stokvel interest
+    4. Leave stokvel
+    5. Administrative actions
+    6. Back""",
+    "valid_actions": ["1", "2", "3", "4", "5", "6"],
     "action_requests": {
         "1": "/stokvel/stokvel_summary",
         "2": "/stokvel/view_constitution",
+        "3": "/stokvel/stokvel_total_interest",
     },
-    "state_selection": {"3": "leave_stokvel", "4": "admin_services", "5": "back_state"},
+    "state_selection": {"4": "leave_stokvel", "5": "admin_services", "6": "back_state"},
     "state": 1,
 }
 
@@ -151,19 +155,14 @@ VIEW_PROFILE = {
     "message": """
     Please select what you would view to see on your profile:
     1. View Account Details
-    2. View my wallet balance
-    3. My transactions
-    4. Back""",
-    "valid_actions": ["1", "2", "3", "4"],
+    2. Back""",
+    "valid_actions": ["1", "2"],
     "action_requests": {
         "1": "/users/view_account_details",
-        "2": "/accounting/view_wallet_balances",
-        "3": "/accounting/view_transactions",
     },
-    "state_selection": {"4": "back_state"},
+    "state_selection": {"2": "back_state"},
     "state": 2,
 }
-
 
 UPDATE_PROFILE = {
     "tag": "update_profile",

@@ -10,15 +10,44 @@ BASE_ROUTE = "/whatsapp"
 @whatsapp_bp.route(BASE_ROUTE, methods=["POST"])
 def whatsapp() -> str:
     """
-    Handle incoming WhatsApp messages and process user requests based on the current state.
-
-    This method is triggered by a POST request to the WhatsApp webhook endpoint. It retrieves the
-    incoming message and the sender's phone number, manages the user's state using the
-    `MessageStateManager`, and processes the user's action based on their current state. The
-    appropriate response is then generated and returned.
-
-    Returns:
-        str: A string containing the response message to be sent back to the user via WhatsApp.
+    Handle Incoming WhatsApp Messages
+    Processes user requests based on the current state managed through WhatsApp interactions.
+    ---
+    tags:
+      - WhatsApp
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - Body
+            - From
+          properties:
+            Body:
+              type: string
+              description: The content of the incoming WhatsApp message.
+              example: "Check my balance"
+            From:
+              type: string
+              description: The phone number of the user sending the message.
+              example: "+27821234567"
+    responses:
+      200:
+        description: Successfully processed the user request and returned a response message.
+        schema:
+          type: string
+          example: "Your balance is R500."
+      400:
+        description: Bad request. The message body or sender information is missing.
+        schema:
+          type: string
+          example: "Invalid request. Please send a valid message."
+      500:
+        description: Internal server error. Something went wrong while processing the request.
+        schema:
+          type: string
+          example: "An error occurred while processing your request. Please try again."
     """
     incoming_msg = request.values.get("Body", "")
     from_number = request.values.get("From", "")
