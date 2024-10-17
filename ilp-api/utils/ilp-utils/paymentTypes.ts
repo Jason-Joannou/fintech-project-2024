@@ -16,6 +16,9 @@ import {
   interactType,
 } from "../types/validation";
 import { validateWalletAddress } from "./wallet";
+import { getEnviromentVariables } from "../../enviroment";
+
+const { nodeServer } = getEnviromentVariables();
 
 export const createGrant = async (
   walletAddress: IWalletAddressResponse,
@@ -28,9 +31,9 @@ export const createGrant = async (
   quoteId?: string
 ): Promise<Grant | PendingGrant> => {
   try {
-    let uri = `http://localhost:5000/stokvel/create_stokvel/${dynamicEndpoint}_interactive_grant_response?user_id=${userId}&stokvel_id=${stokvelId}`;
+    let uri = `${nodeServer}/stokvel/create_stokvel/${dynamicEndpoint}_interactive_grant_response?user_id=${userId}&stokvel_id=${stokvelId}`;
     if (dynamicEndpoint === "adhoc") {
-      uri = `http://localhost:5000/stokvel/${dynamicEndpoint}_payment_grant_accept?user_id=${userId}&stokvel_id=${stokvelId}&quote_id=${quoteId}`;
+      uri = `${nodeServer}/stokvel/${dynamicEndpoint}_payment_grant_accept?user_id=${userId}&stokvel_id=${stokvelId}&quote_id=${quoteId}`;
     }
 
     let accessRequest: grantAccessRequest;

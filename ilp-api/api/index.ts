@@ -13,6 +13,8 @@ const app = express();
 // Middleware
 app.use(bodyParser.json());
 
+const { nodeServer } = getEnviromentVariables();
+
 // Swagger definition
 const swaggerOptions = {
   swaggerDefinition: {
@@ -30,6 +32,10 @@ const swaggerOptions = {
       {
         url: "http://localhost:3001",
         description: "Local Development Server",
+      },
+      {
+        url: nodeServer,
+        description: "Production Development Server",
       },
     ],
   },

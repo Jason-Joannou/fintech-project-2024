@@ -66,16 +66,16 @@ stokvel_bp = Blueprint("stokvel", __name__)
 
 BASE_ROUTE = "/stokvel"
 
-NODE_SERVER_INITIATE_GRANT = "http://localhost:3001/payments/user_payment_setup"
+NODE_SERVER_INITIATE_GRANT = f"{os.getenv('NODE_SERVER')}/payments/user_payment_setup"
 NODE_SERVER_INITIATE_STOKVELPAYOUT_GRANT = (
-    "http://localhost:3001/payments/stokvel_payment_setup"
+    f"{os.getenv('NODE_SERVER')}/payments/stokvel_payment_setup"
 )
 
 NODE_SERVER_CREATE_INITIAL_PAYMENT = (
-    "http://localhost:3001/payments/initial_outgoing_payment"
+    f"{os.getenv('NODE_SERVER')}/payments/initial_outgoing_payment"
 )
 
-NODE_SERVER_ADHOC_PAYMENT = "http://localhost:3001/payments/adhoc-payment"
+NODE_SERVER_ADHOC_PAYMENT = f"{os.getenv('NODE_SERVER')}/payments/adhoc-payment"
 
 load_dotenv()
 
