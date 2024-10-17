@@ -19,4 +19,4 @@ The DigiStokvel Express app provides several key features:
 
 ## Endpoints in Express
 
-For a detailed list of the endpoints available in the DigiStokvel Express app, please refer to our API documentation. The documentation provides comprehensive details on request formats, response structures, and how to interact with each of the Express app’s endpoints. You can access the complete list of endpoints by visiting the [Express API Documentation](<your-swagger-ui-url-or-other-documentation-url>).
+For a detailed list of the endpoints available in the DigiStokvel Express app, please refer to our API documentation. The documentation provides comprehensive details on request formats, response structures, and how to interact with each of the Express app’s endpoints. You can access the complete list of endpoints by visiting the [Express API Documentation](https://digistokvel-api-payments.onrender.com/docs).
