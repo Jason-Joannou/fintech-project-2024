@@ -1,81 +1,23 @@
-## Update User
+# Why We Use Flask Templates
 
-The update_user page is designed for users to modify their personal details like name, email, and password. The page consists of a form with multiple input fields that allow users to input new information and submit it for updating their profile. Upon submission, the form sends the data to the backend for validation and processing.
+The use of Flask templates allows us to handle more complex user interactions that would be challenging to manage solely through the WhatsApp interface. While WhatsApp is an effective tool for simple, text-based communication and quick actions, it has limitations when dealing with forms that require multiple fields, user input validation, and more intricate user experiences. Here are a few key reasons:
 
-**Data Captured:**
+**Complex User Inputs**:
 
-- **Name**: A required field that captures the user's full name, which is typically displayed on their profile and used for identification in the system.
-- **Email**: A required field for the user's email address. This must follow a valid email format (e.g., name@example.com). The email is used for communication and account recovery.
-- **Password**: A required field for the user's password. It enforces password strength rules to ensure the account is secure. The password may need to meet certain complexity requirements such as minimum length, inclusion of special characters, and numbers.
-- **Confirm Password**: A required field that asks the user to re-enter the password for confirmation, ensuring that the user has not made any typing mistakes.
+  - **Forms with Multiple Fields**: Managing complex forms, such as updating user details or editing a stokvel's information, is more intuitive and streamlined through a web-based interface. Flask templates enable us to build forms that can include various input types, offer field validation, and provide detailed feedback, which would be cumbersome through a chat interface.
+  - **Data Validation**: Flask allows for real-time data validation, ensuring users receive immediate feedback if they enter invalid information. On WhatsApp, this process would be less fluid, requiring multiple back-and-forth messages to correct user input errors.
 
-**Why the Update User page is designed so:**
-This page is a crucial part of the user profile management system. By allowing users to update their profile details, the system ensures that users can keep their information accurate and up-to-date. The password confirmation feature is designed to enhance security, ensuring that the user has entered their new password correctly without typos. Email validation is key to maintaining the integrity of contact information, as it may be used for authentication or recovery.
+**Enhanced User Experience**:
 
-**Endpoints in Update User:**
-**POST /update_user**: 
-  - Upon submission, the form data is sent to the backend, where it is processed by the update_user_info.py file. The backend validates each input field: it checks the format of the email, ensures that the two password fields match, and verifies the overall integrity of the data.
-  - If any validation fails, an error message is generated and sent back to the front end, prompting the user to correct the mistakes.
-  - Once all fields are validated, the system updates the user's details in the database, confirming the changes.
-  - If the process is successful, a success message is displayed to the user. In the event of an error (e.g., invalid email, passwords don't match), the page will display error feedback.
+  - **Visual Feedback and Structure**: Unlike WhatsApp, which relies purely on text and simple buttons, a web interface built with Flask templates can provide a richer experience with visual cues, structured forms, and a more intuitive layout. This improves the user experience by guiding users through processes like updating details or managing group settings.
+  - **Security**: Complex actions, such as updating passwords, are best handled through a secure web environment that can properly encrypt and manage user credentials. Flask templates allow for the secure handling of sensitive data inputs, ensuring a safer interaction compared to a more constrained platform like WhatsApp.
 
-## Update Stokvel
+**Integration with Backend Logic**:
 
-The `update_stokvel` page is designed to allow stokvel administrators to edit the group's information, including the group's name, description, and the list of members. This page is vital for keeping group information accurate and up-to-date as the group grows or changes.
+  - **Direct Integration**: Flask templates can directly interact with backend systems, making it easier to perform actions like form submissions, data processing, and user authentication. This integration streamlines the user experience, ensuring that inputs are processed quickly and accurately without the need for multiple steps.
 
-**Data Captured:**
+By using Flask templates, we can provide users with an enhanced, efficient, and secure way to perform complex tasks that go beyond what is feasible within a simple messaging app. This combination of a rich web interface for more intricate interactions and WhatsApp for quick and straightforward communication creates a balanced user experience, making the DigiStokvel platform both versatile and user-friendly.
 
-- **Group Name**: The stokvel group's name, a required field that identifies the group.
-- **Description**: A text field that allows the administrator to enter or modify the description of the group, outlining its purpose and activities.
-- **Member List**: An optional feature that allows the administrator to add or remove members from the group. The system might include a mechanism for searching and selecting members to be added or removed.
-
-**Why the Update Stokvel page is designed so:**
-The ability to edit stokvel details is essential for managing the group's dynamic nature. As the group evolves, changes in its purpose, size, and membership may occur, and this page provides a simple way for administrators to manage those changes. The ability to update the member list without needing to recreate the group is particularly useful in stokvels, where membership often fluctuates. This page ensures that stokvel details remain accurate, relevant, and up-to-date.
-
-**Endpoints in Update Stokvel:**
-**POST /update_stokvel**:
-  - The form data is sent to the backend (handled by `update_stokvel.py`), where it is validated to ensure that all required fields (e.g., group name) are filled out correctly. Optional fields like the description can be left empty or updated as needed.
-  - If any data is missing or incorrect, the user is notified with an error message and prompted to fix the issue.
-  - Upon successful validation, the group's information is updated in the database, and a success message is displayed. The system may also send notifications to group members about the updates, depending on the design.
-
-## Update User Login
-
-The `update_user_login` page provides users with a secure way to update their login credentials, including username and password. This is a critical feature for maintaining account security and allowing users to make necessary changes, such as when they forget their password or want to change their username.
-
-**Data Captured:**
-
-- **Username**: A required field where the user can input a new or existing username. It must be unique in the system to avoid conflicts with other users.
-- **Password**: A required field where the user can input a new password. Password complexity rules might be enforced, such as requiring a minimum number of characters, special characters, and digits.
-- **Confirm Password**: A required field to confirm the new password. This prevents errors caused by typing mistakes.
-
-**Why the Update User Login page is designed so:**
-The `update_user_login` page is designed to give users full control over their login credentials, which is an important aspect of security and usability. Allowing users to change their username and password ensures that they can secure their accounts if they feel their current credentials have been compromised or if they want a change for personal reasons. The system's design enforces security by requiring password confirmation to avoid accidental changes.
-
-**Endpoints in Update User Login:**
-**POST /update_user_login**:
-  - Handled by `users.py`, the backend verifies the new credentials before updating them in the system. It checks the username for uniqueness to prevent conflicts.
-  - Password validation ensures that it meets security requirements and that both password fields match.
-  - If everything is valid, the backend updates the login credentials in the database.
-  - If any errors occur, such as a duplicate username or mismatched passwords, appropriate error messages are returned to the user.
-
-## Stokvel Search
-
-The `stokvel_search` page allows users to search for existing stokvel groups by entering a search term or applying filters like group type or location. This page helps users find stokvels that match their interests or geographical preferences.
-
-**Data Captured:**
-
-- **Search Term**: A keyword or group name entered by the user to search for stokvels. This could be a partial or full name of the group.
-- **Filters**: Optional fields that allow users to refine their search by location, type of stokvel, or other categories.
-
-**Why the Stokvel Search page is designed so:**
-This page makes it easier for users to discover stokvels that align with their interests. By providing search functionality with filtering options, the system caters to users who are looking for groups within specific geographical areas or who have particular preferences. This feature improves user engagement by offering a straightforward way to explore and join new groups.
-
-**Endpoints in Stokvel Search:**
-**GET /stokvel_search**:
-
-  - The search term and filters are processed by the backend (`stokvel.py`), which queries the database for matching stokvels.
-  - The system returns a list of stokvels that match the search criteria. If no matches are found, a message is displayed to the user, indicating that no relevant groups were found.
-  - The page may also offer options to further refine the search or provide suggestions for similar groups.
 
 ## Onboarding Template
 
@@ -155,24 +97,6 @@ This page is essential for stokvel management. It provides a simple and intuitiv
   - The administrator's decision (approve or reject) is sent to `approve_applications.py`, where the backend updates the status of the application in the database.
   - If the application is approved, the user is notified and added to the group. If rejected, the user is informed of the decision.
   - The page may also allow administrators to leave a note explaining their decision, particularly if the application is rejected.
-
-## Approval Login
-
-The `approval_login` page ensures that only authorized administrators can access the approve/reject functionality. It requires administrators to log in with their credentials before they can manage membership applications.
-
-**Data Captured:**
-- **Username**: The admin's login username.
-- **Password**: The password used to authenticate the admin.
-
-**Why the Approval Login page is designed so:**
-This page enhances security by requiring administrators to authenticate before making changes to the group's membership. Ensuring that only authorized users can approve or reject applications helps protect the group from unauthorized access and ensures that membership decisions are legitimate.
-
-**Endpoints in Approval Login:**
-**POST /approval_login**:
-
-  - The form data is processed by `approval_login.py`, where the backend verifies the admin's credentials.
-  - If the credentials are correct, the admin is granted access to the membership management page.
-  - If the login attempt fails, an error message is displayed, and the admin is prompted to retry.
 
 ## Action Success Template
 
