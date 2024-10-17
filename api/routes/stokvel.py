@@ -63,16 +63,16 @@ stokvel_bp = Blueprint("stokvel", __name__)
 
 BASE_ROUTE = "/stokvel"
 
-node_server_initiate_grant = "http://localhost:3001/payments/user_payment_setup"
-node_server_initiate_stokvelpayout_grant = (
+NODE_SERVER_INITIATE_GRANT = "http://localhost:3001/payments/user_payment_setup"
+NODE_SERVER_INITIATE_STOKVELPAYOUT_GRANT = (
     "http://localhost:3001/payments/stokvel_payment_setup"
 )
 
-node_server_create_initial_payment = (
+NODE_SERVER_CREATE_INITIAL_PAYMENT = (
     "http://localhost:3001/payments/initial_outgoing_payment"
 )
 
-noder_server_adhoc_payment = "http://localhost:3001/payments/adhoc-payment"
+NODE_SERVER_ADHOC_PAYMENT = "http://localhost:3001/payments/adhoc-payment"
 
 
 @stokvel_bp.route(BASE_ROUTE)
@@ -812,7 +812,7 @@ def onboard_stokvel() -> Response:
         }
 
         print("USER PAYLOAD: \n", payload)
-        response = requests.post(node_server_initiate_grant, json=payload, timeout=10)
+        response = requests.post(NODE_SERVER_INITIATE_GRANT, json=payload, timeout=10)
         response.raise_for_status()
 
         print("USER RESPONSE: \n", response.json())
@@ -859,7 +859,7 @@ def onboard_stokvel() -> Response:
         print("SYSTEM AGENT PAYLOAD: \n", payload_payout)
 
         response_payout_grant = requests.post(
-            node_server_initiate_stokvelpayout_grant, json=payload_payout, timeout=10
+            NODE_SERVER_INITIATE_STOKVELPAYOUT_GRANT, json=payload_payout, timeout=10
         )
         response_payout_grant.raise_for_status()
         print("SYSTEM AGENT RESPONSE: \n", response_payout_grant.json())
@@ -1246,7 +1246,7 @@ def process_application():
 
             # Send POST request for contribution grant
             response = requests.post(
-                node_server_initiate_grant, json=payload, timeout=10
+                NODE_SERVER_INITIATE_GRANT, json=payload, timeout=10
             )
 
             print("USER RESPONSE: \n", response.json())
@@ -1300,7 +1300,7 @@ def process_application():
 
             # Send POST request for payout grant
             response_payout_grant = requests.post(
-                node_server_initiate_stokvelpayout_grant,
+                NODE_SERVER_INITIATE_STOKVELPAYOUT_GRANT,
                 json=payload_payout,
                 timeout=10,
             )
@@ -1778,7 +1778,7 @@ def user_interactive_grant_handle() -> str:
         print("USER PAYLOAD: \n", payload)
 
         response = requests.post(
-            node_server_create_initial_payment, json=payload, timeout=10
+            NODE_SERVER_CREATE_INITIAL_PAYMENT, json=payload, timeout=10
         )
 
         print("USER RESPONSE: \n", response.json())
@@ -1903,7 +1903,7 @@ def stokvel_interactive_grant_handle() -> str:
         print("SYSTEM AGENT PAYLOAD: \n", payload)
 
         response = requests.post(
-            node_server_create_initial_payment, json=payload, timeout=10
+            NODE_SERVER_CREATE_INITIAL_PAYMENT, json=payload, timeout=10
         )
 
         print("SYSTEM AGENT RESPONSE: \n", response.json())
@@ -2031,7 +2031,7 @@ def adhoc_payment_grant_handle() -> str:
             print("SYSTEM AGENT PAYLOAD: \n", payload)
 
             response = requests.post(
-                node_server_create_initial_payment, json=payload, timeout=10
+                NODE_SERVER_CREATE_INITIAL_PAYMENT, json=payload, timeout=10
             )
             response.raise_for_status()
 
@@ -2149,7 +2149,7 @@ def leave_current_stokvel():
         }
 
         print("USER PAYLOAD: \n", payload)
-        response = requests.post(noder_server_adhoc_payment, json=payload, timeout=10)
+        response = requests.post(NODE_SERVER_ADHOC_PAYMENT, json=payload, timeout=10)
         response.raise_for_status()
         print("USER RESPONSE: \n", response.json())
 
