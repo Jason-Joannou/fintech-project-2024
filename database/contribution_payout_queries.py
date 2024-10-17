@@ -140,6 +140,21 @@ def calculate_next_date(contribution_or_payout_period, current_date):
     # example usage:
     # pevious_date = next_date --> update in DB
     # new next_date = update_next_date()
+    """
+    Calculate the next contribution date based on the specified contribution
+    or payout period.
+
+    Args:
+        contribution_or_payout_period (str): The contribution or payout period,
+            e.g., 'Days', 'Week', 'Months', 'Years'.
+        current_date (str or datetime): The current date.
+
+    Returns:
+        str: The next contribution date as a string in '%Y-%m-%dT%H:%M:%S' format.
+
+    Raises:
+        ValueError: If an invalid contribution or payout period is specified.
+    """
     current_date = str(current_date)
     if ":" in current_date and "T" not in current_date:
         current_date = current_date.split(" ")[0]
@@ -171,6 +186,21 @@ def calculate_next_date(contribution_or_payout_period, current_date):
 def update_next_contributions_dates(
     current_next_date, stokvel_id, contribution_or_payout_period
 ):
+    """
+    Update the next contribution date in the CONTRIBUTIONS table.
+
+    Parameters:
+    current_next_date (str): The current next contribution date as a string in '%Y-%m-%dT%H:%M:%S' format.
+    stokvel_id (int): The ID of the stokvel (group).
+    contribution_or_payout_period (str): The contribution or payout period, e.g., 'Days', 'Week', 'Months', 'Years'.
+
+    Returns:
+    str: The next contribution date as a string in '%Y-%m-%dT%H:%M:%S' format.
+
+    Raises:
+    sqlite3.Error: If an error occurs during the database operation.
+    Exception: If an error occurs during the function execution.
+    """
     update_query = """
             UPDATE CONTRIBUTIONS
             SET PreviousDate = :PreviousDate, NextDate = :NextDate
@@ -204,6 +234,21 @@ def update_next_contributions_dates(
 def update_next_payout_dates(
     current_next_date, stokvel_id, contribution_or_payout_period
 ):
+    """
+    Update the next payout date in the PAYOUTS table.
+
+    Parameters:
+    current_next_date (str): The current next payout date as a string in '%Y-%m-%dT%H:%M:%S' format.
+    stokvel_id (int): The ID of the stokvel (group).
+    contribution_or_payout_period (str): The contribution or payout period, e.g., 'Days', 'Week', 'Months', 'Years'.
+
+    Returns:
+    str: The next payout date as a string in '%Y-%m-%dT%H:%M:%S' format.
+
+    Raises:
+    sqlite3.Error: If an error occurs during the database operation.
+    Exception: If an error occurs during the function execution.
+    """
     update_query = """
             UPDATE PAYOUTS
             SET PreviousDate = :PreviousDate, NextDate = :NextDate
@@ -235,6 +280,22 @@ def update_next_payout_dates(
 
 
 def update_user_contribution_token_uri(stokvel_id, user_id, new_token, new_uri):
+    """
+    Update the user_payment_token and user_payment_URI for a user in the STOKVEL_MEMBERS table.
+
+    Parameters:
+    stokvel_id (int): The ID of the stokvel (group).
+    user_id (int): The ID of the user.
+    new_token (str): The new user_payment_token.
+    new_uri (str): The new user_payment_URI.
+
+    Returns:
+    None
+
+    Raises:
+    sqlite3.Error: If an error occurs during the database operation.
+    Exception: If an error occurs during the function execution.
+    """
     try:
         with sqlite_conn.connect() as conn:
             # Update query to modify user_payment_token and user_payment_URI
@@ -273,6 +334,19 @@ def update_user_contribution_token_uri(stokvel_id, user_id, new_token, new_uri):
 
 
 def update_stokvel_token_uri(stokvel_id, user_id, new_token, new_uri):
+    """
+    Update the stokvel payment token and URI for a specific stokvel and user.
+
+    Args:
+        stokvel_id: The ID of the stokvel.
+        user_id: The ID of the user.
+        new_token: The new token to be set.
+        new_uri: The new URI to be set.
+
+    Raises:
+        sqlite3.Error: If there is an error during the update operation.
+        Exception: If an unexpected error occurs during the update.
+    """
     try:
         with sqlite_conn.connect() as conn:
             # Update query to modify stokvel_payment_token and stokvel_payment_URI
