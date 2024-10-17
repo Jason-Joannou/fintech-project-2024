@@ -78,7 +78,17 @@ noder_server_adhoc_payment = "http://localhost:3001/payments/adhoc-payment"
 @stokvel_bp.route(BASE_ROUTE)
 def stokvel() -> str:
     """
-    docstrings
+    Stokvel Root Endpoint
+    Provides information about the Stokvel API.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully returned the Stokvel API information.
+        schema:
+          type: string
+          example: "Stokvel API. This API endpoint for all things stokvel related!"
     """
     return "Stokvel API. This API endpoint for all things stokvel related!"
 
@@ -86,8 +96,52 @@ def stokvel() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/stokvel_summary", methods=["POST"])
 def get_user_total_deposit():
     """
-    This endpoint returns the total deposits of a user for a given stokvel.
-    The user's phone number and stokvel name should be provided as query parameters.
+    Get User Total Deposits for a Stokvel
+    Returns the total deposits and payouts for a user in a given stokvel, along with the number of active users.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The user's phone number.
+              example: "+27821234567"
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: Successfully retrieved the user's total deposits and stokvel summary.
+        schema:
+          type: string
+          example: |
+            📊 Stokvel Summary
+
+            Stokvel Name: Community Savings Club
+            Total Deposits in Stokvel: R5000.00
+            Your Total Payouts in Stokvel: R3000.00
+            Number of Active Users in Stokvel: 25
+
+            Thank you for being a part of our community!
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid user number and stokvel name."
+      500:
+        description: Internal server error. An error occurred while processing the request.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     phone_number = request.json.get(
         "user_number"
@@ -137,7 +191,52 @@ def get_user_total_deposit():
 @stokvel_bp.route(f"{BASE_ROUTE}/view_constitution", methods=["POST"])
 def get_stokvels_constitution_handler():
     """
-    This endpoint returns the stokvels constitution
+    Get Stokvel Constitution
+    Returns the constitution details for a specified stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The phone number of the user requesting the constitution.
+              example: "+27821234567"
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel whose constitution is being requested.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: Successfully retrieved the stokvel constitution.
+        schema:
+          type: string
+          example: |
+            Stokvel Constitution
+
+            Stokvel Name: Community Savings Club
+            Minimum Contributing Amount for Stokvel: R100.00
+            Maximum Number of Contributors: 50
+            Creation Date of Stokvel: 2023-05-15
+
+            Thank you for being a part of our community!
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid user number and stokvel name."
+      500:
+        description: Internal server error. An error occurred while processing the request.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     phone_number = request.json.get(
         "user_number"
@@ -173,31 +272,52 @@ def get_stokvels_constitution_handler():
         return msg  # Return internal server error
 
 
-@stokvel_bp.route(f"{BASE_ROUTE}/change_contribution", methods=["POST"])
-def update_stokvel_contribution() -> str:
-    """
-    This is an example endpoint on how we would manage post requests from the state manager.
-    """
-    try:
-        user_number = request.json.get("user_number")
-        user_input = request.json.get("user_input")
-        stokvel_name = request.json.get("stokvel_selection")
-        # send_notification_message(
-        #     to=user_number,
-        #     body="Thank you, we are currently processing your request...",
-        # )
-        msg = f"You contribution amount has been succesfully updated to R{user_input} for {stokvel_name}."
-        return msg
-    except Exception as e:
-        msg = "There was an error performing that action, please try the action again."
-        print(f"Error in {update_stokvel_contribution.__name__}: {e}")
-        return msg
-
-
 @stokvel_bp.route(f"{BASE_ROUTE}/admin/change_stokvel_name", methods=["POST"])
 def change_stokvel_name_endpoint() -> str:
     """
-    Endpoint to change the stokvel name.
+    Change Stokvel Name
+    Endpoint to change the name of an existing stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - user_input
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The phone number of the user initiating the change.
+              example: "+27821234567"
+            user_input:
+              type: string
+              description: The new name to be assigned to the stokvel.
+              example: "New Community Savings Club"
+            stokvel_selection:
+              type: string
+              description: The current name of the stokvel to be changed.
+              example: "Old Community Savings Club"
+    responses:
+      200:
+        description: Successfully updated the stokvel name.
+        schema:
+          type: string
+          example: "Your stokvel name has been successfully updated to New Community Savings Club."
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Missing required fields."
+      500:
+        description: Internal server error. An error occurred while processing the request.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     try:
         user_number = request.json.get("user_number")
@@ -227,7 +347,58 @@ def change_stokvel_name_endpoint() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/my_stokvels", methods=["POST"])
 def my_stokvels_dynamic_state():
     """
-    Create a dynamic state based on the user's linked stokvels for the MY_STOKVELS state.
+    View User's Linked Stokvels
+    Creates a dynamic state based on the user's linked stokvels for managing their actions.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+          properties:
+            user_number:
+              type: string
+              description: The phone number of the user.
+              example: "+27821234567"
+    responses:
+      200:
+        description: Successfully retrieved the user's linked stokvels and created a dynamic state.
+        schema:
+          type: object
+          properties:
+            tag:
+              type: string
+              example: "my_stokvels"
+            message:
+              type: string
+              example: "Please choose one of your stokvels:\n1. Community Savings Club\n2. Back"
+            valid_actions:
+              type: array
+              items:
+                type: string
+              example: ["1", "2"]
+            state_selection:
+              type: object
+              example: {"1": "stokvel_actions_user", "2": "back_state"}
+            current_stokvels:
+              type: array
+              items:
+                type: string
+              example: ["Community Savings Club"]
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide a valid user number."
+      500:
+        description: Internal server error. An error occurred while processing the request.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     user_number = request.json.get("user_number")
 
