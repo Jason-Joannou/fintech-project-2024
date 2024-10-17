@@ -13,16 +13,16 @@ nav:
   - System Architecture:
     - Overview: system-architecture/overview.md
   - Components:
-      - Overview: architecture/overview.md
-      - Database: architecture/database.md
-      - Terraform: architecture/terraform.md
-      - Docker: architecture/docker.md
-      - Flask Templates: architecture/flask_templates.md
-      - Components: architecture/components.md
-      - Testing: architecture/testing.md
+      - Database: components/database.md
+      - Flask : components/flask.md
+      - Express: components/express.md
+      - Flask Templates: components/flask_templates.md
+      - Testing: components/testing.md
   - Devops:
       - Overview: devops/overview.md
+      - Git Management: devops/git.md
       - Docker: devops/docker.md
+      - Terraform: architecture/terraform.md
 
 
 markdown_extensions:
