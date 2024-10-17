@@ -451,7 +451,22 @@ def my_stokvels_dynamic_state():
 @stokvel_bp.route(f"{BASE_ROUTE}/join_stokvel", methods=["GET"])
 def join_stokvel() -> str:
     """
-    docstrings
+    View Available Stokvels
+    Provides a list of available stokvels that users can apply to join.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully retrieved the list of available stokvels.
+        schema:
+          type: string
+          example: "Rendered HTML template showing list of available stokvels."
+      500:
+        description: Internal server error. An error occurred while retrieving the stokvel list.
+        schema:
+          type: string
+          example: "An error occurred while trying to fetch the stokvel list."
     """
 
     stokvel_list = get_all_stokvels()
@@ -462,7 +477,46 @@ def join_stokvel() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/join_stokvel/apply_to_join", methods=["POST"])
 def apply_to_join_stokvel() -> Response:
     """
-    Handles onboarding of a new user.
+    Apply to Join a Stokvel
+    Allows a user to submit an application to join a specified stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - requesting_number
+            - stokvel_name
+            - user_contribution
+          properties:
+            requesting_number:
+              type: string
+              description: The phone number of the user applying to join the stokvel.
+              example: "+27821234567"
+            stokvel_name:
+              type: string
+              description: The name of the stokvel the user wants to join.
+              example: "Community Savings Club"
+            user_contribution:
+              type: string
+              description: The user's planned contribution amount.
+              example: "200"
+    responses:
+      302:
+        description: Redirects to success or failure page based on the application result.
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "You are already a member or you have already applied to join this stokvel."
+      500:
+        description: Internal server error. An error occurred while processing the join request.
+        schema:
+          type: string
+          example: "An unknown error occurred while processing the join request."
     """
     try:
 
@@ -552,7 +606,17 @@ def apply_to_join_stokvel() -> Response:
 @stokvel_bp.route(f"{BASE_ROUTE}/join_stokvel/success_stokvel_join")
 def success_stokvel_join_application() -> str:
     """
-    docstrings
+    Successful Stokvel Join Application
+    Displays a success message after a user has successfully applied to join a stokvel.
+    ---
+    tags:
+      - Stokvel
+    responses:
+      200:
+        description: Successfully displayed the success message for stokvel join application.
+        schema:
+          type: string
+          example: "Application to join selected stokvel has been sent. Please navigate back to WhatsApp for further functions."
     """
     action = "Application Submitted!"
     success_message = "Application to join selected stokvel has been sent."
@@ -571,7 +635,23 @@ def success_stokvel_join_application() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/join_stokvel/failed_stokvel_join")
 def failed_stokvel_join_application() -> str:
     """
-    docstring
+    Failed Stokvel Join Application
+    Displays an error message when a user fails to apply to join a stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: error_message
+        type: string
+        required: false
+        description: The error message to display.
+    responses:
+      200:
+        description: Successfully displayed the failure message for stokvel join application.
+        schema:
+          type: string
+          example: "Application to join has failed. Please try again later."
     """
     action = "Application"
     if request.args.get("error_message"):
