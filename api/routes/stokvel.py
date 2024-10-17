@@ -20,6 +20,7 @@ from database.contribution_payout_queries import (
     update_stokvel_token_uri,
     update_user_contribution_token_uri,
 )
+from database.state_manager.queries import pop_previous_state
 from database.stokvel_queries.queries import (
     calculate_number_periods,
     check_application_pending_approved,
@@ -1384,6 +1385,15 @@ def process_application():
                 body=app_accepted_notification_message,
             )
 
+            # Redirect to a route that fetches the latest applications with the requesting_number
+            return redirect(
+                url_for(
+                    "stokvel.display_applications",
+                    admin_id=admin_id,
+                    requesting_number=requesting_number,
+                )
+            )
+
         elif action == "decline":
             update_application_status(application_id, "Declined")
 
@@ -2164,15 +2174,15 @@ def leave_current_stokvel():
             token=adhoc_contribution_token,
         )
 
-        notfication_message = (
-            f"SYSTEM REQUEST: A user is requesting a payout {auth_link}"
-        )
+        notfication_message = f"SYSTEM REQUEST: A user is requesting a payout ( attemtping to leave ) {auth_link}"
 
         # Send notification message to SYSTEM AGENT
         send_notification_message(to="whatsapp:+27798782441", body=notfication_message)
+        pop_previous_state(from_number=user_number)
+        pop_previous_state(from_number=user_number)
 
-        return {"message": "Success"}, 200
+        return "We are processing your request..."
 
     except Exception as e:
         print("Error occurred:", e)  # Print the error for debugging
-        return {"error": str(e)}, 500  # Return a JSON response with an error message
+        return "Something went wrong, please try that again"  # Return a JSON response with an error message

@@ -133,7 +133,7 @@ def get_linked_stokvels(user_number):
         FROM STOKVEL_MEMBERS
         WHERE user_id IN (
             SELECT user_id FROM USERS WHERE user_number = :user_number
-        )
+        ) AND active_status = 'active'
     );
     """
 

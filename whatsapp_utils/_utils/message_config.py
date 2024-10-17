@@ -98,7 +98,7 @@ LEAVE_STOKVEL = {
     2. Back
     """,
     "valid_actions": ["1", "2"],
-    "action_requests": {"1": "stokvels/admin/leave_stokvel"},
+    "action_requests": {"1": "/stokvel/leave_stokvel"},
     "state_selection": {"2": "back_state"},
     "state": 1,
 }
