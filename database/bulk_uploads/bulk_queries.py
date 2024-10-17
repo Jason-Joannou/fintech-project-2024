@@ -22,8 +22,22 @@ def bulk_upload_transaction(table_rows: List[Tuple]):
 
     with sqlite_conn.connect() as conn:
         try:
-            conn.executemany(text(sql_query), table_rows)
+            conn.execute(text(sql_query), table_rows)
             conn.commit()
         except sqlite3.OperationalError as e:
             print(e)
+            conn.rollback()
+
+
+def bulk_upload_interest_table(table_rows: List[Tuple]):
+
+    sql_query = """
+                INSERT INTO INTEREST (stokvel_id, date, interest_value)
+                VALUES (:stokvel_id, :date, :interest_value)"""
+    with sqlite_conn.connect() as conn:
+        try:
+            conn.execute(text(sql_query), table_rows)
+            conn.commit()
+        except Exception as e:
+            print(f"Error in bulk upload for interest table: {e}")
             conn.rollback()
