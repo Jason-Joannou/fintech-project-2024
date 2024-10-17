@@ -1730,7 +1730,49 @@ def stokvel_total_interest() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/admin/change_member_number", methods=["POST"])
 def change_max_nr_of_contrributors() -> str:
     """
-    Endpoint to change the maximum number of contributors for a stokvel.
+    Change Maximum Number of Contributors
+    Updates the maximum number of contributors allowed for a stokvel.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - user_input
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The phone number of the admin making the change.
+              example: "+27821234567"
+            user_input:
+              type: string
+              description: The new maximum number of contributors.
+              example: "50"
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel to update.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: Successfully updated the maximum number of contributors.
+        schema:
+          type: string
+          example: "Max number of contributors has been updated to 50."
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Missing required fields."
+      500:
+        description: Internal server error. An error occurred while updating the maximum number of contributors.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try again."
     """
     try:
         user_number = request.json.get("user_number")
@@ -1765,7 +1807,58 @@ def change_max_nr_of_contrributors() -> str:
 )
 def user_interactive_grant_handle() -> str:
     """
-    Handle the success or rejection of stokvel contributions.
+    Handle Stokvel Contribution Grant Response
+    Manages the acceptance or rejection of stokvel contributions based on user interaction.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: result
+        type: string
+        required: false
+        description: The result of the grant interaction ("grant_rejected" indicates rejection).
+        example: "grant_rejected"
+      - in: query
+        name: hash
+        type: string
+        required: false
+        description: The confirmation hash value.
+        example: "abc123hash"
+      - in: query
+        name: interact_ref
+        type: string
+        required: false
+        description: The reference for user interaction.
+        example: "interaction123"
+      - in: query
+        name: user_id
+        type: string
+        required: true
+        description: The ID of the user whose grant interaction is being handled.
+        example: "54321"
+      - in: query
+        name: stokvel_id
+        type: string
+        required: true
+        description: The ID of the stokvel.
+        example: "67890"
+    responses:
+      200:
+        description: Displays the success or failure message based on the grant interaction.
+        schema:
+          type: string
+          example: "Your contributions will be processed at the specified periods."
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid user and stokvel IDs."
+      500:
+        description: Internal server error. An error occurred while processing the grant interaction.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try again."
     """
 
     # Extract query parameters
@@ -1840,7 +1933,58 @@ def user_interactive_grant_handle() -> str:
 )
 def stokvel_interactive_grant_handle() -> str:
     """
-    Handle the success or rejection of stokvel contributions.
+    Handle Stokvel Payout Grant Response
+    Manages the acceptance or rejection of stokvel payout grants based on user interaction.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: result
+        type: string
+        required: false
+        description: The result of the grant interaction ("grant_rejected" indicates rejection).
+        example: "grant_rejected"
+      - in: query
+        name: hash
+        type: string
+        required: false
+        description: The confirmation hash value.
+        example: "abc123hash"
+      - in: query
+        name: interact_ref
+        type: string
+        required: false
+        description: The reference for user interaction.
+        example: "interaction123"
+      - in: query
+        name: user_id
+        type: string
+        required: true
+        description: The ID of the user whose grant interaction is being handled.
+        example: "54321"
+      - in: query
+        name: stokvel_id
+        type: string
+        required: true
+        description: The ID of the stokvel.
+        example: "67890"
+    responses:
+      200:
+        description: Displays the success or failure message based on the grant interaction.
+        schema:
+          type: string
+          example: "Your payout will be processed at the specified periods."
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid user and stokvel IDs."
+      500:
+        description: Internal server error. An error occurred while processing the grant interaction.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try again."
     """
 
     # Extract query parameters
@@ -1913,7 +2057,64 @@ def stokvel_interactive_grant_handle() -> str:
 @stokvel_bp.route(f"{BASE_ROUTE}/adhoc_payment_grant_accept", methods=["GET"])
 def adhoc_payment_grant_handle() -> str:
     """
-    Handle the success or rejection of stokvel contributions.
+    Handle Stokvel Adhoc Payment Grant Response
+    Manages the acceptance or rejection of adhoc payment grants based on user interaction.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: query
+        name: result
+        type: string
+        required: false
+        description: The result of the grant interaction ("grant_rejected" indicates rejection).
+        example: "grant_rejected"
+      - in: query
+        name: hash
+        type: string
+        required: false
+        description: The confirmation hash value.
+        example: "abc123hash"
+      - in: query
+        name: interact_ref
+        type: string
+        required: false
+        description: The reference for user interaction.
+        example: "interaction123"
+      - in: query
+        name: user_id
+        type: string
+        required: true
+        description: The ID of the user whose adhoc payment is being handled.
+        example: "54321"
+      - in: query
+        name: stokvel_id
+        type: string
+        required: true
+        description: The ID of the stokvel.
+        example: "67890"
+      - in: query
+        name: quote_id
+        type: string
+        required: true
+        description: The ID of the quote associated with the payment.
+        example: "12345"
+    responses:
+      200:
+        description: Displays the success or failure message based on the adhoc payment interaction.
+        schema:
+          type: string
+          example: "Your payout will be processed at the specified periods."
+      400:
+        description: Bad request. Missing or invalid input data.
+        schema:
+          type: string
+          example: "Invalid request. Please provide valid user and stokvel IDs."
+      500:
+        description: Internal server error. An error occurred while processing the adhoc payment.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try again."
     """
     # Extract query parameters
     result = request.args.get("result")  # For grant_rejected
@@ -2008,9 +2209,49 @@ def adhoc_payment_grant_handle() -> str:
             )
 
 
-@stokvel_bp.route(f"{BASE_ROUTE}/leave_stokvel", methods=["GET"])
+@stokvel_bp.route(f"{BASE_ROUTE}/leave_stokvel", methods=["POST"])
 def leave_current_stokvel():
-
+    """
+    Leave Stokvel
+    Processes the request for a user to leave a stokvel and handle associated payouts.
+    ---
+    tags:
+      - Stokvel
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The phone number of the user requesting to leave the stokvel.
+              example: "+27821234567"
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel from which the user wishes to exit.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: The user has successfully left the stokvel.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Success"
+      500:
+        description: Internal server error. An error occurred while processing the request to leave the stokvel.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "An error occurred while trying to leave the stokvel."
+    """
     try:
         user_number = request.json.get("user_number")
         stokvel_name = request.json.get("stokvel_selection")
