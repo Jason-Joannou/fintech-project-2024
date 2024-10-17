@@ -22,7 +22,7 @@ nav:
       - Overview: devops/overview.md
       - Git Management: devops/git.md
       - Docker: devops/docker.md
-      - Terraform: architecture/terraform.md
+      - Terraform: devops/terraform.md
 
 
 markdown_extensions:
