@@ -26,7 +26,17 @@ BASE_ROUTE = "/users"
 @users_bp.route(BASE_ROUTE)
 def user_info() -> str:
     """
-    docstring
+    User Info API
+    Provides general information about the user API endpoints.
+    ---
+    tags:
+      - Users
+    responses:
+      200:
+        description: Returns a message about the user API.
+        schema:
+          type: string
+          example: "User Info API. This API endpoint is used for getting user information."
     """
     return "User Info API. This API endpoint is used for getting user information"
 
@@ -34,7 +44,22 @@ def user_info() -> str:
 @users_bp.route(f"{BASE_ROUTE}/total_users", methods=["GET"])
 def get_all_users() -> str:
     """
-    This endpoint returns the number of users in the database.
+    Get Total Number of Users
+    Retrieves the total count of users in the system.
+    ---
+    tags:
+      - Users
+    responses:
+      200:
+        description: Returns the total number of users.
+        schema:
+          type: string
+          example: "The total number of users registered and participating in the stokvel system are 150"
+      500:
+        description: Internal server error. An error occurred while fetching user count.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     try:
         user_count = get_total_number_of_users()
@@ -49,7 +74,39 @@ def get_all_users() -> str:
 @users_bp.route(f"{BASE_ROUTE}/user_total_interest", methods=["POST"])
 def user_total_interest() -> str:
     """
-    This endpoint returns the total interest for a user in a stokvel in the savings period.
+    Get User Total Interest
+    Retrieves the total interest earned by a user in a specified stokvel.
+    ---
+    tags:
+      - Users
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - stokvel_selection
+          properties:
+            user_number:
+              type: string
+              description: The user's phone number.
+              example: "+27821234567"
+            stokvel_selection:
+              type: string
+              description: The name of the stokvel.
+              example: "Community Savings Club"
+    responses:
+      200:
+        description: Returns the total interest earned by the user in the stokvel.
+        schema:
+          type: string
+          example: "Your total interest in this Stokvel is: R500"
+      500:
+        description: Internal server error. An error occurred while fetching interest data.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     phone_number = request.json.get(
         "user_number"
@@ -75,8 +132,34 @@ def user_total_interest() -> str:
 @users_bp.route(f"{BASE_ROUTE}/view_account_details", methods=["POST"])
 def get_account_details_endpoint() -> str:
     """
-    This endpoint returns account details of a user based on their phone number.
-    The phone number should be provided as a query parameter.
+    View User Account Details
+    Retrieves account details of a user based on their phone number.
+    ---
+    tags:
+      - Users
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+          properties:
+            user_number:
+              type: string
+              description: The user's phone number.
+              example: "+27821234567"
+    responses:
+      200:
+        description: Returns account details of the user.
+        schema:
+          type: string
+          example: "Welcome John Doe! Your user ID: 1234, Wallet ID: abc123, Balance: R500."
+      500:
+        description: Internal server error. An error occurred while retrieving account details.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
     """
     phone_number = request.json.get(
         "user_number"
@@ -105,6 +188,41 @@ def get_account_details_endpoint() -> str:
 
 @users_bp.route(f"{BASE_ROUTE}/admin/update_username", methods=["POST"])
 def update_user_name_endpoint():
+    """
+    Update User Name
+    Updates the user's name based on their phone number.
+    ---
+    tags:
+      - Users
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - user_input
+          properties:
+            user_number:
+              type: string
+              description: The user's phone number.
+              example: "+27821234567"
+            user_input:
+              type: string
+              description: The new name to update for the user.
+              example: "John"
+    responses:
+      200:
+        description: Successfully updated the user's name.
+        schema:
+          type: string
+          example: "Your name has been updated successfully to: John!"
+      500:
+        description: Internal server error. An error occurred while updating the user's name.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
+    """
 
     phone_number = request.json.get("user_number")
     new_name = request.json.get("user_input")
@@ -127,6 +245,41 @@ def update_user_name_endpoint():
 
 @users_bp.route(f"{BASE_ROUTE}/admin/update_usersurname", methods=["POST"])
 def update_user_surname_endpoint():
+    """
+    Update User Surname
+    Updates the user's surname based on their phone number.
+    ---
+    tags:
+      - Users
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required:
+            - user_number
+            - user_input
+          properties:
+            user_number:
+              type: string
+              description: The user's phone number.
+              example: "+27821234567"
+            user_input:
+              type: string
+              description: The new surname to update for the user.
+              example: "Doe"
+    responses:
+      200:
+        description: Successfully updated the user's surname.
+        schema:
+          type: string
+          example: "Your surname has been updated successfully to: Doe!"
+      500:
+        description: Internal server error. An error occurred while updating the user's surname.
+        schema:
+          type: string
+          example: "There was an error performing that action, please try the action again."
+    """
     phone_number = request.json.get("user_number")
     new_surname = request.json.get("user_input")
 
@@ -146,30 +299,20 @@ def update_user_surname_endpoint():
         return msg
 
 
-@users_bp.route(f"{BASE_ROUTE}/fund_wallet", methods=["POST"])
-def example_fund_wallet() -> str:
-    """
-    This is an example endpoint on how we would manage post requests from the state manager.
-    """
-    try:
-        user_number = request.json.get("user_number")
-        send_notification_message(
-            to=user_number,
-            body="Thank you, we are currently processing your request...",
-        )
-        ammount = request.json.get("user_input")
-        msg = f"Your wallet has been funded with R{ammount}."
-        return msg
-    except Exception as e:
-        msg = "There was an error performing that action, please try the action again."
-        print(f"Error in {example_fund_wallet.__name__}: {e}")
-        return msg
-
-
 @users_bp.route(f"{BASE_ROUTE}/update_user", methods=["GET"])
 def approval_update_login() -> str:
     """
-    docstrings
+    Update User Login
+    Renders a login page for users who wish to update their profile details.
+    ---
+    tags:
+      - Users
+    responses:
+      200:
+        description: Returns the login page for user profile update.
+        content:
+          text/html:
+            example: "<html>...</html>"
     """
     return render_template("update_user_login.html")
 
@@ -177,7 +320,29 @@ def approval_update_login() -> str:
 @users_bp.route(f"{BASE_ROUTE}/update_user/update", methods=["POST"])
 def update_user_details() -> Response:
     """
-    Handles onboarding of a new user.
+    Update User Details
+    Processes the request to update user details based on their login and provided information.
+    ---
+    tags:
+      - Users
+    parameters:
+      - in: formData
+        name: requesting_number
+        type: string
+        required: true
+        description: The phone number of the user requesting an update.
+        example: "+27821234567"
+    responses:
+      200:
+        description: Successfully renders the user update page with the requesting user's details.
+        content:
+          text/html:
+            example: "<html>...</html>"
+      302:
+        description: Redirects to the failed user update page in case of errors.
+        content:
+          text/html:
+            example: "<html>...</html>"
     """
     try:
         requesting_number = requesting_number = request.form.get(
@@ -202,7 +367,17 @@ def update_user_details() -> Response:
 @users_bp.route(f"{BASE_ROUTE}/update_user/success_user_update")
 def success_user_update() -> str:
     """
-    docstrings
+    Success User Update
+    Displays a success message after a user successfully updates their profile.
+    ---
+    tags:
+      - Users
+    responses:
+      200:
+        description: Returns the success page indicating the user update was successful.
+        content:
+          text/html:
+            example: "<html>Profile Update: Update to profile completed. Please navigate back to WhatsApp for further functions.</html>"
     """
     action = "Profile Update"
     success_message = "Update to profile completed"
@@ -221,7 +396,17 @@ def success_user_update() -> str:
 @users_bp.route(f"{BASE_ROUTE}/update_user/failed_user_update")
 def failed_user_update() -> str:
     """
-    docstring
+    Failed User Update
+    Displays a message if the user's profile update fails.
+    ---
+    tags:
+      - Users
+    responses:
+      200:
+        description: Returns a failure page indicating the user update was unsuccessful.
+        content:
+          text/html:
+            example: "<html>User update: We could not update your profile. Please try again. Please go back and try again.</html>"
     """
     action = "User update"
     failed_message = "We could not update your profile. Please try again."  # Define a better message here - depending on what went wrong
