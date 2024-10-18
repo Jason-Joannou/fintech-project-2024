@@ -16,6 +16,7 @@ export interface IEnvVariables {
   keyID: string;
   privateKeyID: string;
   nodeServer: string;
+  pythonServer: string;
 }
 
 export const getEnviromentVariables = (): IEnvVariables => {
