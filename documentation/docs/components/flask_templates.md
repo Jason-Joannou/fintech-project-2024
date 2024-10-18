@@ -41,6 +41,8 @@ Onboarding is critical for user retention and ensuring a smooth first experience
   - If the validation is successful, the user's account is created in the database, and they are logged into the system.
   - If there are any issues, such as a duplicate email or password weakness, appropriate error messages are displayed to guide the user in fixing the problem.
 
+![Onboarding Template](./images/onboard.png)
+
 ## Stokvel Creation Template
 
 The `stokvel_creation_template` page allows users to create a new stokvel group by providing basic details such as the group's name, its purpose, and the initial list of members. The page is designed to streamline the process of starting a stokvel.
@@ -62,6 +64,8 @@ This page is designed to encourage users to create new stokvels by providing a s
   - If the validation is successful, the new stokvel is created in the database, and the initial members are notified of their inclusion.
   - If there are any issues, such as a duplicate group name, an error message is returned to the user for correction.
 
+![Creation Template](./images/create_stokvel.png)
+
 ## Joining Template
 
 The `joining_template` page allows users to submit a request to join an existing stokvel. The page collects the user's basic information and, optionally, a message explaining why they want to join the group.
@@ -81,6 +85,8 @@ This page formalizes the process of joining a stokvel, ensuring that administrat
   - The system checks for potential issues (e.g., duplicate requests) before submitting the application.
   - Upon successful submission, the user is notified that their request has been sent. The stokvel admin will then review the application and decide whether to accept or reject it.
 
+![Join Template](./images/join_stokvel.png)
+
 ## Approve Applications
 
 The `approve_applications` page is designed for stokvel administrators to manage membership requests. Administrators can view pending applications and either approve or reject them based on the details provided by the applicants.
@@ -98,6 +104,8 @@ This page is essential for stokvel management. It provides a simple and intuitiv
   - If the application is approved, the user is notified and added to the group. If rejected, the user is informed of the decision.
   - The page may also allow administrators to leave a note explaining their decision, particularly if the application is rejected.
 
+![Approve Template](./images/approvals.png)
+
 ## Action Success Template
 
 The `action_success_template` page is a generic confirmation page that informs users that their requested action has been successfully completed. It is commonly used after form submissions or updates, providing a clear indication that the user's request was processed without errors.
@@ -112,6 +120,8 @@ Feedback is crucial for user experience. After completing an action (e.g., submi
 **GET /action_success**:
 
   - This endpoint displays the success message after a user completes a specific action, such as submitting a form or making an update. It is designed to provide positive feedback and closure to the user's interaction.
+
+![Success Template](./images/action_success.png)
 
 ## Action Failed Template
 
@@ -129,3 +139,5 @@ The `action_failed_template` page notifies users that an action they attempted h
 **GET /action_failed**:
 
   - This endpoint displays an error message when the user's action fails. It could be triggered by form validation failures, incorrect login attempts, or issues processing a request. The page offers guidance on how the user can resolve the issue or retry the action.
+
+![Success Template](./images/action_failure.png)
