@@ -71,12 +71,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.json({
-    message: "Welcome to the API! This is the base endpoint.",
-  });
-});
-
 // Mount routers to base paths
 app.use("/payments", payments);
 
