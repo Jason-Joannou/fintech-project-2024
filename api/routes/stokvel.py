@@ -763,7 +763,7 @@ def onboard_stokvel() -> Response:
         inserted_stokvel_id = insert_stokvel(
             stokvel_id=None,
             stokvel_name=stokvel_data.stokvel_name,  # unique constraint here
-            ILP_wallet="$ilp.rafiki.money/masterstokveladdress",  # MASTER WALLET
+            ILP_wallet="$ilp.interledger-test.dev/stokvelmasteraddress",  # MASTER WALLET
             MOMO_wallet="MOMO_TEST",
             total_members=stokvel_data.total_members,
             min_contributing_amount=stokvel_data.min_contributing_amount,
@@ -800,7 +800,7 @@ def onboard_stokvel() -> Response:
             "stokvel_contributions_start_date": get_iso_with_default_time(
                 stokvel_data.start_date
             ),
-            "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
+            "walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
             "sender_walletAddressURL": find_wallet_by_userid(user_id=user_id),
             "payment_periods": number_contribution_periods_between_start_end_date,  # how many contributions are going to be made
             "payment_period_length": format_contribution_period_string(
@@ -852,7 +852,7 @@ def onboard_stokvel() -> Response:
                 stokvel_data.start_date
             ),
             "walletAddressURL": find_wallet_by_userid(user_id=user_id),
-            "sender_walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
+            "sender_walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
             "payment_periods": number_payout_periods_between_start_end_date
             * 2,  # how many contributions are going to be made
             "payment_period_length": payment_period_duration_converted,
@@ -1229,7 +1229,7 @@ def process_application():
                 "stokvel_contributions_start_date": get_iso_with_default_time(
                     stokvel_dict.get("start_date")
                 ),
-                "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
+                "walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
                 "sender_walletAddressURL": find_wallet_by_userid(
                     user_id=application_joiner_id
                 ),
@@ -1294,7 +1294,7 @@ def process_application():
                 "walletAddressURL": find_wallet_by_userid(
                     user_id=application_joiner_id
                 ),
-                "sender_walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
+                "sender_walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
                 "payment_periods": number_payout_periods_between_start_end_date
                 * 2,  # Double the number of payout periods
                 "payment_period_length": payment_period_duration_converted,
@@ -1912,7 +1912,7 @@ def stokvel_interactive_grant_handle() -> str:
             "quote_id": stokvel_members_details.get("stokvel_quote_id"),
             "continueUri": stokvel_members_details.get("stokvel_payment_URI"),
             "continueAccessToken": stokvel_members_details.get("stokvel_payment_token"),
-            "walletAddressURL": "https://ilp.rafiki.money/masterstokveladdress",
+            "walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
             "interact_ref": stokvel_members_details.get("stokvel_interaction_ref"),
         }
 
@@ -2040,7 +2040,7 @@ def adhoc_payment_grant_handle() -> str:
                 "continueAccessToken": stokvel_members_details.get(
                     "adhoc_contribution_token"
                 ),
-                "walletAddressURL": "$ilp.rafiki.money/masterstokveladdress",
+                "walletAddressURL": "$ilp.interledger-test.dev/stokvelmasteraddress",
                 "interact_ref": interact_ref,
             }
 
@@ -2154,7 +2154,7 @@ def leave_current_stokvel():
         print(user_id, " USER ID")
         user_wallet = find_wallet_by_userid(user_id)
         stokvel_id = get_stokvel_id_by_name(stokvel_name)
-        stokvel_wallet = "$ilp.rafiki.money/masterstokveladdress"
+        stokvel_wallet = "$ilp.interledger-test.dev/stokvelmasteraddress"
 
         payload = {
             "value": str(total_deposits),
